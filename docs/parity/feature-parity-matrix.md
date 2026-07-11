@@ -48,8 +48,8 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 6 | Inbox | `InboxScreen.tsx` | conversations; updated event | `features/messaging/inbox` | In progress | In progress | REST, ordering/dedup and responsive tests pass; live reconnect evidence pending |
 | 6 | Chat | `ChatScreen.tsx` | messages; message event | `features/messaging/chat` | In progress | In progress | send/receive dedup, room lifecycle and widget journey pass; live socket evidence pending |
 | 6 | Notification center | `NotificationsScreen.tsx`; context | notification CRUD/event | `features/notifications` | In progress | In progress | CRUD rollback, realtime dedup and deep-link mapping pass; live event evidence pending |
-| 6 | Android push | Notification context | push token endpoints | `core/notifications` | Not started | Not started | device token lifecycle evidence |
-| 6 | Web Push | PWA web push/context | VAPID/subscription endpoints | `core/notifications/web` | Not started | Not started | browser permission/subscription evidence |
+| 6 | Android push | Notification context | Expo-only push token endpoint | `core/notifications` | Blocked by backend contract | Not started | backend rejects/non-delivers FCM tokens; requires FCM delivery + Firebase config |
+| 6 | Web Push | PWA web push/context | VAPID/subscription endpoints | `core/notifications/web` | In progress | In progress | service worker, permission, register/unregister tests and Web build pass; live browser delivery pending |
 | 7 | Premium benefits/plans | `PremiumBenefitsScreen.tsx` | plans/trial | `features/premium` | Not started | Not started | plan/trial state tests |
 | 7 | PayOS payment | Premium screen | create/status | `features/premium/payment` | Not started | Not started | return/status terminal states |
 | 8 | Admin dashboard/KPI | `AdminScreens.tsx` | dashboard/summary | `features/admin/dashboard` | Not started | Not started | ranges/responsive charts |

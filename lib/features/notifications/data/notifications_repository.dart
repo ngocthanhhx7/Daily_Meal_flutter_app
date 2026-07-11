@@ -7,6 +7,9 @@ abstract interface class NotificationsRepositoryContract {
   Future<void> markAllRead();
   Future<void> delete(String id);
   Future<void> deleteAll();
+  Future<String> webPushPublicKey();
+  Future<void> registerWebPush(Map<String, dynamic> subscription);
+  Future<void> unregisterWebPush(String endpoint);
 }
 
 class NotificationsRepository implements NotificationsRepositoryContract {
@@ -22,4 +25,12 @@ class NotificationsRepository implements NotificationsRepositoryContract {
   Future<void> delete(String id) => _api.delete(id);
   @override
   Future<void> deleteAll() => _api.deleteAll();
+  @override
+  Future<String> webPushPublicKey() => _api.webPushPublicKey();
+  @override
+  Future<void> registerWebPush(Map<String, dynamic> subscription) =>
+      _api.registerWebPush(subscription);
+  @override
+  Future<void> unregisterWebPush(String endpoint) =>
+      _api.unregisterWebPush(endpoint);
 }

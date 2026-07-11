@@ -26,3 +26,18 @@ Date: 2026-07-12
 Live two-session production Socket.IO delivery/reconnect and physical/browser
 push permission/subscription evidence remain pending; these capabilities are
 therefore kept `In progress` in the parity matrix.
+
+## Push contract finding
+
+- Web Push now includes a dedicated service worker, VAPID readiness/permission
+  bridge, subscription persistence, backend register/unregister lifecycle and
+  deterministic controller/API tests.
+- Read-only production probe on 2026-07-12 confirmed
+  `/api/users/web-push/vapid-public-key` returns a configured 87-character
+  public key; the key value itself is intentionally not recorded.
+- Native `/api/users/push-token` is not Flutter-compatible today. Backend
+  `sendPushNotification` only forwards values beginning with
+  `ExponentPushToken[` to Expo's push API. A Flutter FCM token would be stored
+  but never delivered. Android push therefore remains explicitly blocked until
+  backend FCM delivery credentials/logic and the Flutter Firebase project
+  configuration are supplied; the app does not submit a misleading token.

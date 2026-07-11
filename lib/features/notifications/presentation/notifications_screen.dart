@@ -3,17 +3,26 @@ import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/features/notifications/application/notifications_controller.dart';
 import 'package:daily_meal_flutter_app/features/notifications/application/notifications_providers.dart';
 import 'package:daily_meal_flutter_app/features/notifications/domain/app_notification.dart';
+import 'package:daily_meal_flutter_app/features/notifications/application/web_push_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class NotificationsScreen extends ConsumerWidget {
-  const NotificationsScreen({this.controller, super.key});
+  const NotificationsScreen({
+    this.controller,
+    this.webPushController,
+    super.key,
+  });
   final NotificationsController? controller;
+  final WebPushController? webPushController;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final NotificationsController value =
         controller ?? ref.watch(notificationsControllerProvider);
+    final push =
+        webPushController ??
+        (controller == null ? ref.watch(webPushControllerProvider) : null);
     final body = controller == null
         ? _body(context, ref, value)
         : AnimatedBuilder(
@@ -37,7 +46,12 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: body,
+      body: Column(
+        children: [
+          if (push != null) _WebPushBanner(controller: push),
+          Expanded(child: body),
+        ],
+      ),
     );
   }
 
@@ -150,5 +164,43 @@ class NotificationsScreen extends ConsumerWidget {
       ),
     );
     if (confirmed == true) await controller.deleteAll().catchError((_) {});
+  }
+}
+
+class _WebPushBanner extends StatelessWidget {
+  const _WebPushBanner({required this.controller});
+  final WebPushController controller;
+  @override
+  Widget build(BuildContext context) {
+    if (controller.status == WebPushStatus.unsupported ||
+        controller.status == WebPushStatus.ready) {
+      return const SizedBox.shrink();
+    }
+    final text = switch (controller.status) {
+      WebPushStatus.needsPermission =>
+        'Bật thông báo trình duyệt để nhận cập nhật khi Daily Meal không mở.',
+      WebPushStatus.permissionDenied =>
+        'Quyền thông báo đang bị chặn trong cài đặt trình duyệt.',
+      WebPushStatus.missingPublicKey => 'Máy chủ chưa cấu hình Web Push VAPID.',
+      WebPushStatus.failure => 'Không thể đăng ký Web Push.',
+      _ => 'Đang kiểm tra Web Push...',
+    };
+    return Material(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: ListTile(
+        leading: const Icon(Icons.notifications_active_outlined),
+        title: Text(text),
+        trailing:
+            controller.status == WebPushStatus.needsPermission ||
+                controller.status == WebPushStatus.failure
+            ? FilledButton.tonal(
+                onPressed: controller.status == WebPushStatus.loading
+                    ? null
+                    : () => controller.enable().catchError((_) {}),
+                child: const Text('Bật'),
+              )
+            : null,
+      ),
+    );
   }
 }

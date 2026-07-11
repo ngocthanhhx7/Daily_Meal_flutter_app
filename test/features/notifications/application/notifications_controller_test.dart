@@ -31,6 +31,12 @@ class _Repository implements NotificationsRepositoryContract {
   Future<void> delete(String id) => action();
   @override
   Future<void> deleteAll() => action();
+  @override
+  Future<String> webPushPublicKey() async => 'key';
+  @override
+  Future<void> registerWebPush(Map<String, dynamic> subscription) => action();
+  @override
+  Future<void> unregisterWebPush(String endpoint) => action();
 }
 
 class _Realtime implements RealtimeClient {

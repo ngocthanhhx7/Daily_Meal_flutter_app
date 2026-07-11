@@ -14,7 +14,9 @@ class _Adapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requests.add(options);
-    final data = options.method == 'GET'
+    final data = options.path == '/api/users/web-push/vapid-public-key'
+        ? {'publicKey': 'vapid-key'}
+        : options.method == 'GET'
         ? {
             'notifications': [
               {
@@ -53,6 +55,12 @@ void main() {
     await api.markAllRead();
     await api.delete('n1');
     await api.deleteAll();
+    expect(await api.webPushPublicKey(), 'vapid-key');
+    await api.registerWebPush({
+      'endpoint': 'https://push.test',
+      'keys': {'p256dh': 'p', 'auth': 'a'},
+    });
+    await api.unregisterWebPush('https://push.test');
     expect(
       adapter.requests.map((item) => '${item.method} ${item.path}'),
       containsAll([
@@ -60,6 +68,9 @@ void main() {
         'PATCH /api/notifications/read-all',
         'DELETE /api/notifications/n1',
         'DELETE /api/notifications',
+        'GET /api/users/web-push/vapid-public-key',
+        'POST /api/users/web-push-subscription',
+        'DELETE /api/users/web-push-subscription',
       ]),
     );
   });
