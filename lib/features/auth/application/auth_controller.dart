@@ -60,6 +60,12 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<void> loginWithGoogle(String idToken) =>
+      _socialLogin(() => _repository.loginWithGoogle(idToken));
+
+  Future<void> loginWithFacebook(String accessToken) =>
+      _socialLogin(() => _repository.loginWithFacebook(accessToken));
+
   Future<void> register({
     required String email,
     required String password,
@@ -167,6 +173,16 @@ class AuthController extends ChangeNotifier {
   }
 
   void updateUser(AppUser user) => _setAuthenticatedUser(user);
+
+  Future<void> _socialLogin(Future<AppUser> Function() authenticate) async {
+    _setState(const AuthState(status: AuthStatus.signedOut, isBusy: true));
+    try {
+      _setAuthenticatedUser(await authenticate());
+    } catch (error) {
+      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      rethrow;
+    }
+  }
 
   void _setAuthenticatedUser(AppUser user) {
     _setState(

@@ -28,6 +28,8 @@ abstract interface class AuthRepositoryContract {
     required String phone,
     required String password,
   });
+  Future<AppUser> loginWithGoogle(String idToken);
+  Future<AppUser> loginWithFacebook(String accessToken);
   Future<AdminAuthResult> adminLogin({
     required String email,
     required String password,
@@ -119,9 +121,11 @@ class AuthRepository implements AuthRepositoryContract {
     ),
   );
 
+  @override
   Future<AppUser> loginWithGoogle(String idToken) async =>
       _persistUser(await _api.loginWithGoogle(idToken));
 
+  @override
   Future<AppUser> loginWithFacebook(String accessToken) async =>
       _persistUser(await _api.loginWithFacebook(accessToken));
 

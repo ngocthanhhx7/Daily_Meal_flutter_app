@@ -105,6 +105,17 @@ void main() {
     expect(await sessions.read(SessionKind.user), isNull);
   });
 
+  test('social token exchange persists the resulting user session', () async {
+    final googleUser = await repository.loginWithGoogle('google-id-token');
+    expect(googleUser.id, 'user-1');
+    expect((await sessions.read(SessionKind.user))?.token, 'user-token');
+
+    await sessions.clear(SessionKind.user);
+    final facebookUser = await repository.loginWithFacebook('access-token');
+    expect(facebookUser.id, 'user-1');
+    expect((await sessions.read(SessionKind.user))?.token, 'user-token');
+  });
+
   test('failed authentication does not persist a session', () async {
     adapter.statusCode = 401;
 
