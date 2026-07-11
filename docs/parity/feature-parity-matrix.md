@@ -31,11 +31,11 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 3 | Comments | `CommentsScreen.tsx` | comments REST; comment event | `features/posts/comments` | In progress | In progress | REST load/create/validation/controller/widget verified; Socket room lifecycle remains Slice 6 |
 | 3 | Recipe/nutrition | `RecipeScreen.tsx`; nutrition helpers | nutrition insight | `features/posts`, `meal_analysis` | Verified | Verified | per-image/legacy recipe and nutrition detail decoder/widget tests plus builds |
 | 3 | Post summary | `PostSummaryScreen.tsx`; filters | GET summary | `features/posts/summary` | Not started | Not started | filter/paging tests |
-| 4 | Media picker/camera | `CreatePostScreen.tsx`; image picker util | permissions | `core/media`, `features/posts/create` | Not started | Not started | Android/Web capability evidence |
-| 4 | Upload image/video | create/edit profile screens | multipart uploads | `core/network/upload` | Not started | Not started | progress/cancel/platform tests |
-| 4 | AI meal analysis | create screen; meal helpers | POST meal analyze | `features/meal_analysis` | Not started | Not started | mapping/controller/integration |
-| 4 | Sticker editor | create screen; sticker helpers | sticker list/create | `features/posts/stickers` | Not started | Not started | transform/range/gesture tests |
-| 4 | Create/edit/delete post | Create/Edit screens | post CRUD | `features/posts/editor` | Not started | Not started | publish/edit/delete journey |
+| 4 | Media picker/camera | `CreatePostScreen.tsx`; image picker util | permissions | `core/media`, `features/posts/create` | In progress | In progress | Android/Web adapters, MIME/size/duration tests and builds pass; physical camera/browser chooser evidence remains |
+| 4 | Upload image/video | create/edit profile screens | multipart uploads | `core/network/upload` | In progress | In progress | exact multipart field/MIME contract and build verified; live large-file/progress/cancel evidence remains |
+| 4 | AI meal analysis | create screen; meal helpers | POST meal analyze | `features/meal_analysis` | In progress | In progress | exact hints/decoder/controller/UI journey verified with mock; live production AI evidence remains |
+| 4 | Sticker editor | create screen; sticker helpers | sticker list/create | `features/posts/stickers` | In progress | In progress | list/select/drag/scale/rotate and server bounds implemented; custom Premium sticker upload remains |
+| 4 | Create/edit/delete post | Create/Edit screens | post CRUD | `features/posts/editor` | In progress | In progress | create payload/draft retry/UI journey/build verified; edit and delete journeys remain |
 | 5 | Search posts/users | `SearchScreen.tsx` | post/user search | `features/search` | Not started | Not started | debounce/filter/personalized tests |
 | 5 | Own profile | `ProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | tabs/state/widget tests |
 | 5 | Public profile | `PublicProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | route/data tests |

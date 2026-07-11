@@ -1,0 +1,168 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/data/post_editor_api.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/domain/post_draft.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+class _Adapter implements HttpClientAdapter {
+  RequestOptions? request;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    request = options;
+    final body = switch (options.path) {
+      '/api/uploads' => {
+        'upload': {
+          '_id': 'upload-1',
+          'mediaType': 'image',
+          'url': '/uploads/meal.jpg',
+          'mime': 'image/jpeg',
+          'size': 3,
+        },
+      },
+      '/api/meals/analyze' => {
+        'meal': {
+          '_id': 'meal-1',
+          'image': {'url': '/uploads/meal.jpg', 'uploadId': 'upload-1'},
+          'result': {
+            'items': [
+              {
+                'name': 'Cơm',
+                'portion': '1 bát',
+                'calories': 200,
+                'protein': 4,
+                'carbs': 45,
+                'fat': 1,
+                'confidence': 0.9,
+              },
+            ],
+            'total': {
+              'calories': 200,
+              'protein': 4,
+              'carbs': 45,
+              'fat': 1,
+              'confidence': 0.9,
+            },
+            'warnings': ['Ước tính'],
+          },
+          'createdAt': '2026-07-11T08:00:00Z',
+        },
+      },
+      '/api/stickers' => {
+        'stickers': [
+          {
+            '_id': 'sticker-1',
+            'key': 'fresh',
+            'name': 'Fresh',
+            'assetPath': '/stickers/fresh.svg',
+            'premiumOnly': false,
+          },
+        ],
+      },
+      '/api/posts' => {
+        'post': {
+          '_id': 'post-1',
+          'author': {'id': 'user-1', 'displayName': 'Meal'},
+          ...((options.data as Map).cast<String, dynamic>()),
+          'stats': {'likes': 0, 'comments': 0, 'saves': 0},
+          'createdAt': '2026-07-11T08:00:00Z',
+          'updatedAt': '2026-07-11T08:00:00Z',
+        },
+      },
+      _ => throw StateError('Unexpected ${options.path}'),
+    };
+    return ResponseBody.fromString(
+      jsonEncode(body),
+      options.path == '/api/stickers' ? 200 : 201,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+void main() {
+  late _Adapter adapter;
+  late PostEditorApi api;
+
+  setUp(() {
+    adapter = _Adapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.dailymeal.site'))
+      ..httpClientAdapter = adapter;
+    api = PostEditorApi(dio);
+  });
+
+  test('uploads image bytes with exact multipart field and category', () async {
+    final upload = await api.upload(
+      bytes: Uint8List.fromList([1, 2, 3]),
+      fileName: 'meal.jpg',
+      mimeType: 'image/jpeg',
+      mediaType: DraftMediaType.image,
+    );
+
+    expect(adapter.request?.method, 'POST');
+    expect(adapter.request?.path, '/api/uploads');
+    expect(adapter.request?.queryParameters, {'category': 'post'});
+    final form = adapter.request?.data as FormData;
+    expect(form.files.single.key, 'image');
+    expect(form.files.single.value.filename, 'meal.jpg');
+    expect(form.files.single.value.contentType.toString(), 'image/jpeg');
+    expect(upload.id, 'upload-1');
+  });
+
+  test(
+    'analyzes upload, lists stickers and creates exact post payload',
+    () async {
+      final meal = await api.analyze('upload-1', hints: 'ít dầu');
+      expect(adapter.request?.data, {
+        'uploadId': 'upload-1',
+        'hints': {'ingredientsText': 'ít dầu'},
+      });
+      expect(meal.result.total.calories, 200);
+
+      final stickers = await api.stickers();
+      expect(stickers.single.id, 'sticker-1');
+
+      final draft = PostDraft(
+        mediaType: DraftMediaType.image,
+        images: const [
+          UploadedMedia(
+            id: 'upload-1',
+            mediaType: DraftMediaType.image,
+            url: '/uploads/meal.jpg',
+            mime: 'image/jpeg',
+            size: 3,
+          ),
+        ],
+        caption: 'Bữa trưa',
+        tags: const ['healthy'],
+        visibility: PostVisibility.friends,
+        layout: PostLayout.stack,
+        recipes: const [
+          ImageRecipe(
+            imageIndex: 0,
+            title: 'Cơm',
+            ingredients: ['gạo'],
+            steps: ['nấu'],
+          ),
+        ],
+        nutritionDetails: [meal.toNutritionDetail(0)],
+      );
+      final created = await api.createPost(draft);
+
+      expect(adapter.request?.path, '/api/posts');
+      expect(adapter.request?.data, draft.toJson());
+      expect(created.id, 'post-1');
+    },
+  );
+}

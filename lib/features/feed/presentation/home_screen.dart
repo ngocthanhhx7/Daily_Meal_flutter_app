@@ -10,6 +10,8 @@ import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutriti
 import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({this.controller, this.mediaResolver, super.key});
@@ -90,7 +92,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
       selectedIndex: 0,
       onDestinationSelected: (index) {
-        if (index != 0) {
+        if (index == 2) {
+          context.goNamed(AppRoute.createPost.name);
+        } else if (index != 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Tính năng đang được hoàn thiện.')),
           );

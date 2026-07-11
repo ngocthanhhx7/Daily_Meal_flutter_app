@@ -4,6 +4,7 @@ import 'package:daily_meal_flutter_app/features/auth/presentation/login_screen.d
 import 'package:daily_meal_flutter_app/features/auth/presentation/admin_login_screen.dart';
 import 'package:daily_meal_flutter_app/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/home_screen.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +24,7 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.adminLogin => const AdminLoginScreen(),
             AppRoute.onboarding => const OnboardingScreen(),
             AppRoute.home => const HomeScreen(),
+            AppRoute.createPost => const CreatePostScreen(),
             _ => FoundationRouteProbe(route: route),
           },
         ),

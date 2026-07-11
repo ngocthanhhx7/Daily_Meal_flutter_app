@@ -3,6 +3,7 @@ enum AppRoute {
   adminLogin('/admin/login'),
   onboarding('/onboarding'),
   home('/'),
+  createPost('/create'),
   adminDashboard('/admin');
 
   const AppRoute(this.path);
