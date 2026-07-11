@@ -3,6 +3,7 @@ enum AppRoute {
   adminLogin('/admin/login'),
   onboarding('/onboarding'),
   home('/'),
+  search('/search'),
   createPost('/create'),
   editPost('/posts/edit'),
   adminDashboard('/admin');

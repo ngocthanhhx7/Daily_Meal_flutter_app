@@ -7,6 +7,7 @@ import 'package:daily_meal_flutter_app/features/feed/presentation/home_screen.da
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_post_screen.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,6 +27,7 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.adminLogin => const AdminLoginScreen(),
             AppRoute.onboarding => const OnboardingScreen(),
             AppRoute.home => const HomeScreen(),
+            AppRoute.search => const SearchScreen(),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost

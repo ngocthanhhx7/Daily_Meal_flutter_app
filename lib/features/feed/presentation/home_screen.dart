@@ -104,7 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
       selectedIndex: 0,
       onDestinationSelected: (index) {
-        if (index == 2) {
+        if (index == 1) {
+          context.goNamed(AppRoute.search.name);
+        } else if (index == 2) {
           context.goNamed(AppRoute.createPost.name);
         } else if (index != 0) {
           ScaffoldMessenger.of(context).showSnackBar(

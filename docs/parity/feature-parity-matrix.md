@@ -36,7 +36,7 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 4 | AI meal analysis | create screen; meal helpers | POST meal analyze | `features/meal_analysis` | In progress | In progress | exact hints/decoder/controller/UI journey verified with mock; live production AI evidence remains |
 | 4 | Sticker editor | create screen; sticker helpers | sticker list/create | `features/posts/stickers` | In progress | In progress | list/select/drag/scale/rotate plus Premium upload/create contract implemented; live media capability evidence remains |
 | 4 | Create/edit/delete post | Create/Edit screens | post CRUD | `features/posts/editor` | Verified | Verified | exact POST/PATCH/DELETE contracts, owner-only UI, confirmation, feed reconciliation, tests and platform builds |
-| 5 | Search posts/users | `SearchScreen.tsx` | post/user search | `features/search` | Not started | Not started | debounce/filter/personalized tests |
+| 5 | Search posts/users | `SearchScreen.tsx` | post/user search | `features/search` | Verified | Verified | API contract, controller rollback and responsive widget tests |
 | 5 | Own profile | `ProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | tabs/state/widget tests |
 | 5 | Public profile | `PublicProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | route/data tests |
 | 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | Not started | Not started | validation/upload tests |
