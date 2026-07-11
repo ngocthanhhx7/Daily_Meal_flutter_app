@@ -43,6 +43,19 @@ class _Repository implements PostEditorRepositoryContract {
   Future<List<PostSticker>> stickers() async => const [];
 
   @override
+  Future<PostSticker> createSticker({
+    required String name,
+    required String key,
+    required String assetPath,
+  }) async => PostSticker(
+    id: 'custom-1',
+    key: key,
+    name: name,
+    assetPath: assetPath,
+    premiumOnly: true,
+  );
+
+  @override
   Future<FeedPost> publish(PostDraft draft) async {
     publishedDraft = draft;
     if (failPublish) throw StateError('network');
@@ -113,5 +126,15 @@ void main() {
     expect(controller.state.caption, 'Retry');
     expect(controller.state.errorMessage, isNotNull);
     expect(controller.state.isBusy, isFalse);
+  });
+
+  test('premium user uploads and selects a custom sticker', () async {
+    final controller = PostEditorController(_Repository(), isPremium: true);
+
+    await controller.createCustomSticker(image('sticker.jpg'));
+
+    expect(controller.state.stickers.single.id, 'custom-1');
+    expect(controller.state.selectedStickerId, 'custom-1');
+    expect(controller.state.step, PostEditorStep.sticker);
   });
 }

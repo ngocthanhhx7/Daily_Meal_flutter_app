@@ -56,6 +56,20 @@ class PostEditorApi {
         .toList(growable: false);
   }
 
+  Future<PostSticker> createSticker({
+    required String name,
+    required String key,
+    required String assetPath,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/api/stickers',
+      data: {'name': name, 'key': key, 'assetPath': assetPath},
+    );
+    final raw = _data(response)['sticker'];
+    if (raw is! Map) throw const FormatException('Missing created sticker');
+    return PostSticker.fromJson(raw.cast<String, dynamic>());
+  }
+
   Future<FeedPost> createPost(PostDraft draft) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/api/posts',
@@ -64,6 +78,24 @@ class PostEditorApi {
     final post = _data(response)['post'];
     if (post is! Map) throw const FormatException('Missing created post');
     return FeedPost.fromJson(post.cast<String, dynamic>());
+  }
+
+  Future<FeedPost> updatePost(
+    String postId, {
+    required String caption,
+    required List<String> tags,
+  }) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '/api/posts/$postId',
+      data: {'caption': caption.trim(), 'tags': tags},
+    );
+    final raw = _data(response)['post'];
+    if (raw is! Map) throw const FormatException('Missing updated post');
+    return FeedPost.fromJson(raw.cast<String, dynamic>());
+  }
+
+  Future<void> deletePost(String postId) async {
+    await _dio.delete<void>('/api/posts/$postId');
   }
 
   Map<String, dynamic> _data(Response<Map<String, dynamic>> response) {

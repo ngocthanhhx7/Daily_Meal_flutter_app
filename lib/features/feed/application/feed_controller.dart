@@ -58,6 +58,22 @@ class FeedController extends ChangeNotifier {
   FeedState get state => _state;
   bool isInteractionBusy(String postId) => _busyInteractions.contains(postId);
 
+  void applyPost(FeedPost post) {
+    final index = _state.posts.indexWhere((item) => item.id == post.id);
+    if (index >= 0) _replacePost(index, post);
+  }
+
+  void removePost(String postId) {
+    final posts = _state.posts.where((post) => post.id != postId).toList();
+    if (posts.length == _state.posts.length) return;
+    _setState(
+      _state.copyWith(
+        posts: posts,
+        status: posts.isEmpty ? FeedStatus.empty : FeedStatus.ready,
+      ),
+    );
+  }
+
   Future<void> loadInitial() async {
     if (_state.status == FeedStatus.loading) return;
     _setState(_state.copyWith(status: FeedStatus.loading, clearError: true));

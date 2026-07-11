@@ -116,4 +116,30 @@ void main() {
       expect(controller.state.posts.single.stats.saves, 1);
     },
   );
+
+  test('applies edited posts and removes deleted posts in place', () async {
+    final repository = _Repository()
+      ..pages[1] = FeedPage(
+        posts: [post('1'), post('2')],
+        page: 1,
+        limit: 20,
+        hasMore: false,
+      );
+    final controller = FeedController(repository);
+    await controller.loadInitial();
+
+    final edited = FeedPost.fromJson({
+      '_id': '1',
+      'author': {'id': 'user-1', 'displayName': 'Meal 1'},
+      'caption': 'Edited',
+      'visibility': 'public',
+      'createdAt': '2026-07-11T08:00:00Z',
+      'updatedAt': '2026-07-11T09:00:00Z',
+    });
+    controller.applyPost(edited);
+    expect(controller.state.posts.first.caption, 'Edited');
+
+    controller.removePost('1');
+    expect(controller.state.posts.map((item) => item.id), ['2']);
+  });
 }

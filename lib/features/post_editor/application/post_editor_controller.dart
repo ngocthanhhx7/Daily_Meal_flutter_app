@@ -223,6 +223,33 @@ class PostEditorController extends ChangeNotifier {
     }
   }
 
+  Future<void> createCustomSticker(PickedMedia image) async {
+    if (!isPremium) throw StateError('Tự tải nhãn dán yêu cầu Premium.');
+    if (image.mediaType != DraftMediaType.image) {
+      throw StateError('Nhãn dán phải là hình ảnh.');
+    }
+    _setState(_state.copyWith(isBusy: true, clearError: true));
+    try {
+      final upload = await _repository.upload(image);
+      final sticker = await _repository.createSticker(
+        name: 'Tự tải',
+        key: 'custom-user-${DateTime.now().millisecondsSinceEpoch}',
+        assetPath: upload.url,
+      );
+      _setState(
+        _state.copyWith(
+          stickers: [sticker, ..._state.stickers],
+          selectedStickerId: sticker.id,
+          step: PostEditorStep.sticker,
+          isBusy: false,
+        ),
+      );
+    } catch (error) {
+      _setState(_state.copyWith(isBusy: false, errorMessage: error.toString()));
+      rethrow;
+    }
+  }
+
   Future<void> analyzeAll({Map<int, String> hintsByImage = const {}}) async {
     final images = _state.media
         .where((item) => item.mediaType == DraftMediaType.image)

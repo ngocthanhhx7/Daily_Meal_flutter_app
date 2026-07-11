@@ -5,6 +5,8 @@ import 'package:daily_meal_flutter_app/features/auth/presentation/admin_login_sc
 import 'package:daily_meal_flutter_app/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/home_screen.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_post_screen.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_screen.dart';
+import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,6 +27,14 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.onboarding => const OnboardingScreen(),
             AppRoute.home => const HomeScreen(),
             AppRoute.createPost => const CreatePostScreen(),
+            AppRoute.editPost =>
+              state.extra is FeedPost
+                  ? EditPostScreen(
+                      post: state.extra! as FeedPost,
+                      onUpdated: (post) => context.pop(post),
+                      onDeleted: (id) => context.pop(id),
+                    )
+                  : FoundationRouteProbe(route: route),
             _ => FoundationRouteProbe(route: route),
           },
         ),

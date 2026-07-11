@@ -84,6 +84,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     });
   }
 
+  Future<void> _customSticker() async {
+    await _guard(() async {
+      final files = await _picker.pickImages(limit: 1);
+      if (files.isNotEmpty) {
+        await _controller.createCustomSticker(files.first);
+      }
+    });
+  }
+
   Future<void> _analyze() async {
     await _guard(
       () => _controller.analyzeAll(
@@ -268,7 +277,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     steps: _steps,
                   ),
                   const SizedBox(height: 16),
-                  _StickerCard(state: state, controller: controller),
+                  _StickerCard(
+                    state: state,
+                    controller: controller,
+                    onCustomSticker: _customSticker,
+                  ),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     key: CreatePostScreen.publishKey,
@@ -588,9 +601,14 @@ class _RecipeCard extends StatelessWidget {
 }
 
 class _StickerCard extends StatelessWidget {
-  const _StickerCard({required this.state, required this.controller});
+  const _StickerCard({
+    required this.state,
+    required this.controller,
+    required this.onCustomSticker,
+  });
   final PostEditorState state;
   final PostEditorController controller;
+  final VoidCallback onCustomSticker;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -601,6 +619,14 @@ class _StickerCard extends StatelessWidget {
         children: [
           Text('Nhãn dán', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 10),
+          if (controller.isPremium) ...[
+            OutlinedButton.icon(
+              onPressed: state.isBusy ? null : onCustomSticker,
+              icon: const Icon(Icons.upload_file_outlined),
+              label: const Text('Tự tải nhãn dán'),
+            ),
+            const SizedBox(height: 8),
+          ],
           Wrap(
             spacing: 8,
             children: [

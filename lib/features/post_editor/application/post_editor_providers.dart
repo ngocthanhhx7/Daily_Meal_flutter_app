@@ -14,6 +14,11 @@ final postEditorRepositoryProvider = Provider<PostEditorRepositoryContract>((
   return PostEditorRepository(PostEditorApi(ref.watch(dioProvider)));
 });
 
+final postManagementRepositoryProvider =
+    Provider<PostManagementRepositoryContract>((ref) {
+      return PostManagementRepository(PostEditorApi(ref.watch(dioProvider)));
+    });
+
 final mediaPickerServiceProvider = Provider<MediaPickerService>((ref) {
   return PluginMediaPickerService();
 });

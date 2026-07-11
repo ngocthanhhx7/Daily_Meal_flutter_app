@@ -13,6 +13,8 @@ class FeedPostCard extends StatelessWidget {
     required this.onComment,
     required this.onRecipe,
     this.interactionBusy = false,
+    this.isOwner = false,
+    this.onEdit,
     super.key,
   });
 
@@ -23,6 +25,8 @@ class FeedPostCard extends StatelessWidget {
   final VoidCallback onComment;
   final VoidCallback onRecipe;
   final bool interactionBusy;
+  final bool isOwner;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,13 @@ class FeedPostCard extends StatelessWidget {
                   ? 'Premium creator • ${post.author.streakDays} ngày liên tiếp'
                   : 'Food journal • ${post.author.streakDays} ngày liên tiếp',
             ),
+            trailing: isOwner
+                ? IconButton(
+                    tooltip: 'Quản lý bài viết',
+                    onPressed: onEdit,
+                    icon: const Icon(Icons.more_horiz_rounded),
+                  )
+                : null,
           ),
           PostMedia(
             post: post,

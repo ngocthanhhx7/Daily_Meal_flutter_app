@@ -4,6 +4,7 @@ enum AppRoute {
   onboarding('/onboarding'),
   home('/'),
   createPost('/create'),
+  editPost('/posts/edit'),
   adminDashboard('/admin');
 
   const AppRoute(this.path);

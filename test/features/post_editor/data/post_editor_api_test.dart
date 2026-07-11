@@ -55,7 +55,7 @@ class _Adapter implements HttpClientAdapter {
           'createdAt': '2026-07-11T08:00:00Z',
         },
       },
-      '/api/stickers' => {
+      '/api/stickers' when options.method == 'GET' => {
         'stickers': [
           {
             '_id': 'sticker-1',
@@ -65,6 +65,13 @@ class _Adapter implements HttpClientAdapter {
             'premiumOnly': false,
           },
         ],
+      },
+      '/api/stickers' => {
+        'sticker': {
+          '_id': 'custom-1',
+          ...((options.data as Map).cast<String, dynamic>()),
+          'premiumOnly': true,
+        },
       },
       '/api/posts' => {
         'post': {
@@ -76,6 +83,18 @@ class _Adapter implements HttpClientAdapter {
           'updatedAt': '2026-07-11T08:00:00Z',
         },
       },
+      '/api/posts/post-1' when options.method == 'PATCH' => {
+        'post': {
+          '_id': 'post-1',
+          'author': {'id': 'user-1', 'displayName': 'Meal'},
+          'caption': (options.data as Map)['caption'],
+          'tags': (options.data as Map)['tags'],
+          'visibility': 'public',
+          'createdAt': '2026-07-11T08:00:00Z',
+          'updatedAt': '2026-07-11T09:00:00Z',
+        },
+      },
+      '/api/posts/post-1' => <String, dynamic>{},
       _ => throw StateError('Unexpected ${options.path}'),
     };
     return ResponseBody.fromString(
@@ -165,4 +184,36 @@ void main() {
       expect(created.id, 'post-1');
     },
   );
+
+  test('creates custom sticker and updates/deletes owned post', () async {
+    final sticker = await api.createSticker(
+      name: 'Tự tải',
+      key: 'custom-1',
+      assetPath: '/uploads/sticker.png',
+    );
+    expect(adapter.request?.method, 'POST');
+    expect(adapter.request?.data, {
+      'name': 'Tự tải',
+      'key': 'custom-1',
+      'assetPath': '/uploads/sticker.png',
+    });
+    expect(sticker.id, 'custom-1');
+
+    final updated = await api.updatePost(
+      'post-1',
+      caption: ' Updated ',
+      tags: const ['healthy'],
+    );
+    expect(adapter.request?.method, 'PATCH');
+    expect(adapter.request?.path, '/api/posts/post-1');
+    expect(adapter.request?.data, {
+      'caption': 'Updated',
+      'tags': ['healthy'],
+    });
+    expect(updated.caption, 'Updated');
+
+    await api.deletePost('post-1');
+    expect(adapter.request?.method, 'DELETE');
+    expect(adapter.request?.path, '/api/posts/post-1');
+  });
 }

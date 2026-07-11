@@ -8,16 +8,23 @@ import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutrition_sheet.dart';
 import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
+import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({this.controller, this.mediaResolver, super.key});
+  const HomeScreen({
+    this.controller,
+    this.mediaResolver,
+    this.currentUserId,
+    super.key,
+  });
 
   final FeedController? controller;
   final MediaUrlResolver? mediaResolver;
+  final String? currentUserId;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -70,6 +77,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       resolver = ref.watch(mediaUrlResolverProvider);
     }
     final state = controller.state;
+    final currentUserId =
+        widget.currentUserId ??
+        (widget.controller == null
+            ? ref.watch(authControllerProvider).state.user?.id
+            : null);
     final content = switch (state.status) {
       FeedStatus.idle ||
       FeedStatus.loading => const AsyncContentState<List<FeedPost>>.loading(),
@@ -167,6 +179,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             interactionBusy: controller.isInteractionBusy(
                               post.id,
                             ),
+                            isOwner: currentUserId == post.author.id,
+                            onEdit: () => _editPost(controller, post),
                             onLike: () => controller
                                 .toggleLike(post.id)
                                 .catchError((_) {}),
@@ -206,5 +220,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _editPost(FeedController controller, FeedPost post) async {
+    final result = await context.pushNamed<Object?>(
+      AppRoute.editPost.name,
+      extra: post,
+    );
+    if (!mounted) return;
+    if (result is FeedPost) {
+      controller.applyPost(result);
+    } else if (result is String) {
+      controller.removePost(result);
+    }
   }
 }

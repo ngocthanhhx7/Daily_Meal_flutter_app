@@ -6,7 +6,7 @@ Verification date: 2026-07-11
 
 Fresh checks with production dart-defines completed successfully:
 
-- `flutter test`: 103 tests passed.
+- `flutter test`: 108 tests passed.
 - `flutter analyze`: no issues found.
 - `flutter build web --release`: exit 0, artifact `build/web`, Wasm dry run passed.
 - `flutter build apk --debug`: exit 0, artifact
@@ -27,14 +27,19 @@ Fresh checks with production dart-defines completed successfully:
 - Draft remains intact after publish failure and can be retried.
 - Responsive composer route with gallery/camera/video, preview, AI, recipe,
   privacy/layout and sticker drag/scale/rotation controls.
+- Premium custom sticker workflow uploads the selected image, creates the
+  server sticker and selects it in the current draft.
+- Owner-only edit route normalizes caption/tags through `PATCH /api/posts/:id`.
+- Destructive deletion requires confirmation, calls `DELETE /api/posts/:id`
+  and reconciles the current feed without a full reload.
 
 ## Evidence boundary
 
 No mock is treated as proof that external capabilities are live. Required manual
 evidence remains: physical Android camera/gallery permission flows, Web browser
 file chooser behavior, live production upload/AI latency and failures, video
-duration metadata across device formats, and Premium custom sticker creation.
-Edit/delete post are not part of this create-only checkpoint and remain open.
+duration metadata across device formats, and live Premium custom sticker media
+upload. CRUD contract and UI journeys are verified by this checkpoint.
 
 ## Android environment warning
 

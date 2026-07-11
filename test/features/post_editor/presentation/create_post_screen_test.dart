@@ -70,6 +70,19 @@ class _Repository implements PostEditorRepositoryContract {
   ];
 
   @override
+  Future<PostSticker> createSticker({
+    required String name,
+    required String key,
+    required String assetPath,
+  }) async => PostSticker(
+    id: 'custom-1',
+    key: key,
+    name: name,
+    assetPath: assetPath,
+    premiumOnly: true,
+  );
+
+  @override
   Future<FeedPost> publish(PostDraft draft) async {
     published = draft;
     return FeedPost.fromJson({
