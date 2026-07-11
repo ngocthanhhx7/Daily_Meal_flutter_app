@@ -8,6 +8,7 @@ import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
+import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,6 +29,10 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.onboarding => const OnboardingScreen(),
             AppRoute.home => const HomeScreen(),
             AppRoute.search => const SearchScreen(),
+            AppRoute.profile => const ProfileScreen(),
+            AppRoute.publicProfile => ProfileScreen(
+              userId: state.pathParameters['id'],
+            ),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost

@@ -4,6 +4,8 @@ enum AppRoute {
   onboarding('/onboarding'),
   home('/'),
   search('/search'),
+  profile('/profile'),
+  publicProfile('/users/:id'),
   createPost('/create'),
   editPost('/posts/edit'),
   adminDashboard('/admin');

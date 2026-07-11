@@ -65,6 +65,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     onDestinationSelected: (index) {
       if (index == 0) context.goNamed(AppRoute.home.name);
       if (index == 2) context.goNamed(AppRoute.createPost.name);
+      if (index == 4) context.goNamed(AppRoute.profile.name);
     },
     body: ColoredBox(
       color: AppColors.canvas,
@@ -219,6 +220,10 @@ class _Results extends StatelessWidget {
               onFollow: () => controller
                   .toggleFollow(state.users[index].id)
                   .catchError((_) {}),
+              onOpen: () => context.pushNamed(
+                AppRoute.publicProfile.name,
+                pathParameters: {'id': state.users[index].id},
+              ),
             ),
           ),
         ),
@@ -281,17 +286,20 @@ class _UserCard extends StatelessWidget {
     required this.resolver,
     required this.busy,
     required this.onFollow,
+    required this.onOpen,
   });
   final PublicUser user;
   final MediaUrlResolver resolver;
   final bool busy;
   final VoidCallback onFollow;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
     final avatar = resolver.resolve(user.avatarUrl);
     return Card(
       child: ListTile(
+        onTap: onOpen,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundImage: avatar == null

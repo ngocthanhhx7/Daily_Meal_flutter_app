@@ -37,10 +37,10 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 4 | Sticker editor | create screen; sticker helpers | sticker list/create | `features/posts/stickers` | In progress | In progress | list/select/drag/scale/rotate plus Premium upload/create contract implemented; live media capability evidence remains |
 | 4 | Create/edit/delete post | Create/Edit screens | post CRUD | `features/posts/editor` | Verified | Verified | exact POST/PATCH/DELETE contracts, owner-only UI, confirmation, feed reconciliation, tests and platform builds |
 | 5 | Search posts/users | `SearchScreen.tsx` | post/user search | `features/search` | Verified | Verified | API contract, controller rollback and responsive widget tests |
-| 5 | Own profile | `ProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | tabs/state/widget tests |
-| 5 | Public profile | `PublicProfileScreen.tsx` | user/posts/saved | `features/profile` | Not started | Not started | route/data tests |
-| 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | Not started | Not started | validation/upload tests |
-| 5 | Followers/following | `FollowsScreen.tsx` | follow list/actions | `features/social` | Not started | Not started | mutation/list tests |
+| 5 | Own profile | `ProfileScreen.tsx` | user/posts/saved | `features/profile` | Verified | Verified | owner route, posts/saved tabs, API/controller/widget tests |
+| 5 | Public profile | `PublicProfileScreen.tsx` | user/posts | `features/profile` | Verified | Verified | parameterized route, profile/posts and follow journey tests |
+| 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | In progress | In progress | display name/bio PATCH validated; avatar/cover picker-upload remains |
+| 5 | Followers/following | `FollowsScreen.tsx` | follow list/actions | `features/social` | Verified | Verified | exact list APIs, follow rollback and responsive sheet journey |
 | 5 | Restrict/block/report | PublicProfile/Blocked | interactions endpoints | `features/social/safety` | Not started | Not started | confirmation/error tests |
 | 5 | Saved/settings/password | Saved/Settings/ChangePassword | saved, password | respective features | Not started | Not started | widget/journey tests |
 | 5 | Support/share account | Support/ShareAccount | platform share/support | `features/profile/utility` | Not started | Not started | platform behavior evidence |

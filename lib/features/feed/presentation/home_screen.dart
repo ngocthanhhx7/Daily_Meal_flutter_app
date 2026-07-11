@@ -108,6 +108,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context.goNamed(AppRoute.search.name);
         } else if (index == 2) {
           context.goNamed(AppRoute.createPost.name);
+        } else if (index == 4) {
+          context.goNamed(AppRoute.profile.name);
         } else if (index != 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Tính năng đang được hoàn thiện.')),
