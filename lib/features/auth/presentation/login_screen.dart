@@ -5,6 +5,7 @@ import 'package:daily_meal_flutter_app/features/auth/domain/auth_validation.dart
 import 'package:daily_meal_flutter_app/features/auth/presentation/auth_form_state.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/password_reset_sheet.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/phone_auth_form.dart';
+import 'package:daily_meal_flutter_app/features/auth/presentation/social_auth_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -209,6 +210,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             child: const Text('Quên mật khẩu?'),
                           ),
+                        if (!registering && widget.controller == null) ...[
+                          const Row(
+                            children: [
+                              Expanded(child: Divider()),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Text('hoặc'),
+                              ),
+                              Expanded(child: Divider()),
+                            ],
+                          ),
+                          SocialAuthButtons(
+                            controller: _controller,
+                            googleWebClientId: ref
+                                .watch(appConfigProvider)
+                                .googleWebClientId,
+                            facebookAppId: ref
+                                .watch(appConfigProvider)
+                                .facebookAppId,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                         const Divider(),
                         TextButton(
                           onPressed: () => setState(() {

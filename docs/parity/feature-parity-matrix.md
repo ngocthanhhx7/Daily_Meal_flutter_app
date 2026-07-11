@@ -17,13 +17,13 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 1 | Typed network/errors | `client/src/api/client.ts`; server error middleware | all REST | `lib/core/network/*`, `lib/core/errors/*` | Verified | Verified | bearer/401/error/media URL tests |
 | 1 | Session storage | `client/src/context/AuthContext.tsx` | bearer auth | `lib/core/storage/*` | Verified | Verified | shared storage contract tests and platform builds |
 | 1 | Analytics adapter | `client/src/services/analytics.ts` | POST `/api/ingest/events` | `lib/core/analytics/*` | In progress | In progress | redaction tests pass; production ingest sink/batching remains |
-| 2 | Login/Register | `LoginScreen.tsx`; `AuthContext.tsx` | auth register/login | `features/auth` | Not started | Not started | widget + integration journey |
-| 2 | Phone/OTP | `LoginScreen.tsx`; login validation | phone endpoints | `features/auth` | Not started | Not started | validation/controller/integration tests |
-| 2 | Forgot password | `LoginScreen.tsx` | forgot OTP endpoints | `features/auth` | Not started | Not started | state and journey tests |
-| 2 | Google auth/link | `googleSignIn.ts`; auth context | Google endpoints | `features/auth` | Not started | Not started | supported-platform auth evidence |
-| 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | Not started | Not started | auth result/error evidence |
-| 2 | Admin login/guards | `AdminScreens.tsx`; navigator | POST `/api/admin/login` | `features/auth`, `features/admin` | Not started | Not started | guard/integration tests |
-| 2 | Onboarding | `OnboardingScreen.tsx`; preferences constants | PATCH preferences | `features/onboarding` | Not started | Not started | widget + persisted route test |
+| 2 | Login/Register | `LoginScreen.tsx`; `AuthContext.tsx` | auth register/login | `features/auth` | Verified | Verified | contract/widget/session tests and Slice 2 builds |
+| 2 | Phone/OTP | `LoginScreen.tsx`; login validation | phone endpoints | `features/auth` | Verified | Verified | validation, request/verify and first-time setup tests |
+| 2 | Forgot password | `LoginScreen.tsx` | forgot OTP endpoints | `features/auth` | Verified | Verified | request/verify state journey and API contract tests |
+| 2 | Google auth/link | `googleSignIn.ts`; auth context | Google endpoints | `features/auth` | In progress | In progress | SDK/token exchange tests and builds pass; live OAuth console/device evidence remains |
+| 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | In progress | In progress | Web SDK/token exchange implemented; Android Meta Client Token and live-login evidence remain |
+| 2 | Admin login/guards | `AdminScreens.tsx`; navigator | POST `/api/admin/login` | `features/auth`, `features/admin` | Verified | Verified | dedicated route, session separation, guard and widget tests |
+| 2 | Onboarding | `OnboardingScreen.tsx`; preferences constants | PATCH preferences | `features/onboarding` | Verified | Verified | exact options/PATCH contract/controller/widget route tests |
 | 3 | Home feed | `HomeScreen.tsx` | GET feed; post stats event | `features/feed` | Not started | Not started | pagination/refresh/integration |
 | 3 | Image/video/carousel | `HomeScreen.tsx`; `PostVideoPlayer.tsx` | media URLs | `features/posts/presentation` | Not started | Not started | lifecycle and viewport tests |
 | 3 | Like/save | Home/PostCard | post like/save; stats event | `features/posts` | Not started | Not started | rollback/dedup tests |
