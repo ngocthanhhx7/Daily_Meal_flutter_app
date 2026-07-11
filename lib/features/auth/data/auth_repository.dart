@@ -4,12 +4,26 @@ import 'package:daily_meal_flutter_app/features/auth/data/auth_api.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/auth_result.dart';
 
-class AuthRepository {
+abstract interface class AuthRepositoryContract {
+  Future<AppUser> login({required String email, required String password});
+  Future<AdminAuthResult> adminLogin({
+    required String email,
+    required String password,
+  });
+  Future<Session?> readSession(SessionKind kind);
+  Future<void> validateAdmin();
+  Future<AppUser> currentUser();
+  Future<void> clear(SessionKind kind);
+  Future<void> logout();
+}
+
+class AuthRepository implements AuthRepositoryContract {
   AuthRepository(this._api, this._sessions);
 
   final AuthApi _api;
   final SessionStore _sessions;
 
+  @override
   Future<AppUser> login({
     required String email,
     required String password,
@@ -85,6 +99,7 @@ class AuthRepository {
 
   Future<AppUser> linkGoogle(String idToken) => _api.linkGoogle(idToken);
 
+  @override
   Future<AdminAuthResult> adminLogin({
     required String email,
     required String password,
@@ -97,14 +112,19 @@ class AuthRepository {
     return result;
   }
 
+  @override
   Future<Session?> readSession(SessionKind kind) => _sessions.read(kind);
 
+  @override
   Future<void> validateAdmin() => _api.validateAdmin();
 
+  @override
   Future<AppUser> currentUser() => _api.me();
 
+  @override
   Future<void> clear(SessionKind kind) => _sessions.clear(kind);
 
+  @override
   Future<void> logout() async {
     await _sessions.clear(SessionKind.user);
     await _sessions.clear(SessionKind.admin);
