@@ -4,6 +4,7 @@ import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.
 import 'package:daily_meal_flutter_app/features/auth/domain/auth_validation.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/auth_form_state.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/password_reset_sheet.dart';
+import 'package:daily_meal_flutter_app/features/auth/presentation/phone_auth_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _password = TextEditingController();
   final _displayName = TextEditingController();
   AuthFormMode _mode = AuthFormMode.login;
+  bool _usePhone = false;
   String? _emailError;
   String? _passwordError;
   String? _submitError;
@@ -109,92 +111,118 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 24),
-                      if (registering) ...[
-                        TextField(
-                          key: LoginScreen.displayNameFieldKey,
-                          controller: _displayName,
-                          textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Tên hiển thị',
-                            border: OutlineInputBorder(),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                            value: false,
+                            icon: Icon(Icons.email_outlined),
+                            label: Text('Email'),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      TextField(
-                        key: LoginScreen.emailFieldKey,
-                        controller: _email,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          errorText: _emailError,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        key: LoginScreen.passwordFieldKey,
-                        controller: _password,
-                        obscureText: true,
-                        onSubmitted: (_) => _submit(),
-                        autofillHints: const [AutofillHints.password],
-                        decoration: InputDecoration(
-                          labelText: 'Mật khẩu',
-                          errorText: _passwordError,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                      if (_submitError != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _submitError!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
+                          ButtonSegment(
+                            value: true,
+                            icon: Icon(Icons.phone_outlined),
+                            label: Text('Số điện thoại'),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      FilledButton(
-                        onPressed: state.isBusy ? null : _submit,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: state.isBusy
-                            ? const SizedBox.square(
-                                dimension: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(registering ? 'Tạo tài khoản' : 'Đăng nhập'),
-                      ),
-                      if (!registering)
-                        TextButton(
-                          onPressed: () => showModalBottomSheet<void>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (context) =>
-                                PasswordResetSheet(controller: _controller),
-                          ),
-                          child: const Text('Quên mật khẩu?'),
-                        ),
-                      const Divider(),
-                      TextButton(
-                        onPressed: () => setState(() {
-                          _mode = registering
-                              ? AuthFormMode.login
-                              : AuthFormMode.register;
-                          _emailError = null;
-                          _passwordError = null;
+                        ],
+                        selected: {_usePhone},
+                        onSelectionChanged: (selection) => setState(() {
+                          _usePhone = selection.first;
+                          _submitError = null;
                         }),
-                        child: Text(
-                          registering
-                              ? 'Đã có tài khoản? Đăng nhập'
-                              : 'Tạo tài khoản',
-                        ),
                       ),
+                      const SizedBox(height: 20),
+                      if (_usePhone)
+                        PhoneAuthForm(controller: _controller)
+                      else ...[
+                        if (registering) ...[
+                          TextField(
+                            key: LoginScreen.displayNameFieldKey,
+                            controller: _displayName,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Tên hiển thị',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        TextField(
+                          key: LoginScreen.emailFieldKey,
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.email],
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            errorText: _emailError,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          key: LoginScreen.passwordFieldKey,
+                          controller: _password,
+                          obscureText: true,
+                          onSubmitted: (_) => _submit(),
+                          autofillHints: const [AutofillHints.password],
+                          decoration: InputDecoration(
+                            labelText: 'Mật khẩu',
+                            errorText: _passwordError,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        if (_submitError != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _submitError!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        FilledButton(
+                          onPressed: state.isBusy ? null : _submit,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                          ),
+                          child: state.isBusy
+                              ? const SizedBox.square(
+                                  dimension: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  registering ? 'Tạo tài khoản' : 'Đăng nhập',
+                                ),
+                        ),
+                        if (!registering)
+                          TextButton(
+                            onPressed: () => showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) =>
+                                  PasswordResetSheet(controller: _controller),
+                            ),
+                            child: const Text('Quên mật khẩu?'),
+                          ),
+                        const Divider(),
+                        TextButton(
+                          onPressed: () => setState(() {
+                            _mode = registering
+                                ? AuthFormMode.login
+                                : AuthFormMode.register;
+                            _emailError = null;
+                            _passwordError = null;
+                          }),
+                          child: Text(
+                            registering
+                                ? 'Đã có tài khoản? Đăng nhập'
+                                : 'Tạo tài khoản',
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

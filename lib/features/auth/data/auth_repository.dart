@@ -17,6 +17,17 @@ abstract interface class AuthRepositoryContract {
     required String otp,
     required String newPassword,
   });
+  Future<PhoneOtpResponse> requestPhoneOtp(String phone);
+  Future<AppUser> verifyPhoneOtp({
+    required String phone,
+    required String otp,
+    String? password,
+    String? displayName,
+  });
+  Future<AppUser> loginWithPhone({
+    required String phone,
+    required String password,
+  });
   Future<AdminAuthResult> adminLogin({
     required String email,
     required String password,
@@ -53,6 +64,7 @@ class AuthRepository implements AuthRepositoryContract {
     ),
   );
 
+  @override
   Future<AppUser> loginWithPhone({
     required String phone,
     required String password,
@@ -71,9 +83,11 @@ class AuthRepository implements AuthRepositoryContract {
     ),
   );
 
+  @override
   Future<PhoneOtpResponse> requestPhoneOtp(String phone) =>
       _api.requestPhoneOtp(phone);
 
+  @override
   Future<AppUser> verifyPhoneOtp({
     required String phone,
     required String otp,

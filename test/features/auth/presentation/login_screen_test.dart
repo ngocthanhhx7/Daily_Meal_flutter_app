@@ -3,6 +3,7 @@ import 'package:daily_meal_flutter_app/features/auth/application/auth_state.dart
 import 'package:daily_meal_flutter_app/features/auth/data/auth_repository.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/login_screen.dart';
+import 'package:daily_meal_flutter_app/features/auth/presentation/phone_auth_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -94,5 +95,17 @@ void main() {
 
     expect(find.byKey(LoginScreen.displayNameFieldKey), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Tạo tài khoản'), findsOneWidget);
+  });
+
+  testWidgets('switches from email to phone authentication', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(controller: AuthController(_Repository()))),
+    );
+
+    await tester.tap(find.text('Số điện thoại'));
+    await tester.pump();
+
+    expect(find.byKey(PhoneAuthForm.phoneFieldKey), findsOneWidget);
+    expect(find.byKey(LoginScreen.emailFieldKey), findsNothing);
   });
 }

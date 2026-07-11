@@ -2,6 +2,7 @@ import 'package:daily_meal_flutter_app/core/storage/session.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_state.dart';
 import 'package:daily_meal_flutter_app/features/auth/data/auth_repository.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
+import 'package:daily_meal_flutter_app/features/auth/domain/auth_result.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthController extends ChangeNotifier {
@@ -96,6 +97,46 @@ class AuthController extends ChangeNotifier {
           otp: otp,
           newPassword: newPassword,
         ),
+      );
+    } catch (error) {
+      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      rethrow;
+    }
+  }
+
+  Future<PhoneOtpResponse> requestPhoneOtp(String phone) =>
+      _repository.requestPhoneOtp(phone);
+
+  Future<void> verifyPhoneOtp({
+    required String phone,
+    required String otp,
+    String? password,
+    String? displayName,
+  }) async {
+    _setState(const AuthState(status: AuthStatus.signedOut, isBusy: true));
+    try {
+      _setAuthenticatedUser(
+        await _repository.verifyPhoneOtp(
+          phone: phone,
+          otp: otp,
+          password: password,
+          displayName: displayName,
+        ),
+      );
+    } catch (error) {
+      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      rethrow;
+    }
+  }
+
+  Future<void> loginWithPhone({
+    required String phone,
+    required String password,
+  }) async {
+    _setState(const AuthState(status: AuthStatus.signedOut, isBusy: true));
+    try {
+      _setAuthenticatedUser(
+        await _repository.loginWithPhone(phone: phone, password: password),
       );
     } catch (error) {
       _setState(AuthState.signedOut(errorMessage: error.toString()));
