@@ -130,6 +130,26 @@ class AppUser {
   final UserPreferences preferences;
   final UserCounts counts;
 
+  AppUser withPreferences(UserPreferences nextPreferences) => AppUser(
+    id: id,
+    email: email,
+    phone: phone,
+    displayName: displayName,
+    avatarUrl: avatarUrl,
+    coverUrl: coverUrl,
+    bio: bio,
+    birthday: birthday,
+    isPremium: isPremium,
+    premiumTrialUsed: premiumTrialUsed,
+    premiumTrialStartedAt: premiumTrialStartedAt,
+    premiumTrialEndsAt: premiumTrialEndsAt,
+    premiumPaidEndsAt: premiumPaidEndsAt,
+    streakDays: streakDays,
+    themeColor: themeColor,
+    preferences: nextPreferences,
+    counts: counts,
+  );
+
   static String _requiredString(Map<String, dynamic> json, String key) {
     final value = json[key];
     if (value is! String || value.isEmpty) {
