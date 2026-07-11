@@ -10,6 +10,10 @@ import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/blocked_screen.dart';
+import 'package:daily_meal_flutter_app/features/messaging/presentation/inbox_screen.dart';
+import 'package:daily_meal_flutter_app/features/messaging/presentation/chat_screen.dart';
+import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
+import 'package:daily_meal_flutter_app/features/notifications/presentation/notifications_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -35,6 +39,14 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
               userId: state.pathParameters['id'],
             ),
             AppRoute.blocked => const BlockedScreen(),
+            AppRoute.inbox => const InboxScreen(),
+            AppRoute.chat => ChatScreen(
+              conversationId: state.pathParameters['id']!,
+              otherUser: state.extra is ChatUser
+                  ? state.extra! as ChatUser
+                  : null,
+            ),
+            AppRoute.notifications => const NotificationsScreen(),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost

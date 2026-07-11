@@ -8,6 +8,7 @@ import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_controller.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_providers.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/services/media_picker_service.dart';
+import 'package:daily_meal_flutter_app/features/messaging/application/messaging_providers.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,6 +78,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (index == 0) context.goNamed(AppRoute.home.name);
       if (index == 1) context.goNamed(AppRoute.search.name);
       if (index == 2) context.goNamed(AppRoute.createPost.name);
+      if (index == 3) context.goNamed(AppRoute.inbox.name);
       if (index == 4 && !controller.isOwner) {
         context.goNamed(AppRoute.profile.name);
       }
@@ -117,6 +119,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             controller: controller,
             resolver: resolver,
             mediaPicker: widget.mediaPicker ?? PluginMediaPickerService(),
+            onMessage: controller.isOwner
+                ? null
+                : () => _startConversation(user),
           ),
         ),
         SliverToBoxAdapter(
@@ -148,6 +153,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ],
     );
   }
+
+  Future<void> _startConversation(PublicUser user) async {
+    try {
+      final conversation = await ref
+          .read(messagingRepositoryProvider)
+          .createConversation(user.id);
+      if (!mounted) return;
+      context.pushNamed(
+        AppRoute.chat.name,
+        pathParameters: {'id': conversation.id},
+        extra: conversation.otherUser,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể bắt đầu cuộc trò chuyện.')),
+        );
+      }
+    }
+  }
 }
 
 class _Header extends StatelessWidget {
@@ -156,11 +181,13 @@ class _Header extends StatelessWidget {
     required this.controller,
     required this.resolver,
     required this.mediaPicker,
+    this.onMessage,
   });
   final PublicUser user;
   final ProfileController controller;
   final MediaUrlResolver resolver;
   final MediaPickerService mediaPicker;
+  final VoidCallback? onMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -287,9 +314,16 @@ class _Header extends StatelessWidget {
                               ],
                             )
                           else
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 8,
+                              runSpacing: 8,
                               children: [
+                                OutlinedButton.icon(
+                                  onPressed: onMessage,
+                                  icon: const Icon(Icons.chat_bubble_outline),
+                                  label: const Text('Nhắn tin'),
+                                ),
                                 FilledButton.icon(
                                   onPressed: controller.state.followBusy
                                       ? null
@@ -307,7 +341,6 @@ class _Header extends StatelessWidget {
                                         : 'Theo dõi',
                                   ),
                                 ),
-                                const SizedBox(width: 8),
                                 PopupMenuButton<String>(
                                   tooltip: 'An toàn tài khoản',
                                   enabled: !controller.state.safetyBusy,

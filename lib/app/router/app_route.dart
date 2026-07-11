@@ -7,6 +7,9 @@ enum AppRoute {
   profile('/profile'),
   publicProfile('/users/:id'),
   blocked('/profile/blocked'),
+  inbox('/messages'),
+  chat('/messages/:id'),
+  notifications('/notifications'),
   createPost('/create'),
   editPost('/posts/edit'),
   adminDashboard('/admin');

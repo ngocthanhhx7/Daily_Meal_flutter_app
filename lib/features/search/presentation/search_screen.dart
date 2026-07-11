@@ -66,6 +66,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       if (index == 0) context.goNamed(AppRoute.home.name);
       if (index == 2) context.goNamed(AppRoute.createPost.name);
       if (index == 4) context.goNamed(AppRoute.profile.name);
+      if (index == 3) context.goNamed(AppRoute.inbox.name);
     },
     body: ColoredBox(
       color: AppColors.canvas,

@@ -13,18 +13,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
+import 'package:daily_meal_flutter_app/features/notifications/application/notifications_providers.dart';
+import 'package:daily_meal_flutter_app/features/notifications/application/notifications_controller.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({
     this.controller,
     this.mediaResolver,
     this.currentUserId,
+    this.notificationsController,
     super.key,
   });
 
   final FeedController? controller;
   final MediaUrlResolver? mediaResolver;
   final String? currentUserId;
+  final NotificationsController? notificationsController;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -77,6 +81,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       resolver = ref.watch(mediaUrlResolverProvider);
     }
     final state = controller.state;
+    final notifications =
+        widget.notificationsController ??
+        (widget.controller == null
+            ? ref.watch(notificationsControllerProvider)
+            : null);
     final currentUserId =
         widget.currentUserId ??
         (widget.controller == null
@@ -110,6 +119,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context.goNamed(AppRoute.createPost.name);
         } else if (index == 4) {
           context.goNamed(AppRoute.profile.name);
+        } else if (index == 3) {
+          context.goNamed(AppRoute.inbox.name);
         } else if (index != 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Tính năng đang được hoàn thiện.')),
@@ -143,8 +154,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const Spacer(),
                       IconButton(
                         tooltip: 'Thông báo',
-                        onPressed: () {},
-                        icon: const Icon(Icons.notifications_outlined),
+                        onPressed: () =>
+                            context.pushNamed(AppRoute.notifications.name),
+                        icon: Badge(
+                          isLabelVisible: (notifications?.unreadCount ?? 0) > 0,
+                          label: Text('${notifications?.unreadCount ?? 0}'),
+                          child: const Icon(Icons.notifications_outlined),
+                        ),
                       ),
                     ],
                   ),
