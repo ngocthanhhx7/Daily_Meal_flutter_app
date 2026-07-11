@@ -11,12 +11,12 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 
 | Slice | Feature/screen | Source reference | APIs/events | Flutter target | Android | Web | Required evidence |
 |---:|---|---|---|---|---|---|---|
-| 1 | Bootstrap/config | `client/App.tsx`; API base in `client/src/api/client.ts:39` | environment validation | `lib/app/bootstrap.dart`, `lib/app/config/app_config.dart` | Not started | Not started | config unit tests; release defines |
-| 1 | Theme/design system | `client/src/theme/*`; shared components | none | `lib/app/theme/*`, `lib/core/widgets/*` | Not started | Not started | theme/widget/golden tests |
-| 1 | Responsive shell | navigator and PWA shell | none | `lib/core/responsive/*`, `lib/app/router/*` | Not started | Not started | 4 viewport widget/golden checks |
-| 1 | Typed network/errors | `client/src/api/client.ts`; server error middleware | all REST | `lib/core/network/*`, `lib/core/errors/*` | Not started | Not started | interceptor/error/media URL tests |
-| 1 | Session storage | `client/src/context/AuthContext.tsx` | bearer auth | `lib/core/storage/*` | Not started | Not started | platform storage tests/fakes |
-| 1 | Analytics adapter | `client/src/services/analytics.ts` | POST `/api/ingest/events` | `lib/core/analytics/*` | Not started | Not started | redaction/batch tests |
+| 1 | Bootstrap/config | `client/App.tsx`; API base in `client/src/api/client.ts:39` | environment validation | `lib/main.dart`, `lib/app/app.dart`, `lib/app/config/*` | Verified | Verified | config/smoke tests; Android/Web build in `docs/parity/verification-slice-1.md` |
+| 1 | Theme/design system | `client/src/theme/*`; shared components | none | `lib/app/theme/*`, `lib/core/widgets/*` | In progress | In progress | token/widget tests pass; Work Sans runtime assets and goldens remain |
+| 1 | Responsive shell | navigator and PWA shell | none | `lib/core/responsive/*`, `lib/app/router/*` | Verified | Verified | compact/medium/expanded widget tests and builds |
+| 1 | Typed network/errors | `client/src/api/client.ts`; server error middleware | all REST | `lib/core/network/*`, `lib/core/errors/*` | Verified | Verified | bearer/401/error/media URL tests |
+| 1 | Session storage | `client/src/context/AuthContext.tsx` | bearer auth | `lib/core/storage/*` | Verified | Verified | shared storage contract tests and platform builds |
+| 1 | Analytics adapter | `client/src/services/analytics.ts` | POST `/api/ingest/events` | `lib/core/analytics/*` | In progress | In progress | redaction tests pass; production ingest sink/batching remains |
 | 2 | Login/Register | `LoginScreen.tsx`; `AuthContext.tsx` | auth register/login | `features/auth` | Not started | Not started | widget + integration journey |
 | 2 | Phone/OTP | `LoginScreen.tsx`; login validation | phone endpoints | `features/auth` | Not started | Not started | validation/controller/integration tests |
 | 2 | Forgot password | `LoginScreen.tsx` | forgot OTP endpoints | `features/auth` | Not started | Not started | state and journey tests |
@@ -69,5 +69,5 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | Keyboard/focus/hover | Not applicable | Not started | keyboard walkthrough |
 | Reduced motion | Not started | Not started | setting-driven widget/manual check |
 | Offline/error/retry | Not started | Not started | network failure tests |
-| Production configuration | Not started | Not started | release build commands |
+| Production configuration | Verified | Verified | Slice 1 debug APK/Web release builds with production dart-defines |
 | README/setup/build documentation | Not started | Not started | clean setup walkthrough |
