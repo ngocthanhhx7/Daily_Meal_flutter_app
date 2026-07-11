@@ -24,9 +24,9 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | In progress | In progress | Web SDK/token exchange implemented; Android Meta Client Token and live-login evidence remain |
 | 2 | Admin login/guards | `AdminScreens.tsx`; navigator | POST `/api/admin/login` | `features/auth`, `features/admin` | Verified | Verified | dedicated route, session separation, guard and widget tests |
 | 2 | Onboarding | `OnboardingScreen.tsx`; preferences constants | PATCH preferences | `features/onboarding` | Verified | Verified | exact options/PATCH contract/controller/widget route tests |
-| 3 | Home feed | `HomeScreen.tsx` | GET feed; post stats event | `features/feed` | Not started | Not started | pagination/refresh/integration |
-| 3 | Image/video/carousel | `HomeScreen.tsx`; `PostVideoPlayer.tsx` | media URLs | `features/posts/presentation` | Not started | Not started | lifecycle and viewport tests |
-| 3 | Like/save | Home/PostCard | post like/save; stats event | `features/posts` | Not started | Not started | rollback/dedup tests |
+| 3 | Home feed | `HomeScreen.tsx` | GET feed; post stats event | `features/feed` | Verified | Verified | page contract, refresh/append/dedup tests, responsive widget tests and Slice 3 builds |
+| 3 | Image/video/carousel | `HomeScreen.tsx`; `PostVideoPlayer.tsx` | media URLs | `features/posts/presentation` | In progress | In progress | image carousel and video lifecycle boundary implemented/builds pass; viewport autoplay/manual evidence remains |
+| 3 | Like/save | Home/PostCard | post like/save; stats event | `features/posts` | Verified | Verified | exact mutation contract plus optimistic success/rollback tests |
 | 3 | Double-tap hearts | Home; `tapGestures.ts` | like | `features/feed` | Not started | Not started | timing/reduced-motion tests |
 | 3 | Comments | `CommentsScreen.tsx` | comments REST; comment event | `features/posts/comments` | Not started | Not started | room lifecycle/realtime tests |
 | 3 | Recipe/nutrition | `RecipeScreen.tsx`; nutrition helpers | nutrition insight | `features/posts`, `meal_analysis` | Not started | Not started | decoding/widget tests |
