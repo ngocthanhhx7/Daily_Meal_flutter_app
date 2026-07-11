@@ -27,9 +27,9 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 3 | Home feed | `HomeScreen.tsx` | GET feed; post stats event | `features/feed` | Verified | Verified | page contract, refresh/append/dedup tests, responsive widget tests and Slice 3 builds |
 | 3 | Image/video/carousel | `HomeScreen.tsx`; `PostVideoPlayer.tsx` | media URLs | `features/posts/presentation` | In progress | In progress | image carousel and video lifecycle boundary implemented/builds pass; viewport autoplay/manual evidence remains |
 | 3 | Like/save | Home/PostCard | post like/save; stats event | `features/posts` | Verified | Verified | exact mutation contract plus optimistic success/rollback tests |
-| 3 | Double-tap hearts | Home; `tapGestures.ts` | like | `features/feed` | Not started | Not started | timing/reduced-motion tests |
-| 3 | Comments | `CommentsScreen.tsx` | comments REST; comment event | `features/posts/comments` | Not started | Not started | room lifecycle/realtime tests |
-| 3 | Recipe/nutrition | `RecipeScreen.tsx`; nutrition helpers | nutrition insight | `features/posts`, `meal_analysis` | Not started | Not started | decoding/widget tests |
+| 3 | Double-tap hearts | Home; `tapGestures.ts` | like | `features/feed` | Verified | Verified | like-only gesture/animation widget test and platform builds |
+| 3 | Comments | `CommentsScreen.tsx` | comments REST; comment event | `features/posts/comments` | In progress | In progress | REST load/create/validation/controller/widget verified; Socket room lifecycle remains Slice 6 |
+| 3 | Recipe/nutrition | `RecipeScreen.tsx`; nutrition helpers | nutrition insight | `features/posts`, `meal_analysis` | Verified | Verified | per-image/legacy recipe and nutrition detail decoder/widget tests plus builds |
 | 3 | Post summary | `PostSummaryScreen.tsx`; filters | GET summary | `features/posts/summary` | Not started | Not started | filter/paging tests |
 | 4 | Media picker/camera | `CreatePostScreen.tsx`; image picker util | permissions | `core/media`, `features/posts/create` | Not started | Not started | Android/Web capability evidence |
 | 4 | Upload image/video | create/edit profile screens | multipart uploads | `core/network/upload` | Not started | Not started | progress/cancel/platform tests |

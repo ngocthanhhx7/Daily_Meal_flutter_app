@@ -3,39 +3,89 @@ import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-class PostMedia extends StatelessWidget {
-  const PostMedia({required this.post, required this.resolver, super.key});
+class PostMedia extends StatefulWidget {
+  const PostMedia({
+    required this.post,
+    required this.resolver,
+    required this.onDoubleTapLike,
+    super.key,
+  });
 
   final FeedPost post;
   final MediaUrlResolver resolver;
+  final VoidCallback onDoubleTapLike;
+
+  @override
+  State<PostMedia> createState() => _PostMediaState();
+}
+
+class _PostMediaState extends State<PostMedia> {
+  bool _showHeart = false;
+
+  void _doubleTap() {
+    if (!widget.post.viewerState.liked) widget.onDoubleTapLike();
+    setState(() => _showHeart = true);
+    Future<void>.delayed(const Duration(milliseconds: 550), () {
+      if (mounted) setState(() => _showHeart = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final videoUri = resolver.resolve(post.video?.url);
-    if (post.mediaType == PostMediaType.video && videoUri != null) {
-      return FeedVideoPlayer(uri: videoUri);
+    final videoUri = widget.resolver.resolve(widget.post.video?.url);
+    final Widget media;
+    if (widget.post.mediaType == PostMediaType.video && videoUri != null) {
+      media = FeedVideoPlayer(uri: videoUri);
+    } else {
+      final images = widget.post.images
+          .map((image) => widget.resolver.resolve(image.url))
+          .whereType<Uri>()
+          .toList(growable: false);
+      media = images.isEmpty
+          ? const AspectRatio(
+              aspectRatio: 4 / 3,
+              child: ColoredBox(
+                color: Color(0xFFECE9DF),
+                child: Center(
+                  child: Icon(
+                    Icons.restaurant_menu_rounded,
+                    size: 52,
+                    color: Color(0xFF8BA58A),
+                    semanticLabel: 'Bài viết chưa có ảnh',
+                  ),
+                ),
+              ),
+            )
+          : _ImageCarousel(images: images);
     }
-    final images = post.images
-        .map((image) => resolver.resolve(image.url))
-        .whereType<Uri>()
-        .toList(growable: false);
-    if (images.isEmpty) {
-      return const AspectRatio(
-        aspectRatio: 4 / 3,
-        child: ColoredBox(
-          color: Color(0xFFECE9DF),
-          child: Center(
-            child: Icon(
-              Icons.restaurant_menu_rounded,
-              size: 52,
-              color: Color(0xFF8BA58A),
-              semanticLabel: 'Bài viết chưa có ảnh',
+    return GestureDetector(
+      key: Key('post-media-${widget.post.id}'),
+      behavior: HitTestBehavior.opaque,
+      onDoubleTap: _doubleTap,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          media,
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showHeart ? 1 : 0,
+              duration: const Duration(milliseconds: 140),
+              child: AnimatedScale(
+                scale: _showHeart ? 1 : 0.55,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutBack,
+                child: const Icon(
+                  Icons.favorite_rounded,
+                  size: 88,
+                  color: Color(0xE6FFFFFF),
+                  shadows: [Shadow(color: Colors.black38, blurRadius: 12)],
+                ),
+              ),
             ),
           ),
-        ),
-      );
-    }
-    return _ImageCarousel(images: images);
+        ],
+      ),
+    );
   }
 }
 

@@ -108,4 +108,37 @@ void main() {
 
     expect(find.byKey(AdaptiveScaffold.railNavigationKey), findsOneWidget);
   });
+
+  testWidgets('double tap likes an unliked post without toggling it off', (
+    tester,
+  ) async {
+    final controller = FeedController(_Repository());
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: HomeScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('post-media-post-1')));
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tap(find.byKey(const Key('post-media-post-1')));
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(controller.state.posts.single.viewerState.liked, isTrue);
+    expect(controller.state.posts.single.stats.likes, 2);
+
+    await tester.tap(find.byKey(const Key('post-media-post-1')));
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tap(find.byKey(const Key('post-media-post-1')));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(controller.state.posts.single.viewerState.liked, isTrue);
+  });
 }

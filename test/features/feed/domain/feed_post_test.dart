@@ -33,6 +33,14 @@ void main() {
         'ingredients': ['rau'],
         'steps': ['trộn'],
       },
+      'recipes': [
+        {
+          'imageIndex': 0,
+          'title': 'Salad ảnh 1',
+          'ingredients': ['xà lách'],
+          'steps': ['rửa'],
+        },
+      ],
       'nutritionSummary': {
         'calories': 320,
         'protein': 20,
@@ -40,6 +48,23 @@ void main() {
         'fat': 10,
         'confidence': 0.9,
       },
+      'nutritionDetails': [
+        {
+          'imageIndex': 0,
+          'items': [
+            {
+              'name': 'Rau',
+              'portion': '100g',
+              'calories': 30,
+              'protein': 2,
+              'carbs': 5,
+              'fat': 0,
+            },
+          ],
+          'total': {'calories': 30, 'protein': 2, 'carbs': 5, 'fat': 0},
+          'warnings': ['Ước tính'],
+        },
+      ],
       'stickerId': {
         '_id': 'sticker-1',
         'key': 'fresh',
@@ -61,7 +86,9 @@ void main() {
     expect(post.layout, PostLayout.cascade);
     expect(post.imageTransforms.single.offsetY, -3);
     expect(post.recipe?.ingredients, ['rau']);
+    expect(post.recipes.single.title, 'Salad ảnh 1');
     expect(post.nutritionSummary?.calories, 320);
+    expect(post.nutritionDetails.single.items.single.portion, '100g');
     expect(post.sticker?.key, 'fresh');
     expect(post.visibility, PostVisibility.friends);
     expect(post.viewerState.liked, isTrue);

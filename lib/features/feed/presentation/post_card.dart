@@ -10,6 +10,8 @@ class FeedPostCard extends StatelessWidget {
     required this.resolver,
     required this.onLike,
     required this.onSave,
+    required this.onComment,
+    required this.onRecipe,
     this.interactionBusy = false,
     super.key,
   });
@@ -18,6 +20,8 @@ class FeedPostCard extends StatelessWidget {
   final MediaUrlResolver resolver;
   final VoidCallback onLike;
   final VoidCallback onSave;
+  final VoidCallback onComment;
+  final VoidCallback onRecipe;
   final bool interactionBusy;
 
   @override
@@ -48,7 +52,11 @@ class FeedPostCard extends StatelessWidget {
                   : 'Food journal • ${post.author.streakDays} ngày liên tiếp',
             ),
           ),
-          PostMedia(post: post, resolver: resolver),
+          PostMedia(
+            post: post,
+            resolver: resolver,
+            onDoubleTapLike: interactionBusy ? () {} : onLike,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
             child: Column(
@@ -106,7 +114,7 @@ class FeedPostCard extends StatelessWidget {
                   icon: Icons.chat_bubble_outline_rounded,
                   count: post.stats.comments,
                   tooltip: 'Bình luận',
-                  onPressed: () {},
+                  onPressed: onComment,
                 ),
                 _Action(
                   key: Key('save-${post.id}'),
@@ -120,7 +128,7 @@ class FeedPostCard extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   tooltip: 'Công thức',
-                  onPressed: () {},
+                  onPressed: onRecipe,
                   icon: const Icon(Icons.restaurant_outlined),
                 ),
               ],

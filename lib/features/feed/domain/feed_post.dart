@@ -112,6 +112,27 @@ class PostRecipe {
   final List<String> steps;
 }
 
+class ImageRecipe {
+  const ImageRecipe({
+    required this.imageIndex,
+    required this.title,
+    required this.ingredients,
+    required this.steps,
+  });
+
+  factory ImageRecipe.fromJson(Map<String, dynamic> json) => ImageRecipe(
+    imageIndex: _integer(json['imageIndex']),
+    title: json['title'] as String? ?? '',
+    ingredients: _strings(json['ingredients']),
+    steps: _strings(json['steps']),
+  );
+
+  final int imageIndex;
+  final String title;
+  final List<String> ingredients;
+  final List<String> steps;
+}
+
 class NutritionSummary {
   const NutritionSummary({
     required this.calories,
@@ -137,6 +158,65 @@ class NutritionSummary {
   final double carbs;
   final double fat;
   final double? confidence;
+}
+
+class NutritionItem {
+  const NutritionItem({
+    required this.name,
+    required this.portion,
+    required this.calories,
+    required this.protein,
+    required this.carbs,
+    required this.fat,
+    this.confidence,
+  });
+
+  factory NutritionItem.fromJson(Map<String, dynamic> json) => NutritionItem(
+    name: json['name'] as String? ?? '',
+    portion: json['portion'] as String? ?? '',
+    calories: _number(json['calories']),
+    protein: _number(json['protein']),
+    carbs: _number(json['carbs']),
+    fat: _number(json['fat']),
+    confidence: json['confidence'] is num
+        ? (json['confidence'] as num).toDouble()
+        : null,
+  );
+
+  final String name;
+  final String portion;
+  final double calories;
+  final double protein;
+  final double carbs;
+  final double fat;
+  final double? confidence;
+}
+
+class NutritionDetail {
+  const NutritionDetail({
+    required this.imageIndex,
+    required this.items,
+    required this.total,
+    required this.warnings,
+    this.mealId,
+  });
+
+  factory NutritionDetail.fromJson(Map<String, dynamic> json) =>
+      NutritionDetail(
+        imageIndex: _integer(json['imageIndex']),
+        items: _maps(
+          json['items'],
+        ).map(NutritionItem.fromJson).toList(growable: false),
+        total: NutritionSummary.fromJson(_map(json['total'], 'total')),
+        warnings: _strings(json['warnings']),
+        mealId: json['mealId'] as String?,
+      );
+
+  final int imageIndex;
+  final List<NutritionItem> items;
+  final NutritionSummary total;
+  final List<String> warnings;
+  final String? mealId;
 }
 
 class PostSticker {
@@ -204,6 +284,8 @@ class FeedPost {
     required this.imageTransforms,
     required this.caption,
     required this.tags,
+    required this.recipes,
+    required this.nutritionDetails,
     required this.visibility,
     required this.stats,
     required this.viewerState,
@@ -241,11 +323,17 @@ class FeedPost {
       recipe: json['recipe'] is Map
           ? PostRecipe.fromJson((json['recipe'] as Map).cast<String, dynamic>())
           : null,
+      recipes: _maps(
+        json['recipes'],
+      ).map(ImageRecipe.fromJson).toList(growable: false),
       nutritionSummary: json['nutritionSummary'] is Map
           ? NutritionSummary.fromJson(
               (json['nutritionSummary'] as Map).cast<String, dynamic>(),
             )
           : null,
+      nutritionDetails: _maps(
+        json['nutritionDetails'],
+      ).map(NutritionDetail.fromJson).toList(growable: false),
       sticker: json['stickerId'] is Map
           ? PostSticker.fromJson(
               (json['stickerId'] as Map).cast<String, dynamic>(),
@@ -277,7 +365,9 @@ class FeedPost {
   final String caption;
   final List<String> tags;
   final PostRecipe? recipe;
+  final List<ImageRecipe> recipes;
   final NutritionSummary? nutritionSummary;
+  final List<NutritionDetail> nutritionDetails;
   final PostSticker? sticker;
   final PostVisibility visibility;
   final PostStats stats;
@@ -300,7 +390,9 @@ class FeedPost {
     caption: caption,
     tags: tags,
     recipe: recipe,
+    recipes: recipes,
     nutritionSummary: nutritionSummary,
+    nutritionDetails: nutritionDetails,
     sticker: sticker,
     visibility: visibility,
     stats: nextStats,

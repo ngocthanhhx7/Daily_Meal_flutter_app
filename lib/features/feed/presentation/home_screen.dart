@@ -6,6 +6,8 @@ import 'package:daily_meal_flutter_app/features/feed/application/feed_controller
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
+import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutrition_sheet.dart';
+import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -167,6 +169,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onSave: () => controller
                                 .toggleSave(post.id)
                                 .catchError((_) {}),
+                            onComment: () => showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              builder: (context) => FractionallySizedBox(
+                                heightFactor: 0.9,
+                                child: CommentsSheet(postId: post.id),
+                              ),
+                            ),
+                            onRecipe: () => showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              builder: (context) => FractionallySizedBox(
+                                heightFactor: 0.92,
+                                child: RecipeNutritionSheet(
+                                  post: post,
+                                  resolver: resolver,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       );

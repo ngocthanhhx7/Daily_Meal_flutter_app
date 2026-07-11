@@ -6,7 +6,8 @@ Verification date: 2026-07-11
 
 Fresh verification completed with production dart-defines:
 
-- `flutter test`: 86 tests passed, including 10 feed-specific tests.
+- `flutter test`: 95 tests passed, including feed, comments, recipe/nutrition and
+  double-tap gesture coverage.
 - `flutter analyze`: no issues found.
 - `flutter build web --release`: exit 0; artifact `build/web`; Wasm dry run passed.
 - `flutter build apk --debug`: exit 0; artifact
@@ -25,12 +26,17 @@ Fresh verification completed with production dart-defines:
 - Relative/absolute media URL resolution, multi-image paging and explicit video
   controller disposal.
 - Accessible minimum 48dp post action targets.
+- Comment list/create contract, 1-500 character validation, deduplication and
+  responsive bottom-sheet send/error states.
+- Like-only double-tap heart feedback that never unlikes an already-liked post.
+- Per-image `recipes[]`, legacy `recipe`, nutrition items/totals and warnings.
 
 ## Evidence boundary
 
 Video viewport-driven autoplay/pause and manual playback on real Android/Web
-remain required before the image/video row can be marked Verified. Comments,
-recipe detail and double-tap hearts remain separate unverified subflows.
+remain required before the image/video row can be marked Verified. Comment REST
+is verified, while Socket room join/leave and live `comment:created` handling
+remain part of the realtime Slice 6 gate.
 
 ## Android environment warning
 
