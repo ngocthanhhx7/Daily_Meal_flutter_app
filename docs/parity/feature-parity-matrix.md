@@ -39,9 +39,9 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 5 | Search posts/users | `SearchScreen.tsx` | post/user search | `features/search` | Verified | Verified | API contract, controller rollback and responsive widget tests |
 | 5 | Own profile | `ProfileScreen.tsx` | user/posts/saved | `features/profile` | Verified | Verified | owner route, posts/saved tabs, API/controller/widget tests |
 | 5 | Public profile | `PublicProfileScreen.tsx` | user/posts | `features/profile` | Verified | Verified | parameterized route, profile/posts and follow journey tests |
-| 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | In progress | In progress | display name/bio PATCH validated; avatar/cover picker-upload remains |
+| 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | Verified | Verified | name/bio PATCH plus avatar/cover picker, MIME/size validation and multipart tests |
 | 5 | Followers/following | `FollowsScreen.tsx` | follow list/actions | `features/social` | Verified | Verified | exact list APIs, follow rollback and responsive sheet journey |
-| 5 | Restrict/block/report | PublicProfile/Blocked | interactions endpoints | `features/social/safety` | Not started | Not started | confirmation/error tests |
+| 5 | Restrict/block/report | PublicProfile/Blocked | interactions endpoints | `features/social/safety` | Verified | Verified | confirmation UI, optimistic rollback, blocked list and exact endpoint tests |
 | 5 | Saved/settings/password | Saved/Settings/ChangePassword | saved, password | respective features | Not started | Not started | widget/journey tests |
 | 5 | Support/share account | Support/ShareAccount | platform share/support | `features/profile/utility` | Not started | Not started | platform behavior evidence |
 | 5 | Progress/streak | `ProgressScreen.tsx`; progress helper | user/post data | `features/profile/progress` | Not started | Not started | summary/unit/widget tests |

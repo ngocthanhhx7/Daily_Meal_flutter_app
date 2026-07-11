@@ -133,6 +133,22 @@ class PublicUser {
     relationship: next,
     viewerInteraction: viewerInteraction,
   );
+
+  PublicUser withViewerInteraction(ViewerInteraction next) => PublicUser(
+    id: id,
+    email: email,
+    phone: phone,
+    displayName: displayName,
+    avatarUrl: avatarUrl,
+    coverUrl: coverUrl,
+    bio: bio,
+    isPremium: isPremium,
+    streakDays: streakDays,
+    themeColor: themeColor,
+    counts: counts,
+    relationship: relationship,
+    viewerInteraction: next,
+  );
 }
 
 int _integer(Object? value) =>

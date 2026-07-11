@@ -9,6 +9,7 @@ import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_po
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
+import 'package:daily_meal_flutter_app/features/profile/presentation/blocked_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,6 +34,7 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.publicProfile => ProfileScreen(
               userId: state.pathParameters['id'],
             ),
+            AppRoute.blocked => const BlockedScreen(),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost

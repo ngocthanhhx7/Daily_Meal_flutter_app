@@ -1,5 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/domain/picked_media.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/domain/post_draft.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/services/media_picker_service.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_controller.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_api.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
@@ -18,6 +23,7 @@ PublicUser _user({bool following = false}) => PublicUser.fromJson({
 });
 
 class _Repository implements ProfileRepositoryContract {
+  String? uploadedCategory;
   @override
   Future<ProfileBundle> loadProfile(
     String userId, {
@@ -55,9 +61,49 @@ class _Repository implements ProfileRepositoryContract {
   Future<PublicUser> updateMe(Map<String, dynamic> changes) async =>
       PublicUser.fromJson({
         'id': 'user-1',
-        'displayName': changes['displayName'],
+        'displayName': changes['displayName'] ?? 'Bếp Nhà',
         'bio': changes['bio'],
       });
+
+  @override
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String fileName,
+    required String mimeType,
+    required String category,
+  }) async {
+    uploadedCategory = category;
+    return '/uploads/$category/$fileName';
+  }
+
+  @override
+  Future<bool> setInteraction(
+    String userId,
+    String type, {
+    required bool active,
+    String? note,
+  }) async => active;
+
+  @override
+  Future<List<PublicUser>> loadBlockedUsers() async => [_user()];
+}
+
+class _Picker implements MediaPickerService {
+  @override
+  Future<List<PickedMedia>> pickImages({required int limit}) async => [
+    PickedMedia(
+      bytes: Uint8List.fromList([1, 2, 3]),
+      fileName: 'avatar.jpg',
+      mimeType: 'image/jpeg',
+      mediaType: DraftMediaType.image,
+    ),
+  ];
+
+  @override
+  Future<PickedMedia?> captureImage() async => null;
+
+  @override
+  Future<PickedMedia?> pickVideo() async => null;
 }
 
 void main() {
@@ -99,6 +145,18 @@ void main() {
       await tester.tap(find.text('Người theo dõi'));
       await tester.pumpAndSettle();
       expect(find.text('Bạn Bếp'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('An toàn tài khoản'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Chặn'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Xác nhận'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('An toàn tài khoản'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bỏ chặn'), findsOneWidget);
     },
   );
 
@@ -147,4 +205,36 @@ void main() {
       expect(find.text('Món mới'), findsOneWidget);
     },
   );
+
+  testWidgets('owner picks and uploads an avatar', (tester) async {
+    tester.view.physicalSize = const Size(900, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _Repository();
+    final controller = ProfileController(
+      repository,
+      userId: 'user-1',
+      isOwner: true,
+    );
+    addTearDown(controller.dispose);
+    await controller.load();
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: ProfileScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+            mediaPicker: _Picker(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Đổi avatar'));
+    await tester.pumpAndSettle();
+    expect(repository.uploadedCategory, 'avatar');
+  });
 }

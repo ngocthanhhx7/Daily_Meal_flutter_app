@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/domain/picked_media.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/foundation.dart';
 enum ProfileStatus { idle, loading, ready, failure }
 
 enum ProfileTab { posts, saved }
+
+enum ProfileImageKind { avatar, cover }
 
 class ProfileState {
   const ProfileState({
@@ -16,6 +19,8 @@ class ProfileState {
     this.user,
     this.errorMessage,
     this.followBusy = false,
+    this.profileBusy = false,
+    this.safetyBusy = false,
   });
 
   const ProfileState.initial()
@@ -33,6 +38,8 @@ class ProfileState {
   final List<FeedPost> savedPosts;
   final String? errorMessage;
   final bool followBusy;
+  final bool profileBusy;
+  final bool safetyBusy;
 
   ProfileState copyWith({
     ProfileStatus? status,
@@ -43,6 +50,8 @@ class ProfileState {
     String? errorMessage,
     bool clearError = false,
     bool? followBusy,
+    bool? profileBusy,
+    bool? safetyBusy,
   }) => ProfileState(
     status: status ?? this.status,
     tab: tab ?? this.tab,
@@ -51,6 +60,8 @@ class ProfileState {
     savedPosts: savedPosts ?? this.savedPosts,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     followBusy: followBusy ?? this.followBusy,
+    profileBusy: profileBusy ?? this.profileBusy,
+    safetyBusy: safetyBusy ?? this.safetyBusy,
   );
 }
 
@@ -132,6 +143,7 @@ class ProfileController extends ChangeNotifier {
 
   Future<void> updateProfile(Map<String, dynamic> changes) async {
     if (!isOwner) return;
+    _set(_state.copyWith(profileBusy: true, clearError: true));
     try {
       _set(
         _state.copyWith(
@@ -142,6 +154,94 @@ class ProfileController extends ChangeNotifier {
     } catch (error) {
       _set(_state.copyWith(errorMessage: error.toString()));
       rethrow;
+    } finally {
+      _set(_state.copyWith(profileBusy: false));
+    }
+  }
+
+  Future<void> updateProfileImage(
+    PickedMedia media,
+    ProfileImageKind kind,
+  ) async {
+    if (!isOwner) return;
+    _set(_state.copyWith(profileBusy: true, clearError: true));
+    try {
+      final url = await _repository.uploadImage(
+        bytes: media.bytes,
+        fileName: media.fileName,
+        mimeType: media.mimeType,
+        category: kind.name,
+      );
+      _set(
+        _state.copyWith(
+          user: await _repository.updateMe({
+            kind == ProfileImageKind.avatar ? 'avatarUrl' : 'coverUrl': url,
+          }),
+        ),
+      );
+    } catch (error) {
+      _set(_state.copyWith(errorMessage: error.toString()));
+      rethrow;
+    } finally {
+      _set(_state.copyWith(profileBusy: false));
+    }
+  }
+
+  Future<void> setSafety(
+    String type, {
+    required bool active,
+    String? note,
+  }) async {
+    final original = _state.user;
+    if (isOwner || original == null || _state.safetyBusy) return;
+    _set(
+      _state.copyWith(
+        safetyBusy: true,
+        user: original.withViewerInteraction(
+          ViewerInteraction(
+            restricted: type == 'restrict'
+                ? active
+                : original.viewerInteraction.restricted,
+            blocked: type == 'block'
+                ? active
+                : original.viewerInteraction.blocked,
+            reported: type == 'report'
+                ? active
+                : original.viewerInteraction.reported,
+          ),
+        ),
+      ),
+    );
+    try {
+      final actual = await _repository.setInteraction(
+        userId,
+        type,
+        active: active,
+        note: note,
+      );
+      final current = _state.user!;
+      _set(
+        _state.copyWith(
+          user: current.withViewerInteraction(
+            ViewerInteraction(
+              restricted: type == 'restrict'
+                  ? actual
+                  : current.viewerInteraction.restricted,
+              blocked: type == 'block'
+                  ? actual
+                  : current.viewerInteraction.blocked,
+              reported: type == 'report'
+                  ? actual
+                  : current.viewerInteraction.reported,
+            ),
+          ),
+        ),
+      );
+    } catch (error) {
+      _set(_state.copyWith(user: original, errorMessage: error.toString()));
+      rethrow;
+    } finally {
+      _set(_state.copyWith(safetyBusy: false));
     }
   }
 

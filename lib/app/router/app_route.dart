@@ -6,6 +6,7 @@ enum AppRoute {
   search('/search'),
   profile('/profile'),
   publicProfile('/users/:id'),
+  blocked('/profile/blocked'),
   createPost('/create'),
   editPost('/posts/edit'),
   adminDashboard('/admin');

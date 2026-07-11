@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:dio/dio.dart';
@@ -66,6 +68,69 @@ class ProfileApi {
       throw const FormatException('Invalid profile update response');
     }
     return PublicUser.fromJson(raw.cast<String, dynamic>());
+  }
+
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String fileName,
+    required String mimeType,
+    required String category,
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/api/uploads',
+      queryParameters: {'category': category},
+      data: FormData.fromMap({
+        'image': MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+          contentType: DioMediaType.parse(mimeType),
+        ),
+      }),
+    );
+    final upload = response.data?['upload'];
+    final url = upload is Map ? upload['url'] : null;
+    if (url is! String || url.isEmpty) {
+      throw const FormatException('Invalid profile image upload response');
+    }
+    return url;
+  }
+
+  Future<bool> setInteraction(
+    String userId,
+    String type, {
+    required bool active,
+    String? note,
+  }) async {
+    final response = active
+        ? await _dio.post<Map<String, dynamic>>(
+            '/api/users/$userId/interactions',
+            data: {
+              'type': type,
+              if (note?.trim().isNotEmpty == true) 'note': note!.trim(),
+            },
+          )
+        : await _dio.delete<Map<String, dynamic>>(
+            '/api/users/$userId/interactions/$type',
+          );
+    final value = response.data?['active'];
+    if (value is! bool) {
+      throw const FormatException('Invalid interaction response');
+    }
+    return value;
+  }
+
+  Future<List<PublicUser>> loadBlockedUsers() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/users/me/interactions/blocked',
+    );
+    final raw = response.data?['users'];
+    if (raw is! List) {
+      throw const FormatException('Invalid blocked users response');
+    }
+    return raw
+        .whereType<Map>()
+        .map((item) => PublicUser.fromJson(item.cast<String, dynamic>()))
+        .toList(growable: false);
   }
 
   List<FeedPost> _posts(Map<String, dynamic>? data) {

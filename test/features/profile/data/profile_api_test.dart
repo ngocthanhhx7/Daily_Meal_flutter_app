@@ -26,6 +26,19 @@ class _Adapter implements HttpClientAdapter {
       '/api/users/me' => {
         'user': {'id': 'user-1', 'displayName': 'Bếp Mới', 'bio': 'Món mới'},
       },
+      '/api/uploads' => {
+        'upload': {'url': '/uploads/avatar/photo.jpg'},
+      },
+      '/api/users/user-1/interactions' => {'type': 'block', 'active': true},
+      '/api/users/user-1/interactions/block' => {
+        'type': 'block',
+        'active': false,
+      },
+      '/api/users/me/interactions/blocked' => {
+        'users': [
+          {'id': 'user-2', 'displayName': 'Đã chặn'},
+        ],
+      },
       '/api/users/user-1/posts' || '/api/users/user-1/saved-posts' => {
         'posts': [
           {
@@ -73,17 +86,40 @@ void main() {
         'displayName': 'Bếp Mới',
         'bio': 'Món mới',
       });
+      final uploadedUrl = await api.uploadImage(
+        bytes: Uint8List.fromList([1, 2, 3]),
+        fileName: 'photo.jpg',
+        mimeType: 'image/jpeg',
+        category: 'avatar',
+      );
+      expect(await api.setInteraction('user-1', 'block', active: true), isTrue);
+      expect(
+        await api.setInteraction('user-1', 'block', active: false),
+        isFalse,
+      );
+      final blocked = await api.loadBlockedUsers();
 
       expect(profile.user.displayName, 'Bếp Nhà');
       expect(profile.posts.single.id, 'post-1');
       expect(profile.savedPosts.single.viewerState.saved, isFalse);
       expect(followers.single.id, 'user-2');
       expect(updated.displayName, 'Bếp Mới');
+      expect(uploadedUrl, '/uploads/avatar/photo.jpg');
+      expect(blocked.single.id, 'user-2');
       final updateRequest = adapter.requests.singleWhere(
         (item) => item.path == '/api/users/me',
       );
       expect(updateRequest.method, 'PATCH');
       expect(updateRequest.data, {'displayName': 'Bếp Mới', 'bio': 'Món mới'});
+      final uploadRequest = adapter.requests.singleWhere(
+        (item) => item.path == '/api/uploads',
+      );
+      expect(uploadRequest.queryParameters, {'category': 'avatar'});
+      expect(uploadRequest.data, isA<FormData>());
+      final interactionRequest = adapter.requests.singleWhere(
+        (item) => item.path == '/api/users/user-1/interactions',
+      );
+      expect(interactionRequest.data, {'type': 'block'});
       expect(
         adapter.requests.map((item) => item.path),
         containsAll([

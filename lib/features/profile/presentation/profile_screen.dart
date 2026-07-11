@@ -7,6 +7,7 @@ import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_controller.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_providers.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/services/media_picker_service.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,11 +18,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
     this.userId,
     this.controller,
     this.mediaResolver,
+    this.mediaPicker,
     super.key,
   });
   final String? userId;
   final ProfileController? controller;
   final MediaUrlResolver? mediaResolver;
+  final MediaPickerService? mediaPicker;
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -113,6 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             user: user,
             controller: controller,
             resolver: resolver,
+            mediaPicker: widget.mediaPicker ?? PluginMediaPickerService(),
           ),
         ),
         SliverToBoxAdapter(
@@ -151,10 +155,12 @@ class _Header extends StatelessWidget {
     required this.user,
     required this.controller,
     required this.resolver,
+    required this.mediaPicker,
   });
   final PublicUser user;
   final ProfileController controller;
   final MediaUrlResolver resolver;
+  final MediaPickerService mediaPicker;
 
   @override
   Widget build(BuildContext context) {
@@ -242,28 +248,99 @@ class _Header extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           if (controller.isOwner)
-                            FilledButton.tonalIcon(
-                              onPressed: () => _edit(context),
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Chỉnh sửa hồ sơ'),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: controller.state.profileBusy
+                                      ? null
+                                      : () =>
+                                            _pickImage(ProfileImageKind.avatar),
+                                  icon: const Icon(
+                                    Icons.account_circle_outlined,
+                                  ),
+                                  label: const Text('Đổi avatar'),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: controller.state.profileBusy
+                                      ? null
+                                      : () =>
+                                            _pickImage(ProfileImageKind.cover),
+                                  icon: const Icon(Icons.panorama_outlined),
+                                  label: const Text('Đổi ảnh bìa'),
+                                ),
+                                FilledButton.tonalIcon(
+                                  onPressed: controller.state.profileBusy
+                                      ? null
+                                      : () => _edit(context),
+                                  icon: const Icon(Icons.edit_outlined),
+                                  label: const Text('Chỉnh sửa hồ sơ'),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () =>
+                                      context.pushNamed(AppRoute.blocked.name),
+                                  icon: const Icon(Icons.block_outlined),
+                                  label: const Text('Đã chặn'),
+                                ),
+                              ],
                             )
                           else
-                            FilledButton.icon(
-                              onPressed: controller.state.followBusy
-                                  ? null
-                                  : () => controller.toggleFollow().catchError(
-                                      (_) {},
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: controller.state.followBusy
+                                      ? null
+                                      : () => controller
+                                            .toggleFollow()
+                                            .catchError((_) {}),
+                                  icon: Icon(
+                                    user.relationship.isFollowing
+                                        ? Icons.check
+                                        : Icons.person_add_alt_1,
+                                  ),
+                                  label: Text(
+                                    user.relationship.isFollowing
+                                        ? 'Đang theo dõi'
+                                        : 'Theo dõi',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                PopupMenuButton<String>(
+                                  tooltip: 'An toàn tài khoản',
+                                  enabled: !controller.state.safetyBusy,
+                                  onSelected: (type) =>
+                                      _confirmSafety(context, type),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: 'restrict',
+                                      child: Text(
+                                        user.viewerInteraction.restricted
+                                            ? 'Bỏ hạn chế'
+                                            : 'Hạn chế',
+                                      ),
                                     ),
-                              icon: Icon(
-                                user.relationship.isFollowing
-                                    ? Icons.check
-                                    : Icons.person_add_alt_1,
-                              ),
-                              label: Text(
-                                user.relationship.isFollowing
-                                    ? 'Đang theo dõi'
-                                    : 'Theo dõi',
-                              ),
+                                    PopupMenuItem(
+                                      value: 'block',
+                                      child: Text(
+                                        user.viewerInteraction.blocked
+                                            ? 'Bỏ chặn'
+                                            : 'Chặn',
+                                      ),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'report',
+                                      child: Text(
+                                        user.viewerInteraction.reported
+                                            ? 'Gỡ báo cáo'
+                                            : 'Báo cáo',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                         ],
                       ),
@@ -339,6 +416,46 @@ class _Header extends StatelessWidget {
     );
     if (result != null && context.mounted) {
       await controller.updateProfile(result).catchError((_) {});
+    }
+  }
+
+  Future<void> _pickImage(ProfileImageKind kind) async {
+    final picked = await mediaPicker.pickImages(limit: 1);
+    if (picked.isEmpty) return;
+    await controller.updateProfileImage(picked.first, kind).catchError((_) {});
+  }
+
+  Future<void> _confirmSafety(BuildContext context, String type) async {
+    final current = user.viewerInteraction;
+    final active = switch (type) {
+      'restrict' => !current.restricted,
+      'block' => !current.blocked,
+      _ => !current.reported,
+    };
+    final label = switch (type) {
+      'restrict' => active ? 'hạn chế' : 'bỏ hạn chế',
+      'block' => active ? 'chặn' : 'bỏ chặn',
+      _ => active ? 'báo cáo' : 'gỡ báo cáo',
+    };
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Xác nhận $label'),
+        content: Text('Bạn có chắc muốn $label ${user.displayName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await controller.setSafety(type, active: active).catchError((_) {});
     }
   }
 }

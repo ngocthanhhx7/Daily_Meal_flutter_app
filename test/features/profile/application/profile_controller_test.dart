@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/profile/application/profile_controller.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_api.dart';
@@ -13,6 +15,7 @@ PublicUser _user({bool following = false}) => PublicUser.fromJson({
 
 class _Repository implements ProfileRepositoryContract {
   bool failFollow = false;
+  bool failSafety = false;
 
   @override
   Future<ProfileBundle> loadProfile(
@@ -46,6 +49,28 @@ class _Repository implements ProfileRepositoryContract {
         'displayName': changes['displayName'],
         'bio': changes['bio'],
       });
+
+  @override
+  Future<String> uploadImage({
+    required Uint8List bytes,
+    required String fileName,
+    required String mimeType,
+    required String category,
+  }) async => '/uploads/$category/$fileName';
+
+  @override
+  Future<bool> setInteraction(
+    String userId,
+    String type, {
+    required bool active,
+    String? note,
+  }) async {
+    if (failSafety) throw StateError('network');
+    return active;
+  }
+
+  @override
+  Future<List<PublicUser>> loadBlockedUsers() async => [_user()];
 }
 
 void main() {
@@ -88,5 +113,20 @@ void main() {
     });
     expect(controller.state.user?.displayName, 'Bếp Mới');
     expect(controller.state.user?.bio, 'Món mới');
+  });
+
+  test('safety interaction rolls back when backend fails', () async {
+    final repository = _Repository();
+    final controller = ProfileController(
+      repository,
+      userId: 'user-1',
+      isOwner: false,
+    );
+    await controller.load();
+    repository.failSafety = true;
+    final pending = controller.setSafety('block', active: true);
+    expect(controller.state.user?.viewerInteraction.blocked, isTrue);
+    await expectLater(pending, throwsStateError);
+    expect(controller.state.user?.viewerInteraction.blocked, isFalse);
   });
 }
