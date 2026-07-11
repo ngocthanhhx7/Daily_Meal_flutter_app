@@ -4,6 +4,7 @@ enum SessionRouteState { loading, signedOut, needsOnboarding, user, admin }
 
 String? routeRedirect(SessionRouteState state, String location) {
   final isLogin = location == AppRoute.login.path;
+  final isAdminLogin = location == AppRoute.adminLogin.path;
   final isOnboarding = location == AppRoute.onboarding.path;
   final isAdmin =
       location == AppRoute.adminDashboard.path ||
@@ -11,11 +12,15 @@ String? routeRedirect(SessionRouteState state, String location) {
 
   return switch (state) {
     SessionRouteState.loading => null,
-    SessionRouteState.signedOut => isLogin ? null : AppRoute.login.path,
+    SessionRouteState.signedOut =>
+      (isLogin || isAdminLogin) ? null : AppRoute.login.path,
     SessionRouteState.needsOnboarding =>
       isOnboarding ? null : AppRoute.onboarding.path,
     SessionRouteState.user =>
-      (isLogin || isOnboarding || isAdmin) ? AppRoute.home.path : null,
-    SessionRouteState.admin => isAdmin ? null : AppRoute.adminDashboard.path,
+      (isLogin || isAdminLogin || isOnboarding || isAdmin)
+          ? AppRoute.home.path
+          : null,
+    SessionRouteState.admin =>
+      (isAdmin && !isAdminLogin) ? null : AppRoute.adminDashboard.path,
   };
 }

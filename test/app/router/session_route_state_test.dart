@@ -14,6 +14,10 @@ void main() {
     );
   });
 
+  test('signed-out sessions may open the dedicated admin login', () {
+    expect(routeRedirect(SessionRouteState.signedOut, '/admin/login'), isNull);
+  });
+
   test('users who need onboarding stay in the onboarding branch', () {
     expect(
       routeRedirect(SessionRouteState.needsOnboarding, AppRoute.home.path),

@@ -7,6 +7,8 @@ import 'package:daily_meal_flutter_app/features/auth/presentation/password_reset
 import 'package:daily_meal_flutter_app/features/auth/presentation/phone_auth_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({this.controller, super.key});
@@ -222,6 +224,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 : 'Tạo tài khoản',
                           ),
                         ),
+                        if (!registering)
+                          TextButton.icon(
+                            onPressed: () =>
+                                context.goNamed(AppRoute.adminLogin.name),
+                            icon: const Icon(
+                              Icons.admin_panel_settings_outlined,
+                            ),
+                            label: const Text('Đăng nhập quản trị'),
+                          ),
                       ],
                     ],
                   ),

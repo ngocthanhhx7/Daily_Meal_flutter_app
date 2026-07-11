@@ -1,5 +1,6 @@
 enum AppRoute {
   login('/login'),
+  adminLogin('/admin/login'),
   onboarding('/onboarding'),
   home('/'),
   adminDashboard('/admin');
