@@ -1,0 +1,40 @@
+<h2>Kiến trúc đề xuất cho Daily Meal Flutter</h2>
+<p class="subtitle">Contract-first + vertical slices, dùng chung codebase cho Android và Web</p>
+
+<div class="mockup">
+  <div class="mockup-header">Luồng tổng thể</div>
+  <div class="mockup-body">
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center">
+      <div style="display:grid;gap:10px">
+        <div class="placeholder"><strong>Flutter Presentation</strong><br>Material 3, responsive mobile/tablet/web</div>
+        <div class="placeholder"><strong>Feature Modules</strong><br>Auth · Feed · Create/AI · Social · Chat · Premium · Admin</div>
+        <div class="placeholder"><strong>Application State</strong><br>Riverpod AsyncNotifier + immutable states</div>
+      </div>
+      <div style="font-size:30px">⇄</div>
+      <div style="display:grid;gap:10px">
+        <div class="placeholder"><strong>Data Layer</strong><br>Dio client · repositories · DTO/domain mapping</div>
+        <div class="placeholder"><strong>Realtime & Device</strong><br>Socket.IO · secure storage · media · notifications</div>
+        <div class="placeholder"><strong>Production Backend</strong><br>https://api.dailymeal.site · REST + WebSocket</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Thứ tự vertical slices</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <span class="label">1. Core/API contract</span><span>→</span>
+    <span class="label">2. Auth & onboarding</span><span>→</span>
+    <span class="label">3. Feed & post</span><span>→</span>
+    <span class="label">4. Create & AI</span><span>→</span>
+    <span class="label">5. Social</span><span>→</span>
+    <span class="label">6. Chat & notifications</span><span>→</span>
+    <span class="label">7. Premium</span><span>→</span>
+    <span class="label">8. Admin</span>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>Nguyên tắc bắt buộc</h4><ul><li>Không mock API khi endpoint thật đã tồn tại</li><li>Mỗi slice phải chạy end-to-end trước khi chuyển tiếp</li><li>Tái sử dụng logo, ảnh, icon và nội dung từ app gốc</li><li>Android và Web đều có loading/error/empty/offline states</li></ul></div>
+  <div class="cons"><h4>Không thực hiện</h4><ul><li>Không sửa hoặc xây lại Node.js backend nếu contract vẫn đáp ứng</li><li>Không dịch máy từng component React Native sang Dart</li><li>Không để placeholder, TODO hoặc nút không hoạt động</li><li>Không bỏ Admin vì ưu tiên mobile</li></ul></div>
+</div>
