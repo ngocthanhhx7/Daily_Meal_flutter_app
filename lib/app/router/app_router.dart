@@ -1,5 +1,6 @@
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/router/session_route_state.dart';
+import 'package:daily_meal_flutter_app/features/auth/presentation/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,7 +15,10 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
         GoRoute(
           path: route.path,
           name: route.name,
-          builder: (context, state) => FoundationRouteProbe(route: route),
+          builder: (context, state) => switch (route) {
+            AppRoute.login => const LoginScreen(),
+            _ => FoundationRouteProbe(route: route),
+          },
         ),
     ],
   );

@@ -6,6 +6,17 @@ import 'package:daily_meal_flutter_app/features/auth/domain/auth_result.dart';
 
 abstract interface class AuthRepositoryContract {
   Future<AppUser> login({required String email, required String password});
+  Future<AppUser> register({
+    required String email,
+    required String password,
+    String? displayName,
+  });
+  Future<OtpRequestResponse> requestPasswordResetOtp(String email);
+  Future<AppUser> verifyPasswordResetOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  });
   Future<AdminAuthResult> adminLogin({
     required String email,
     required String password,
@@ -29,6 +40,7 @@ class AuthRepository implements AuthRepositoryContract {
     required String password,
   }) async => _persistUser(await _api.login(email: email, password: password));
 
+  @override
   Future<AppUser> register({
     required String email,
     required String password,
@@ -76,9 +88,11 @@ class AuthRepository implements AuthRepositoryContract {
     ),
   );
 
+  @override
   Future<OtpRequestResponse> requestPasswordResetOtp(String email) =>
       _api.requestPasswordResetOtp(email);
 
+  @override
   Future<AppUser> verifyPasswordResetOtp({
     required String email,
     required String otp,

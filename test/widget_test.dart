@@ -3,6 +3,7 @@ import 'package:daily_meal_flutter_app/app/config/app_config.dart';
 import 'package:daily_meal_flutter_app/core/storage/key_value_storage.dart';
 import 'package:daily_meal_flutter_app/core/storage/session_store.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,5 +37,7 @@ void main() {
     );
 
     expect(find.bySemanticsLabel('Daily Meal application'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(FilledButton, 'Đăng nhập'), findsOneWidget);
   });
 }

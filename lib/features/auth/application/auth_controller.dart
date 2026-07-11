@@ -59,6 +59,50 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<void> register({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    _setState(const AuthState(status: AuthStatus.signedOut, isBusy: true));
+    try {
+      _setAuthenticatedUser(
+        await _repository.register(
+          email: email,
+          password: password,
+          displayName: displayName,
+        ),
+      );
+    } catch (error) {
+      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      rethrow;
+    }
+  }
+
+  Future<void> requestPasswordResetOtp(String email) async {
+    await _repository.requestPasswordResetOtp(email);
+  }
+
+  Future<void> verifyPasswordResetOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    _setState(const AuthState(status: AuthStatus.signedOut, isBusy: true));
+    try {
+      _setAuthenticatedUser(
+        await _repository.verifyPasswordResetOtp(
+          email: email,
+          otp: otp,
+          newPassword: newPassword,
+        ),
+      );
+    } catch (error) {
+      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      rethrow;
+    }
+  }
+
   Future<void> adminLogin({
     required String email,
     required String password,
