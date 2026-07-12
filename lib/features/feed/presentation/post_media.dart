@@ -14,12 +14,14 @@ class PostMedia extends StatefulWidget {
     required this.post,
     required this.resolver,
     required this.onDoubleTapLike,
+    this.homeStyle = false,
     super.key,
   });
 
   final FeedPost post;
   final MediaUrlResolver resolver;
   final VoidCallback onDoubleTapLike;
+  final bool homeStyle;
 
   @override
   State<PostMedia> createState() => _PostMediaState();
@@ -67,7 +69,7 @@ class _PostMediaState extends State<PostMedia> {
                 ),
               ),
             )
-          : _ImageCarousel(images: images);
+          : _ImageCarousel(images: images, homeStyle: widget.homeStyle);
     }
     return GestureDetector(
       key: Key('post-media-${widget.post.id}'),
@@ -105,8 +107,9 @@ class _PostMediaState extends State<PostMedia> {
 }
 
 class _ImageCarousel extends StatefulWidget {
-  const _ImageCarousel({required this.images});
+  const _ImageCarousel({required this.images, required this.homeStyle});
   final List<Uri> images;
+  final bool homeStyle;
 
   @override
   State<_ImageCarousel> createState() => _ImageCarouselState();
@@ -115,35 +118,43 @@ class _ImageCarousel extends StatefulWidget {
 class _ImageCarouselState extends State<_ImageCarousel> {
   @override
   Widget build(BuildContext context) {
-    final images = widget.images.take(3).toList(growable: false);
-    return SizedBox(
-      height: 390,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final cardWidth = constraints.maxWidth * 0.72;
-          final cardHeight = 330.0;
-          final cacheWidth = feedImageCacheWidth(
-            cardWidth,
-            MediaQuery.devicePixelRatioOf(context),
-          );
-          final offsets = switch (images.length) {
-            1 => [Offset((constraints.maxWidth - cardWidth) / 2, 22)],
-            2 => [
-              const Offset(8, 35),
-              Offset(constraints.maxWidth - cardWidth - 8, 10),
-            ],
-            _ => [
-              const Offset(4, 42),
-              Offset((constraints.maxWidth - cardWidth) / 2, 4),
-              Offset(constraints.maxWidth - cardWidth - 4, 48),
-            ],
-          };
-          final rotations = switch (images.length) {
-            1 => [0.0],
-            2 => [-0.055, 0.045],
-            _ => [-0.075, 0.02, 0.07],
-          };
-          return Stack(
+    final images = widget.images.take(4).toList(growable: false);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final canvasHeight = widget.homeStyle
+            ? (constraints.maxWidth * 4 / 3).clamp(390.0, 510.0)
+            : 390.0;
+        final single = widget.homeStyle && images.length == 1;
+        final cardWidth = single
+            ? constraints.maxWidth
+            : constraints.maxWidth * (widget.homeStyle ? .84 : .72);
+        final cardHeight = single ? canvasHeight : canvasHeight - 60;
+        final cacheWidth = feedImageCacheWidth(
+          cardWidth,
+          MediaQuery.devicePixelRatioOf(context),
+        );
+        final offsets = switch (images.length) {
+          1 => [
+            Offset((constraints.maxWidth - cardWidth) / 2, single ? 0 : 22),
+          ],
+          2 => [
+            const Offset(8, 35),
+            Offset(constraints.maxWidth - cardWidth - 8, 10),
+          ],
+          _ => [
+            const Offset(4, 42),
+            Offset((constraints.maxWidth - cardWidth) / 2, 4),
+            Offset(constraints.maxWidth - cardWidth - 4, 48),
+          ],
+        };
+        final rotations = switch (images.length) {
+          1 => [0.0],
+          2 => [-0.055, 0.045],
+          _ => [-0.075, 0.02, 0.07],
+        };
+        return SizedBox(
+          height: canvasHeight,
+          child: Stack(
             clipBehavior: Clip.none,
             children: [
               for (var index = 0; index < images.length; index++)
@@ -185,9 +196,9 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                   ),
                 ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

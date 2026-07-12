@@ -45,11 +45,12 @@ class FeedPostCard extends StatelessWidget {
             PostMedia(
               post: post,
               resolver: resolver,
+              homeStyle: !showActions,
               onDoubleTapLike: interactionBusy ? () {} : onLike,
             ),
             Positioned(
-              right: 8,
-              top: 0,
+              right: showActions ? 8 : 0,
+              top: showActions ? 0 : 22,
               child: _OverlayPill(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -70,8 +71,8 @@ class FeedPostCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              left: 4,
-              bottom: 18,
+              left: showActions ? 4 : 0,
+              bottom: 22,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 210),
                 child: _OverlayPill(
@@ -92,6 +93,32 @@ class FeedPostCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            if (!showActions &&
+                (post.recipes.isNotEmpty || post.recipe != null))
+              Positioned(
+                left: 0,
+                top: 24,
+                child: FilledButton.icon(
+                  onPressed: onRecipe,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  icon: const Icon(Icons.restaurant_menu, size: 17),
+                  label: const Text('Công thức'),
+                ),
+              ),
+            if (!showActions && nutrition != null)
+              Positioned(
+                right: 0,
+                top: 62,
+                child: _OverlayPill(
+                  child: Text('${nutrition.calories.round()} kcal'),
                 ),
               ),
             if (isOwner)
@@ -125,29 +152,37 @@ class FeedPostCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: AppColors.surface,
-                    child: Text(
-                      post.author.displayName.characters.first.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.greenDark,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                  _AuthorAvatar(
+                    post: post,
+                    resolver: resolver,
+                    homeStyle: !showActions,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: showActions ? 6 : 12),
                   Text(
                     post.author.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.white,
-                      fontSize: 12,
+                      fontSize: showActions ? 12 : 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (!showActions && post.author.streakDays > 0) ...[
+                    const SizedBox(width: 8),
+                    Image.asset(
+                      'assets/feed/streak.png',
+                      width: 30,
+                      height: 30,
+                    ),
+                    Text(
+                      '${post.author.streakDays}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -257,6 +292,38 @@ class _OverlayPill extends StatelessWidget {
           child: child,
         ),
       ),
+    );
+  }
+}
+
+class _AuthorAvatar extends StatelessWidget {
+  const _AuthorAvatar({
+    required this.post,
+    required this.resolver,
+    required this.homeStyle,
+  });
+  final FeedPost post;
+  final MediaUrlResolver resolver;
+  final bool homeStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = homeStyle ? 32.0 : 20.0;
+    final uri = resolver.resolve(post.author.avatarUrl);
+    return CircleAvatar(
+      radius: size / 2,
+      backgroundColor: AppColors.surface,
+      backgroundImage: uri == null ? null : NetworkImage(uri.toString()),
+      child: uri == null
+          ? Text(
+              post.author.displayName.characters.first.toUpperCase(),
+              style: TextStyle(
+                color: AppColors.greenDark,
+                fontSize: homeStyle ? 13 : 10,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          : null,
     );
   }
 }
