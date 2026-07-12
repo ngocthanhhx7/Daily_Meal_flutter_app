@@ -1146,7 +1146,19 @@ class _AnalyticsSection extends StatelessWidget {
                               title: Text(line),
                             ),
                           for (final section in report.sections)
-                            _AiReportSection(section: section),
+                            _TypedAiReportSection(section: section),
+                          if (report.anomalies.isNotEmpty)
+                            _TypedAiReportList(
+                              title: 'Bất thường',
+                              icon: Icons.warning_amber_rounded,
+                              items: report.anomalies,
+                            ),
+                          if (report.risks.isNotEmpty)
+                            _TypedAiReportList(
+                              title: 'Rủi ro',
+                              icon: Icons.shield_outlined,
+                              items: report.risks,
+                            ),
                           if (report.priorityActions.isNotEmpty)
                             const Text(
                               'Hành động ưu tiên',
@@ -1253,6 +1265,107 @@ class _AnalyticsListCard extends StatelessWidget {
   );
 }
 
+class _TypedAiReportSection extends StatelessWidget {
+  const _TypedAiReportSection({required this.section});
+  final AdminAiSection section;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(top: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.canvas,
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          section.title,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        if (section.objective.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text(
+            section.objective,
+            style: const TextStyle(color: AppColors.muted),
+          ),
+        ],
+        const SizedBox(height: 8),
+        for (final metric in section.metrics)
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              title: Text(metric.name),
+              subtitle: Text('${metric.assessment}\n${metric.meaning}'),
+              trailing: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 120),
+                child: Text(
+                  metric.value,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ),
+        for (final insight in section.insights)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.insights_outlined, size: 20),
+            title: Text(insight),
+          ),
+        if (section.conclusion.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            section.conclusion,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
+        for (final action in section.actions)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.task_alt, size: 20),
+            title: Text(action),
+          ),
+      ],
+    ),
+  );
+}
+
+class _TypedAiReportList extends StatelessWidget {
+  const _TypedAiReportList({
+    required this.title,
+    required this.icon,
+    required this.items,
+  });
+  final String title;
+  final IconData icon;
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        for (final item in items)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(icon, size: 20),
+            title: Text(item),
+          ),
+      ],
+    ),
+  );
+}
+
+// Kept temporarily for backward-compatible rendering of cached legacy reports.
+// ignore: unused_element
 class _AiReportSection extends StatelessWidget {
   const _AiReportSection({required this.section});
   final Map<String, dynamic> section;

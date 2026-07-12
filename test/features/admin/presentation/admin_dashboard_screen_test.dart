@@ -90,7 +90,26 @@ class _Repository implements AdminRepositoryContract {
       const AdminAiReport(
         title: 'Báo cáo AI tuần',
         executiveSummary: ['Tăng trưởng tốt'],
-        sections: [],
+        sections: [
+          AdminAiSection(
+            key: 'technical',
+            title: 'Hiệu suất kỹ thuật',
+            objective: 'Theo dõi độ ổn định',
+            metrics: [
+              AdminAiMetric(
+                name: 'API p95',
+                value: '320 ms',
+                assessment: 'Cần theo dõi',
+                meaning: 'Ảnh hưởng tốc độ feed',
+              ),
+            ],
+            insights: ['Tăng nhẹ so với tuần trước'],
+            conclusion: 'Chưa vượt ngưỡng cảnh báo',
+            actions: ['Tối ưu truy vấn feed'],
+          ),
+        ],
+        anomalies: ['Đột biến lỗi lúc 09:00'],
+        risks: ['Nguy cơ feed chậm'],
         priorityActions: ['Theo dõi retention'],
         generatedAt: null,
       );
@@ -184,6 +203,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Báo cáo AI tuần'), findsOneWidget);
     expect(find.text('Theo dõi retention'), findsOneWidget);
+    expect(find.text('API p95'), findsOneWidget);
+    expect(find.text('320 ms'), findsOneWidget);
+    expect(find.text('Tăng nhẹ so với tuần trước'), findsOneWidget);
+    expect(find.text('Chưa vượt ngưỡng cảnh báo'), findsOneWidget);
+    expect(find.text('Tối ưu truy vấn feed'), findsOneWidget);
+    expect(find.text('Đột biến lỗi lúc 09:00'), findsOneWidget);
+    expect(find.text('Nguy cơ feed chậm'), findsOneWidget);
   });
 
   testWidgets('renders KPI from dashboard analytics contract', (tester) async {

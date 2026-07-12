@@ -72,4 +72,8 @@ route. Recipe parity now uses the source full-screen header, artwork fallback,
 recipe-only content, author footer and author navigation. Search opens Recipe
 as a full screen, while post notifications follow the source mapping:
 Like -> Recipe and Comment -> Comments.
+
+Admin AI reports now decode and render the full production response contract:
+typed section objectives, metric assessment/meaning, insights, conclusions,
+section actions, anomalies, risks, priority actions, range and metric snapshot.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

@@ -518,6 +518,48 @@ class AdminHeatmap {
   final List<AdminHeatmapCell> cells;
 }
 
+class AdminAiMetric {
+  const AdminAiMetric({
+    required this.name,
+    required this.value,
+    required this.assessment,
+    required this.meaning,
+  });
+  factory AdminAiMetric.fromJson(Map<String, dynamic> json) => AdminAiMetric(
+    name: json['name']?.toString() ?? '',
+    value: json['value']?.toString() ?? '',
+    assessment: json['assessment']?.toString() ?? '',
+    meaning: json['meaning']?.toString() ?? '',
+  );
+  final String name, value, assessment, meaning;
+}
+
+class AdminAiSection {
+  const AdminAiSection({
+    required this.key,
+    required this.title,
+    required this.objective,
+    required this.metrics,
+    required this.insights,
+    required this.conclusion,
+    required this.actions,
+  });
+  factory AdminAiSection.fromJson(Map<String, dynamic> json) => AdminAiSection(
+    key: json['key']?.toString() ?? '',
+    title: json['title']?.toString() ?? 'Phân tích',
+    objective: json['objective']?.toString() ?? '',
+    metrics: _maps(
+      json['metrics'],
+    ).map(AdminAiMetric.fromJson).toList(growable: false),
+    insights: AdminAiReport.strings(json['insights']),
+    conclusion: json['conclusion']?.toString() ?? '',
+    actions: AdminAiReport.strings(json['actions']),
+  );
+  final String key, title, objective, conclusion;
+  final List<AdminAiMetric> metrics;
+  final List<String> insights, actions;
+}
+
 class AdminAiReport {
   const AdminAiReport({
     required this.title,
@@ -525,22 +567,34 @@ class AdminAiReport {
     required this.sections,
     required this.priorityActions,
     required this.generatedAt,
+    this.anomalies = const [],
+    this.risks = const [],
+    this.range = const {},
+    this.metricsSnapshot = const {},
   });
   factory AdminAiReport.fromJson(Map<String, dynamic> json) {
     final report = _map(json['report']);
     return AdminAiReport(
       title: report['title']?.toString() ?? 'Báo cáo AI',
-      executiveSummary: _strings(report['executiveSummary']),
-      sections: _maps(report['sections']),
-      priorityActions: _strings(report['priorityActions']),
+      executiveSummary: strings(report['executiveSummary']),
+      sections: _maps(
+        report['sections'],
+      ).map(AdminAiSection.fromJson).toList(growable: false),
+      priorityActions: strings(report['priorityActions']),
       generatedAt: DateTime.tryParse(json['generatedAt']?.toString() ?? ''),
+      anomalies: strings(report['anomalies']),
+      risks: strings(report['risks']),
+      range: _map(json['range']),
+      metricsSnapshot: _map(report['metricsSnapshot']),
     );
   }
-  static List<String> _strings(Object? value) => value is List
+  static List<String> strings(Object? value) => value is List
       ? value.map((e) => e.toString()).toList(growable: false)
       : const [];
   final String title;
   final List<String> executiveSummary, priorityActions;
-  final List<Map<String, dynamic>> sections;
+  final List<AdminAiSection> sections;
   final DateTime? generatedAt;
+  final List<String> anomalies, risks;
+  final Map<String, dynamic> range, metricsSnapshot;
 }
