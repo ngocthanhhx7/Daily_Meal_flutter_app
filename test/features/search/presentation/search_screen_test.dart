@@ -1,6 +1,7 @@
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
 import 'package:daily_meal_flutter_app/features/search/application/search_controller.dart'
     as app_search;
 import 'package:daily_meal_flutter_app/features/search/data/search_api.dart';
@@ -86,6 +87,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Salad mùa hè'), findsOneWidget);
+    expect(find.byType(FeedPostCard), findsOneWidget);
     await tester.tap(find.text('Người dùng'));
     await tester.pumpAndSettle();
     expect(find.text('Bếp Nhà'), findsOneWidget);

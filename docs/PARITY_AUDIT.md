@@ -30,7 +30,7 @@ Routing notes:
 |---|---|---|
 | Home header/action bar | Close | Replace remaining Material center icons, badge geometry and motion |
 | Home artwork | Close | Complete device visual regression for 2/3/4-image spread and video |
-| Search/Profile/Inbox compact shell | Improved | Complete device-level visual regression and remaining post-result composition |
+| Search/Profile/Inbox compact shell | Improved | Complete device-level visual regression |
 | Edit Profile | Improved | Complete device visual regression and picker permission copy |
 | Profile/Public Profile | Improved | Complete device visual regression for populated profiles |
 | Comments | Improved | Complete populated-production visual regression and category sheet |
@@ -117,6 +117,11 @@ Search now uses the source back/home title row, discovery hero, 56px search
 action, branded quick filters and black segmented control. People results use
 the source 50px avatar card, bio/follower fallback and friend/follow-back labels;
 the existing API filters, URL initialization and public-profile routing remain intact.
+
+Search post results now match React Native's vertical full-feed composition
+instead of the earlier Flutter-only compact grid. Result cards preserve
+like/save mutations and expose Comment, Recipe and author-profile navigation;
+the people tab remains the source 50px relationship-card list.
 
 Edit Post now matches the production interaction model: a source-style stacked
 media preview and caption metadata card lead into action rows for feed focus,

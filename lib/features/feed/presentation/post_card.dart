@@ -15,6 +15,7 @@ class FeedPostCard extends StatelessWidget {
     this.interactionBusy = false,
     this.isOwner = false,
     this.onEdit,
+    this.onAuthor,
     this.showActions = true,
     super.key,
   });
@@ -28,6 +29,7 @@ class FeedPostCard extends StatelessWidget {
   final bool interactionBusy;
   final bool isOwner;
   final VoidCallback? onEdit;
+  final VoidCallback? onAuthor;
   final bool showActions;
 
   @override
@@ -135,55 +137,61 @@ class FeedPostCard extends StatelessWidget {
         ),
         Transform.translate(
           offset: const Offset(0, -8),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.green,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.12),
-                  offset: Offset(0, 4),
-                  blurRadius: 9,
+          child: GestureDetector(
+            onTap: onAuthor,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.green,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.12),
+                    offset: Offset(0, 4),
+                    blurRadius: 9,
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _AuthorAvatar(
-                    post: post,
-                    resolver: resolver,
-                    homeStyle: !showActions,
-                  ),
-                  SizedBox(width: showActions ? 6 : 12),
-                  Text(
-                    post.author.displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: showActions ? 12 : 14,
-                      fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _AuthorAvatar(
+                      post: post,
+                      resolver: resolver,
+                      homeStyle: !showActions,
                     ),
-                  ),
-                  if (!showActions && post.author.streakDays > 0) ...[
-                    const SizedBox(width: 8),
-                    Image.asset(
-                      'assets/feed/streak.png',
-                      width: 30,
-                      height: 30,
-                    ),
+                    SizedBox(width: showActions ? 6 : 12),
                     Text(
-                      '${post.author.streakDays}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                      post.author.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: showActions ? 12 : 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (!showActions && post.author.streakDays > 0) ...[
+                      const SizedBox(width: 8),
+                      Image.asset(
+                        'assets/feed/streak.png',
+                        width: 30,
+                        height: 30,
+                      ),
+                      Text(
+                        '${post.author.streakDays}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

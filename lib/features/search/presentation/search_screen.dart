@@ -2,10 +2,10 @@ import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
-import 'package:daily_meal_flutter_app/core/widgets/daily_compact_post_preview.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
 import 'package:daily_meal_flutter_app/features/search/application/search_controller.dart'
     as app_search;
 import 'package:daily_meal_flutter_app/features/search/application/search_providers.dart';
@@ -414,36 +414,35 @@ class _Results extends StatelessWidget {
     if (state.posts.isEmpty) {
       return const _Message(message: 'Không tìm thấy bài viết phù hợp.');
     }
-    return LayoutBuilder(
-      builder: (context, constraints) => Center(
-        child: SizedBox(
-          width: constraints.maxWidth > 380 ? 380 : constraints.maxWidth,
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 12,
-              childAspectRatio: 160 / 208,
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      itemCount: state.posts.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 28),
+      itemBuilder: (context, index) {
+        final post = state.posts[index];
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 390),
+            child: FeedPostCard(
+              post: post,
+              resolver: resolver,
+              interactionBusy: controller.isPostBusy(post.id),
+              onLike: () => controller.toggleLike(post.id).catchError((_) {}),
+              onSave: () => controller.toggleSave(post.id).catchError((_) {}),
+              onComment: () => context.pushNamed(
+                AppRoute.comments.name,
+                pathParameters: {'id': post.id},
+                extra: post,
+              ),
+              onRecipe: () => _recipe(context, post),
+              onAuthor: () => context.pushNamed(
+                AppRoute.publicProfile.name,
+                pathParameters: {'id': post.author.id},
+              ),
             ),
-            itemCount: state.posts.length,
-            itemBuilder: (context, index) {
-              final post = state.posts[index];
-              return DailyCompactPostPreview(
-                post: post,
-                resolver: resolver,
-                onOpen: () => _recipe(context, post),
-                onLike: controller.isPostBusy(post.id)
-                    ? null
-                    : () => controller.toggleLike(post.id).catchError((_) {}),
-                onSave: controller.isPostBusy(post.id)
-                    ? null
-                    : () => controller.toggleSave(post.id).catchError((_) {}),
-              );
-            },
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
