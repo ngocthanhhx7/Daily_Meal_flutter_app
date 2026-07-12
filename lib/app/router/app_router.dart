@@ -16,6 +16,7 @@ import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_model
 import 'package:daily_meal_flutter_app/features/notifications/presentation/notifications_screen.dart';
 import 'package:daily_meal_flutter_app/features/premium/presentation/premium_screen.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
+import 'package:daily_meal_flutter_app/features/user_utility/presentation/user_utility_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,6 +38,7 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.home => const HomeScreen(),
             AppRoute.search => const SearchScreen(),
             AppRoute.profile => const ProfileScreen(),
+            AppRoute.saved => const ProfileScreen(showSaved: true),
             AppRoute.publicProfile => ProfileScreen(
               userId: state.pathParameters['id'],
             ),
@@ -50,6 +52,12 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             ),
             AppRoute.notifications => const NotificationsScreen(),
             AppRoute.premium => const PremiumScreen(),
+            AppRoute.settings => const SettingsScreen(),
+            AppRoute.changePassword => const ChangePasswordScreen(),
+            AppRoute.postSummary => const PostSummaryScreen(),
+            AppRoute.progress => const ProgressScreen(),
+            AppRoute.support => const SupportScreen(),
+            AppRoute.shareAccount => const ShareAccountScreen(),
             AppRoute.adminDashboard => const AdminDashboardScreen(),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>

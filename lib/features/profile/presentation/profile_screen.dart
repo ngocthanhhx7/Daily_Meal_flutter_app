@@ -20,12 +20,14 @@ class ProfileScreen extends ConsumerStatefulWidget {
     this.controller,
     this.mediaResolver,
     this.mediaPicker,
+    this.showSaved = false,
     super.key,
   });
   final String? userId;
   final ProfileController? controller;
   final MediaUrlResolver? mediaResolver;
   final MediaPickerService? mediaPicker;
+  final bool showSaved;
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -44,7 +46,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ref.read(profileRepositoryProvider),
       userId: target,
       isOwner: widget.userId == null || widget.userId == ownId,
-    )..load().catchError((_) {});
+    );
+    _owned!
+        .load()
+        .then((_) {
+          if (widget.showSaved && mounted) _owned!.selectTab(ProfileTab.saved);
+        })
+        .catchError((_) {});
   }
 
   @override
@@ -318,6 +326,12 @@ class _Header extends StatelessWidget {
                                     Icons.workspace_premium_outlined,
                                   ),
                                   label: const Text('Daily Premium'),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () =>
+                                      context.pushNamed(AppRoute.settings.name),
+                                  icon: const Icon(Icons.settings_outlined),
+                                  label: const Text('Cài đặt'),
                                 ),
                               ],
                             )

@@ -30,7 +30,7 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 3 | Double-tap hearts | Home; `tapGestures.ts` | like | `features/feed` | Verified | Verified | like-only gesture/animation widget test and platform builds |
 | 3 | Comments | `CommentsScreen.tsx` | comments REST; comment event | `features/posts/comments` | In progress | In progress | REST load/create/validation/controller/widget verified; Socket room lifecycle remains Slice 6 |
 | 3 | Recipe/nutrition | `RecipeScreen.tsx`; nutrition helpers | nutrition insight | `features/posts`, `meal_analysis` | Verified | Verified | per-image/legacy recipe and nutrition detail decoder/widget tests plus builds |
-| 3 | Post summary | `PostSummaryScreen.tsx`; filters | GET summary | `features/posts/summary` | Not started | Not started | filter/paging tests |
+| 3 | Post summary | `PostSummaryScreen.tsx`; filters | GET summary | `features/user_utility` | Verified | Verified | all/friends/following/strangers, deduplicated paging and responsive grid |
 | 4 | Media picker/camera | `CreatePostScreen.tsx`; image picker util | permissions | `core/media`, `features/posts/create` | In progress | In progress | Android/Web adapters, MIME/size/duration tests and builds pass; physical camera/browser chooser evidence remains |
 | 4 | Upload image/video | create/edit profile screens | multipart uploads | `core/network/upload` | In progress | In progress | exact multipart field/MIME contract and build verified; live large-file/progress/cancel evidence remains |
 | 4 | AI meal analysis | create screen; meal helpers | POST meal analyze | `features/meal_analysis` | In progress | In progress | exact hints/decoder/controller/UI journey verified with mock; live production AI evidence remains |
@@ -42,9 +42,9 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 5 | Edit profile/avatar | `EditProfileScreen.tsx` | update me/upload | `features/profile/edit` | Verified | Verified | name/bio PATCH plus avatar/cover picker, MIME/size validation and multipart tests |
 | 5 | Followers/following | `FollowsScreen.tsx` | follow list/actions | `features/social` | Verified | Verified | exact list APIs, follow rollback and responsive sheet journey |
 | 5 | Restrict/block/report | PublicProfile/Blocked | interactions endpoints | `features/social/safety` | Verified | Verified | confirmation UI, optimistic rollback, blocked list and exact endpoint tests |
-| 5 | Saved/settings/password | Saved/Settings/ChangePassword | saved, password | respective features | Not started | Not started | widget/journey tests |
-| 5 | Support/share account | Support/ShareAccount | platform share/support | `features/profile/utility` | Not started | Not started | platform behavior evidence |
-| 5 | Progress/streak | `ProgressScreen.tsx`; progress helper | user/post data | `features/profile/progress` | Not started | Not started | summary/unit/widget tests |
+| 5 | Saved/settings/password | Saved/Settings/ChangePassword | saved, password | `features/user_utility`; profile saved tab | Verified | Verified | exact password contract/validation, saved route, settings/logout/Google link |
+| 5 | Support/share account | Support/ShareAccount | no production backend contract | `features/user_utility` | Verified | Verified | preserves explicit not-yet-sent/invite state without fabricating delivery |
+| 5 | Progress/streak | `ProgressScreen.tsx`; progress helper | user posts | `features/user_utility` | Verified | Verified | owner post source, likes/comments/post totals and responsive grid |
 | 6 | Inbox | `InboxScreen.tsx` | conversations; updated event | `features/messaging/inbox` | In progress | In progress | REST, ordering/dedup and responsive tests pass; live reconnect evidence pending |
 | 6 | Chat | `ChatScreen.tsx` | messages; message event | `features/messaging/chat` | In progress | In progress | send/receive dedup, room lifecycle and widget journey pass; live socket evidence pending |
 | 6 | Notification center | `NotificationsScreen.tsx`; context | notification CRUD/event | `features/notifications` | In progress | In progress | CRUD rollback, realtime dedup and deep-link mapping pass; live event evidence pending |
