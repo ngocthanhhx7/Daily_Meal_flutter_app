@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_repository.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -84,7 +85,7 @@ class FeedController extends ChangeNotifier {
       _setState(
         _state.copyWith(
           status: FeedStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: userErrorMessage(error),
         ),
       );
       rethrow;
@@ -102,7 +103,10 @@ class FeedController extends ChangeNotifier {
       );
     } catch (error) {
       _setState(
-        _state.copyWith(isRefreshing: false, errorMessage: error.toString()),
+        _state.copyWith(
+          isRefreshing: false,
+          errorMessage: userErrorMessage(error),
+        ),
       );
       rethrow;
     }
@@ -118,7 +122,10 @@ class FeedController extends ChangeNotifier {
       );
     } catch (error) {
       _setState(
-        _state.copyWith(isLoadingMore: false, errorMessage: error.toString()),
+        _state.copyWith(
+          isLoadingMore: false,
+          errorMessage: userErrorMessage(error),
+        ),
       );
       rethrow;
     }
@@ -184,7 +191,7 @@ class FeedController extends ChangeNotifier {
     } catch (error) {
       final currentIndex = _state.posts.indexWhere((post) => post.id == postId);
       if (currentIndex >= 0) _replacePost(currentIndex, original);
-      _setState(_state.copyWith(errorMessage: error.toString()));
+      _setState(_state.copyWith(errorMessage: userErrorMessage(error)));
       rethrow;
     } finally {
       _busyInteractions.remove(postId);

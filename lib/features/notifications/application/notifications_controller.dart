@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/notifications/data/notifications_repository.dart';
 import 'package:daily_meal_flutter_app/features/notifications/domain/app_notification.dart';
@@ -32,7 +33,7 @@ class NotificationsController extends ChangeNotifier {
     try {
       notifications = _sort(await _repository.load());
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -73,7 +74,7 @@ class NotificationsController extends ChangeNotifier {
       await request();
     } catch (error) {
       notifications = previous;
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       notifyListeners();
       rethrow;
     }

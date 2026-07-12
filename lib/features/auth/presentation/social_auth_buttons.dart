@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_controller.dart';
 import 'package:daily_meal_flutter_app/features/auth/services/social_identity_provider.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class _SocialAuthButtonsState extends State<SocialAuthButtons> {
       );
       if (mounted) setState(() => _ready = true);
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     }
   }
 
@@ -71,7 +72,7 @@ class _SocialAuthButtonsState extends State<SocialAuthButtons> {
     try {
       await action();
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/domain/picked_media.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
@@ -96,7 +97,7 @@ class ProfileController extends ChangeNotifier {
       _set(
         _state.copyWith(
           status: ProfileStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: userErrorMessage(error),
         ),
       );
       rethrow;
@@ -134,7 +135,9 @@ class ProfileController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _set(_state.copyWith(user: original, errorMessage: error.toString()));
+      _set(
+        _state.copyWith(user: original, errorMessage: userErrorMessage(error)),
+      );
       rethrow;
     } finally {
       _set(_state.copyWith(followBusy: false));
@@ -152,7 +155,7 @@ class ProfileController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _set(_state.copyWith(errorMessage: error.toString()));
+      _set(_state.copyWith(errorMessage: userErrorMessage(error)));
       rethrow;
     } finally {
       _set(_state.copyWith(profileBusy: false));
@@ -180,7 +183,7 @@ class ProfileController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _set(_state.copyWith(errorMessage: error.toString()));
+      _set(_state.copyWith(errorMessage: userErrorMessage(error)));
       rethrow;
     } finally {
       _set(_state.copyWith(profileBusy: false));
@@ -238,7 +241,9 @@ class ProfileController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _set(_state.copyWith(user: original, errorMessage: error.toString()));
+      _set(
+        _state.copyWith(user: original, errorMessage: userErrorMessage(error)),
+      );
       rethrow;
     } finally {
       _set(_state.copyWith(safetyBusy: false));

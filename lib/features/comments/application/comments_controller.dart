@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/comments/data/comments_repository.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
@@ -75,7 +76,7 @@ class CommentsController extends ChangeNotifier {
       _setState(
         _state.copyWith(
           status: CommentsStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: userErrorMessage(error),
         ),
       );
       rethrow;
@@ -89,7 +90,10 @@ class CommentsController extends ChangeNotifier {
       receive(await _repository.create(postId, body));
     } catch (error) {
       _setState(
-        _state.copyWith(isSending: false, errorMessage: error.toString()),
+        _state.copyWith(
+          isSending: false,
+          errorMessage: userErrorMessage(error),
+        ),
       );
       rethrow;
     } finally {

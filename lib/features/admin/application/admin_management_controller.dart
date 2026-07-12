@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/admin/data/admin_repository.dart';
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:flutter/foundation.dart';
@@ -100,7 +101,7 @@ class AdminManagementController extends ChangeNotifier {
     try {
       await action();
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -115,7 +116,7 @@ class AdminManagementController extends ChangeNotifier {
     try {
       await action();
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       mutating = false;

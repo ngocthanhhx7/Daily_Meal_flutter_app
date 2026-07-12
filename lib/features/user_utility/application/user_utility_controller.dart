@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/data/user_utility_repository.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/domain/post_summary.dart';
 import 'package:flutter/foundation.dart';
@@ -23,7 +24,7 @@ class UserUtilityController extends ChangeNotifier {
       page = result.page;
       hasMore = result.hasMore;
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -42,7 +43,7 @@ class UserUtilityController extends ChangeNotifier {
       page = result.page;
       hasMore = result.hasMore;
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loadingMore = false;
@@ -57,7 +58,7 @@ class UserUtilityController extends ChangeNotifier {
     try {
       progressPosts = await _repository.userPosts(userId);
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -93,7 +94,7 @@ class UserUtilityController extends ChangeNotifier {
       );
       return true;
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       busy = false;
@@ -108,7 +109,7 @@ class UserUtilityController extends ChangeNotifier {
     try {
       return await _repository.linkGoogle(idToken);
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       busy = false;

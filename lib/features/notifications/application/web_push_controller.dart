@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/notifications/web_push_platform.dart';
 import 'package:daily_meal_flutter_app/features/notifications/data/notifications_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -31,7 +32,7 @@ class WebPushController extends ChangeNotifier {
       status = _status(_platform.readiness(_publicKey));
     } catch (error) {
       status = WebPushStatus.failure;
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
     }
     notifyListeners();
   }
@@ -47,7 +48,7 @@ class WebPushController extends ChangeNotifier {
     } catch (error) {
       status = _status(_platform.readiness(_publicKey));
       if (status == WebPushStatus.ready) status = WebPushStatus.failure;
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       notifyListeners();

@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/storage/session.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_state.dart';
 import 'package:daily_meal_flutter_app/features/auth/data/auth_repository.dart';
@@ -55,7 +56,7 @@ class AuthController extends ChangeNotifier {
         await _repository.login(email: email, password: password),
       );
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -81,7 +82,7 @@ class AuthController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -105,7 +106,7 @@ class AuthController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -130,7 +131,7 @@ class AuthController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -145,7 +146,7 @@ class AuthController extends ChangeNotifier {
         await _repository.loginWithPhone(phone: phone, password: password),
       );
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -162,7 +163,7 @@ class AuthController extends ChangeNotifier {
       );
       _setState(AuthState(status: AuthStatus.admin, adminEmail: admin.email));
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }
@@ -179,7 +180,7 @@ class AuthController extends ChangeNotifier {
     try {
       _setAuthenticatedUser(await authenticate());
     } catch (error) {
-      _setState(AuthState.signedOut(errorMessage: error.toString()));
+      _setState(AuthState.signedOut(errorMessage: userErrorMessage(error)));
       rethrow;
     }
   }

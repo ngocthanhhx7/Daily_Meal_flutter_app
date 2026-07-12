@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:daily_meal_flutter_app/core/errors/app_failure.dart';
 import 'package:daily_meal_flutter_app/core/network/api_client.dart';
 import 'package:daily_meal_flutter_app/core/network/auth_token_provider.dart';
 import 'package:dio/dio.dart';
@@ -32,6 +33,22 @@ class _RecordingAdapter implements HttpClientAdapter {
       },
     );
   }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _OfflineAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) => throw DioException(
+    requestOptions: options,
+    type: DioExceptionType.connectionError,
+    message: 'SocketException: internal-host.local',
+  );
 
   @override
   void close({bool force = false}) {}
@@ -80,8 +97,50 @@ void main() {
 
     await expectLater(
       client.dio.get<void>('/api/auth/me'),
-      throwsA(isA<DioException>()),
+      throwsA(
+        isA<DioException>().having(
+          (exception) => exception.error,
+          'mapped error',
+          isA<AppFailure>().having(
+            (failure) => failure.kind,
+            'kind',
+            AppFailureKind.unauthorized,
+          ),
+        ),
+      ),
     );
     expect(unauthorizedCalls, 1);
   });
+
+  test(
+    'maps transport failures before they reach feature controllers',
+    () async {
+      final client = ApiClient.create(
+        baseUrl: Uri.parse('https://api.dailymeal.site'),
+        tokenProvider: _TokenProvider(null),
+        adapter: _OfflineAdapter(),
+      );
+
+      await expectLater(
+        client.dio.get<void>('/api/posts/feed'),
+        throwsA(
+          isA<DioException>().having(
+            (exception) => exception.error,
+            'mapped error',
+            isA<AppFailure>()
+                .having(
+                  (failure) => failure.kind,
+                  'kind',
+                  AppFailureKind.network,
+                )
+                .having(
+                  (failure) => failure.userMessage,
+                  'safe message',
+                  isNot(contains('internal-host.local')),
+                ),
+          ),
+        ),
+      );
+    },
+  );
 }

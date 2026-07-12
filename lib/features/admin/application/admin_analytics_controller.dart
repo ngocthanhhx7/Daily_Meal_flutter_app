@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/admin/data/admin_repository.dart';
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:flutter/foundation.dart';
@@ -29,7 +30,7 @@ class AdminAnalyticsController extends ChangeNotifier {
       analytics = values[1] as AdminAnalytics24h;
       heatmap = values[2] as AdminHeatmap;
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -45,7 +46,7 @@ class AdminAnalyticsController extends ChangeNotifier {
     try {
       report = await _repository.generateAiReport(range);
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       generating = false;

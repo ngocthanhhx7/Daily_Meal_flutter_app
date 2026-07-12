@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/admin/data/admin_repository.dart';
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:flutter/foundation.dart';
@@ -19,7 +20,7 @@ class AdminDashboardController extends ChangeNotifier {
     try {
       dashboard = await _repository.dashboard(range);
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;

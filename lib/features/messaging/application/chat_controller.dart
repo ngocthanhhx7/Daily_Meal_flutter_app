@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/messaging/data/messaging_repository.dart';
 import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
@@ -32,7 +33,7 @@ class ChatController extends ChangeNotifier {
       final loaded = await _repository.messages(conversationId);
       messages = _merge([...loaded, ...messages]);
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -50,7 +51,7 @@ class ChatController extends ChangeNotifier {
       _append(await _repository.send(conversationId, normalized));
       return true;
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       sending = false;

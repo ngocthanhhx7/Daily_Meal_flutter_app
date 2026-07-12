@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/messaging/data/messaging_repository.dart';
 import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
@@ -27,7 +28,7 @@ class InboxController extends ChangeNotifier {
     try {
       conversations = _sort(await _repository.conversations());
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;

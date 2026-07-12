@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/data/post_editor_repository.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/domain/picked_media.dart';
@@ -219,7 +220,7 @@ class PostEditorController extends ChangeNotifier {
     try {
       _setState(_state.copyWith(stickers: await _repository.stickers()));
     } catch (error) {
-      _setState(_state.copyWith(errorMessage: error.toString()));
+      _setState(_state.copyWith(errorMessage: userErrorMessage(error)));
     }
   }
 
@@ -245,7 +246,9 @@ class PostEditorController extends ChangeNotifier {
         ),
       );
     } catch (error) {
-      _setState(_state.copyWith(isBusy: false, errorMessage: error.toString()));
+      _setState(
+        _state.copyWith(isBusy: false, errorMessage: userErrorMessage(error)),
+      );
       rethrow;
     }
   }
@@ -268,7 +271,9 @@ class PostEditorController extends ChangeNotifier {
       }
       _setState(_state.copyWith(nutritionDetails: details, isBusy: false));
     } catch (error) {
-      _setState(_state.copyWith(isBusy: false, errorMessage: error.toString()));
+      _setState(
+        _state.copyWith(isBusy: false, errorMessage: userErrorMessage(error)),
+      );
       rethrow;
     }
   }
@@ -313,7 +318,9 @@ class PostEditorController extends ChangeNotifier {
       _setState(_state.copyWith(isBusy: false));
       return post;
     } catch (error) {
-      _setState(_state.copyWith(isBusy: false, errorMessage: error.toString()));
+      _setState(
+        _state.copyWith(isBusy: false, errorMessage: userErrorMessage(error)),
+      );
       rethrow;
     }
   }

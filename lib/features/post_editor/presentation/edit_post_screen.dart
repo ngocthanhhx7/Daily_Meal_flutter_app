@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -81,7 +82,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
       );
       if (mounted) widget.onUpdated?.call(updated);
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -117,7 +118,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
       await _repository.delete(widget.post.id);
       if (mounted) widget.onDeleted?.call(widget.post.id);
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

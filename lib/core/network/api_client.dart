@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/network/api_exception_mapper.dart';
 import 'package:daily_meal_flutter_app/core/network/auth_token_provider.dart';
 import 'package:dio/dio.dart';
 
@@ -39,7 +40,10 @@ class ApiClient {
           if (error.response?.statusCode == 401 && onUnauthorized != null) {
             await onUnauthorized();
           }
-          handler.next(error);
+          final failure = const ApiExceptionMapper().map(error);
+          handler.reject(
+            error.copyWith(error: failure, message: failure.userMessage),
+          );
         },
       ),
     );

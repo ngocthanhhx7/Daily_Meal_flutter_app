@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/foundation.dart';
@@ -18,7 +19,7 @@ class BlockedController extends ChangeNotifier {
     try {
       users = await _repository.loadBlockedUsers();
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -35,7 +36,7 @@ class BlockedController extends ChangeNotifier {
       await _repository.setInteraction(userId, 'block', active: false);
     } catch (error) {
       users = previous;
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       _busy.remove(userId);

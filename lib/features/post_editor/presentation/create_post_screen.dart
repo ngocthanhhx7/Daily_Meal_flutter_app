@@ -1,5 +1,6 @@
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/application/post_editor_controller.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/application/post_editor_providers.dart';
@@ -135,7 +136,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       setState(() => _localError = null);
       await action();
     } catch (error) {
-      if (mounted) setState(() => _localError = error.toString());
+      if (mounted) setState(() => _localError = userErrorMessage(error));
     }
   }
 

@@ -68,6 +68,6 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | Accessibility and 48dp targets | In progress | In progress | semantic media/actions and padded Material targets tested; full manual screen-reader walkthrough pending |
 | Keyboard/focus/hover | Not applicable | Verified | Material focus/hover states, native Google control, 390px/768px browser walkthrough and email-to-password Tab-order widget evidence |
 | Reduced motion | Verified | Verified | `MediaQuery.disableAnimations` removes custom heart durations; widget test |
-| Offline/error/retry | In progress | In progress | network mapping, empty/error/retry/controller tests present; full offline journey pending |
+| Offline/error/retry | Verified | Verified | Dio failures map to safe user messages at the HTTP boundary; Home offline-to-retry recovery and queue-retention tests pass |
 | Production configuration | Verified | Verified | Slice 1 debug APK/Web release builds with production dart-defines |
 | README/setup/build documentation | Verified | Verified | production defines, run/build commands, architecture and limitations documented |

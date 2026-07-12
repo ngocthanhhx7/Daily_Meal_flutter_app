@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
 import 'package:daily_meal_flutter_app/features/premium/data/premium_repository.dart';
 import 'package:daily_meal_flutter_app/features/premium/domain/premium_models.dart';
@@ -33,7 +34,7 @@ class PremiumController extends ChangeNotifier {
         selectedPlan = plans.first.id;
       }
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       loading = false;
@@ -64,7 +65,7 @@ class PremiumController extends ChangeNotifier {
         throw StateError('Could not open PayOS checkout');
       }
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       checkoutBusy = false;
@@ -86,7 +87,7 @@ class PremiumController extends ChangeNotifier {
         await refreshUser?.call();
       }
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       checkoutBusy = false;
@@ -104,7 +105,7 @@ class PremiumController extends ChangeNotifier {
     try {
       onUserUpdated?.call(await _repository.claimTrial());
     } catch (error) {
-      errorMessage = error.toString();
+      errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
       trialBusy = false;

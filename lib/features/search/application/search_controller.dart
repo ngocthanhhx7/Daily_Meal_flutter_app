@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/search/data/search_repository.dart';
@@ -121,7 +122,7 @@ class SearchController extends ChangeNotifier {
       _setState(
         _state.copyWith(
           status: SearchStatus.failure,
-          errorMessage: error.toString(),
+          errorMessage: userErrorMessage(error),
         ),
       );
       rethrow;
@@ -154,7 +155,7 @@ class SearchController extends ChangeNotifier {
       );
     } catch (error) {
       _replaceUser(index, original);
-      _setState(_state.copyWith(errorMessage: error.toString()));
+      _setState(_state.copyWith(errorMessage: userErrorMessage(error)));
       rethrow;
     } finally {
       _followingBusy.remove(userId);
@@ -221,7 +222,7 @@ class SearchController extends ChangeNotifier {
     } catch (error) {
       final current = _state.posts.indexWhere((post) => post.id == postId);
       if (current >= 0) _replacePost(current, original);
-      _setState(_state.copyWith(errorMessage: error.toString()));
+      _setState(_state.copyWith(errorMessage: userErrorMessage(error)));
       rethrow;
     } finally {
       _postBusy.remove(postId);

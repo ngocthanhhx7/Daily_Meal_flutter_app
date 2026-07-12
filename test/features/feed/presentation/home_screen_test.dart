@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
+import 'package:daily_meal_flutter_app/core/errors/app_failure.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_controller.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
@@ -8,6 +9,7 @@ import 'package:daily_meal_flutter_app/features/feed/presentation/home_screen.da
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dio/dio.dart';
 
 class _Repository implements FeedRepositoryContract {
   @override
@@ -46,6 +48,24 @@ class _Repository implements FeedRepositoryContract {
     active: true,
     stats: PostStats(likes: 2, comments: 2, saves: 4),
   );
+}
+
+class _OfflineThenOnlineRepository extends _Repository {
+  var loadCalls = 0;
+
+  @override
+  Future<FeedPage> loadPage({required int page, required int limit}) async {
+    loadCalls++;
+    if (loadCalls == 1) {
+      throw DioException(
+        requestOptions: RequestOptions(path: '/api/posts/feed'),
+        error: const AppFailure.network(
+          technicalMessage: 'SocketException: internal-host.local',
+        ),
+      );
+    }
+    return super.loadPage(page: page, limit: limit);
+  }
 }
 
 void main() {
@@ -167,5 +187,33 @@ void main() {
     final scale = tester.widget<AnimatedScale>(find.byType(AnimatedScale));
     expect(opacity.duration, Duration.zero);
     expect(scale.duration, Duration.zero);
+  });
+
+  testWidgets('shows a safe offline error and recovers through retry', (
+    tester,
+  ) async {
+    final repository = _OfflineThenOnlineRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: HomeScreen(
+            controller: FeedController(repository),
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(const AppFailure.network().userMessage), findsOneWidget);
+    expect(find.textContaining('internal-host.local'), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Thử lại'));
+    await tester.pumpAndSettle();
+
+    expect(repository.loadCalls, 2);
+    expect(find.text('Bếp Nhà'), findsOneWidget);
   });
 }
