@@ -10,7 +10,7 @@ React Native registers 29 active routes in `client/src/navigation/AppNavigator.t
 |---|---|---|---|
 | Login, AdminLogin, Onboarding, Home, Search, Create, Profile, PublicProfile | Equivalent named routes | Present | P0 |
 | Inbox, Chat, EditProfile, Settings, ChangePassword, Notifications | Equivalent named routes | Present | P0/P1 |
-| Saved, PostSummary, Blocked, Support, ShareAccount, PremiumBenefits, Progress | Equivalent feature routes | Present; utility shell and core states source-aligned | P1/P2 |
+| Saved, PostSummary, Blocked, Support, ShareAccount, PremiumBenefits, Progress | Equivalent feature routes | Present; utility composition and core states source-aligned | P1/P2 |
 | AdminDashboard | `/admin` | Present | P0 |
 | Follows | `/users/:id/follows?tab=` / `FollowsScreen` | Present and refresh-safe | P1 |
 | Comments | `/posts/:id/comments` / `CommentsScreen` | Present; hero gracefully falls back after refresh | P0 |
@@ -148,4 +148,10 @@ keeps the media preview interactive, exposes none/server/custom choices plus
 scale and rotation, and returns through `Hoàn tất`. A regression test verifies
 the chosen sticker reaches the publish payload. Android debug and Web release
 builds both pass; the Free camera-only capture state was visually verified on AVD.
+
+Post Summary now uses the source four-part yellow segmented control and a
+single-scroll two-column layout with the right column offset by 50px. Progress
+uses the source compact comments/likes total pill instead of Material chips.
+Both surfaces open the referenced post through the existing Home focus URL and
+gracefully replace missing/failed media with branded placeholders.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

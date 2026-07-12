@@ -2,10 +2,15 @@ import 'package:daily_meal_flutter_app/features/user_utility/application/user_ut
 import 'package:daily_meal_flutter_app/features/user_utility/data/user_utility_repository.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/domain/post_summary.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/presentation/user_utility_screens.dart';
+import 'package:daily_meal_flutter_app/features/user_utility/application/user_utility_providers.dart';
+import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
+import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Repository implements UserUtilityRepositoryContract {
+  PostSummaryFilter? requestedFilter;
   @override
   Future<void> changePassword({
     required String currentPassword,
@@ -15,7 +20,23 @@ class _Repository implements UserUtilityRepositoryContract {
   Future<PostSummaryPage> postSummary(
     PostSummaryFilter filter, {
     int page = 1,
-  }) async => const PostSummaryPage(posts: [], page: 1, hasMore: false);
+  }) async {
+    requestedFilter = filter;
+    return const PostSummaryPage(
+      posts: [
+        SummaryPost(
+          id: 'p1',
+          caption: 'Bữa sáng xanh',
+          authorName: 'Bếp Nhà',
+          likes: 12,
+          comments: 3,
+        ),
+      ],
+      page: 1,
+      hasMore: false,
+    );
+  }
+
   @override
   Future<List<SummaryPost>> userPosts(String userId) async => const [];
   @override
@@ -53,5 +74,31 @@ void main() {
     await tester.tap(find.text('Gửi phản hồi'));
     await tester.pump();
     expect(find.textContaining('Vui lòng nhập đầy đủ'), findsOneWidget);
+  });
+
+  testWidgets('post summary renders source segments and staggered card', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final controller = UserUtilityController(repository);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userUtilityControllerProvider.overrideWith((_) => controller),
+          mediaUrlResolverProvider.overrideWithValue(
+            MediaUrlResolver(Uri.parse('https://api.dailymeal.site')),
+          ),
+        ],
+        child: const MaterialApp(home: PostSummaryScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tất cả'), findsOneWidget);
+    expect(find.text('Bữa sáng xanh'), findsOneWidget);
+    expect(find.textContaining('♥ 12'), findsOneWidget);
+    await tester.tap(find.text('Bạn bè'));
+    await tester.pumpAndSettle();
+    expect(repository.requestedFilter, PostSummaryFilter.friends);
   });
 }

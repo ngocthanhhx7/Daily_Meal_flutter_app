@@ -394,17 +394,10 @@ class _PostSummaryScreenState extends ConsumerState<PostSummaryScreen> {
         title: 'Tổng hợp bài đăng',
         child: Column(
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SegmentedButton<PostSummaryFilter>(
-                segments: [
-                  for (final f in PostSummaryFilter.values)
-                    ButtonSegment(value: f, label: Text(f.label)),
-                ],
-                selected: {c.filter},
-                onSelectionChanged: (v) =>
-                    c.loadSummary(selected: v.first).catchError((_) {}),
-              ),
+            _SummarySegments(
+              selected: c.filter,
+              onSelected: (value) =>
+                  c.loadSummary(selected: value).catchError((_) {}),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -412,6 +405,10 @@ class _PostSummaryScreenState extends ConsumerState<PostSummaryScreen> {
                 posts: c.posts,
                 loading: c.loading,
                 error: c.errorMessage,
+                onOpen: (post) => context.goNamed(
+                  AppRoute.home.name,
+                  queryParameters: {'postId': post.id},
+                ),
               ),
             ),
             if (c.hasMore)
@@ -460,22 +457,43 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
         title: 'Theo dõi tiến độ',
         child: Column(
           children: [
-            Wrap(
-              spacing: 8,
-              children: [
-                Chip(
-                  avatar: const Icon(Icons.article_outlined),
-                  label: Text('${c.progressPosts.length} bài'),
-                ),
-                Chip(
-                  avatar: const Icon(Icons.favorite_outline),
-                  label: Text('$likes lượt thích'),
-                ),
-                Chip(
-                  avatar: const Icon(Icons.chat_bubble_outline),
-                  label: Text('$comments bình luận'),
-                ),
-              ],
+            const Text(
+              'Tổng',
+              style: TextStyle(color: AppColors.muted, fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x29000000),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$comments',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(Icons.chat_bubble_outline, size: 14),
+                  const SizedBox(width: 12),
+                  Text(
+                    '$likes',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(width: 3),
+                  const Icon(Icons.favorite, size: 15, color: AppColors.red),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -483,6 +501,10 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                 posts: c.progressPosts,
                 loading: c.loading,
                 error: c.errorMessage,
+                onOpen: (post) => context.goNamed(
+                  AppRoute.home.name,
+                  queryParameters: {'postId': post.id},
+                ),
               ),
             ),
           ],
@@ -671,11 +693,67 @@ class _ShareAccountScreenState extends ConsumerState<ShareAccountScreen> {
   }
 }
 
+class _SummarySegments extends StatelessWidget {
+  const _SummarySegments({required this.selected, required this.onSelected});
+  final PostSummaryFilter selected;
+  final ValueChanged<PostSummaryFilter> onSelected;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        for (final filter in PostSummaryFilter.values)
+          Expanded(
+            child: InkWell(
+              onTap: () => onSelected(filter),
+              borderRadius: BorderRadius.circular(9),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                alignment: Alignment.center,
+                constraints: const BoxConstraints(minHeight: 34),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: selected == filter
+                      ? AppColors.yellow
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text(
+                  filter.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected == filter
+                        ? AppColors.black
+                        : AppColors.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
 class _PostsGrid extends ConsumerWidget {
-  const _PostsGrid({required this.posts, required this.loading, this.error});
+  const _PostsGrid({
+    required this.posts,
+    required this.loading,
+    required this.onOpen,
+    this.error,
+  });
   final List<SummaryPost> posts;
   final bool loading;
   final String? error;
+  final ValueChanged<SummaryPost> onOpen;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (loading && posts.isEmpty) {
@@ -686,67 +764,105 @@ class _PostsGrid extends ConsumerWidget {
       return const Center(child: Text('Chưa có bài đăng phù hợp.'));
     }
     final resolver = ref.watch(mediaUrlResolverProvider);
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        final count = constraints.maxWidth >= 900
-            ? 4
-            : constraints.maxWidth >= 560
-            ? 3
-            : 2;
-        return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: count,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: .78,
+    final left = [for (var i = 0; i < posts.length; i += 2) posts[i]];
+    final right = [for (var i = 1; i < posts.length; i += 2) posts[i]];
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                for (final post in left) ...[
+                  _SummaryPostCard(
+                    post: post,
+                    image: resolver.resolve(post.imageUrl),
+                    onTap: () => onOpen(post),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ],
+            ),
           ),
-          itemCount: posts.length,
-          itemBuilder: (_, i) {
-            final post = posts[i];
-            final image = resolver.resolve(post.imageUrl);
-            return Card(
-              clipBehavior: Clip.antiAlias,
+          const SizedBox(width: 18),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 50),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: image == null
-                        ? const ColoredBox(
-                            color: Color(0xFFE8EFE8),
-                            child: Center(child: Icon(Icons.restaurant)),
-                          )
-                        : Image.network(
-                            image.toString(),
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      post.caption.isEmpty
-                          ? 'Món ngon Daily Meal'
-                          : post.caption,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  for (final post in right) ...[
+                    _SummaryPostCard(
+                      post: post,
+                      image: resolver.resolve(post.imageUrl),
+                      onTap: () => onOpen(post),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                    child: Text(
-                      '${post.authorName} • ♥ ${post.likes} • 💬 ${post.comments}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                    const SizedBox(height: 24),
+                  ],
                 ],
               ),
-            );
-          },
-        );
-      },
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _SummaryPostCard extends StatelessWidget {
+  const _SummaryPostCard({
+    required this.post,
+    required this.image,
+    required this.onTap,
+  });
+  final SummaryPost post;
+  final Uri? image;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AspectRatio(
+          aspectRatio: .78,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: image == null
+                ? const ColoredBox(
+                    color: AppColors.canvasStrong,
+                    child: Center(
+                      child: Icon(Icons.restaurant, color: AppColors.green),
+                    ),
+                  )
+                : Image.network(
+                    image.toString(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const ColoredBox(
+                      color: AppColors.canvasStrong,
+                      child: Center(child: Icon(Icons.image_outlined)),
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          post.caption.isEmpty ? 'Nó ngon...' : post.caption,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${post.authorName}  ♥ ${post.likes}  💬 ${post.comments}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 11, color: AppColors.muted),
+        ),
+      ],
+    ),
+  );
 }
 
 class _UtilityScaffold extends StatelessWidget {
