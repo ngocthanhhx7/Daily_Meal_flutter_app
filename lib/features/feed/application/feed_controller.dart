@@ -149,6 +149,35 @@ class FeedController extends ChangeNotifier {
     }
   }
 
+  /// Returns the loaded index of [postId], fetching only a bounded number of
+  /// older feed pages. A negative result means the post is unavailable within
+  /// that bound (for example because it was deleted or is no longer visible).
+  Future<int> findPost(String postId, {int maxAdditionalPages = 5}) async {
+    if (_state.status == FeedStatus.idle) await loadInitial();
+    if (_state.status == FeedStatus.loading) await _waitForInitialLoad();
+    var index = _state.posts.indexWhere((post) => post.id == postId);
+    var loadedPages = 0;
+    while (index < 0 && _state.hasMore && loadedPages < maxAdditionalPages) {
+      await loadMore();
+      loadedPages++;
+      index = _state.posts.indexWhere((post) => post.id == postId);
+    }
+    return index;
+  }
+
+  Future<void> _waitForInitialLoad() {
+    if (_state.status != FeedStatus.loading) return Future.value();
+    final completer = Completer<void>();
+    void listener() {
+      if (_state.status == FeedStatus.loading) return;
+      removeListener(listener);
+      if (!completer.isCompleted) completer.complete();
+    }
+
+    addListener(listener);
+    return completer.future;
+  }
+
   Future<void> toggleLike(String postId) => _toggle(
     postId,
     isLike: true,

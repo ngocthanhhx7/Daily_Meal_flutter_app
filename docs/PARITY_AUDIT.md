@@ -57,5 +57,12 @@ Additional routing gaps:
 2. Route and rebuild Comments/Recipe using a refresh-safe post retrieval contract.
 3. Refine Profile/Public Profile and Edit Profile visual geometry.
 4. Implement Admin Users and Admin User Detail as URL-addressable responsive screens.
-5. Complete remaining P1 user surfaces and deep-link/notification focus.
+5. Complete remaining P1 user surfaces.
+
+Notification post taps now preserve `postId` in the Home URL and search a
+bounded number of feed pages before focusing the referenced post. Missing or
+deleted posts produce an explicit message instead of silently opening the
+wrong feed item. Android also accepts the React Native-compatible
+`dailymeal://` custom scheme; verified HTTPS App Links remain out of scope
+until `dailymeal.site` publishes Digital Asset Links.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

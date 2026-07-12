@@ -1,15 +1,19 @@
 import 'package:daily_meal_flutter_app/features/notifications/domain/app_notification.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-AppNotification item(NotificationType type, {NotificationSender? sender}) =>
-    AppNotification(
-      id: type.name,
-      type: type,
-      body: type.name,
-      read: false,
-      createdAt: DateTime.utc(2026),
-      sender: sender,
-    );
+AppNotification item(
+  NotificationType type, {
+  NotificationSender? sender,
+  String? postId,
+}) => AppNotification(
+  id: type.name,
+  type: type,
+  body: type.name,
+  read: false,
+  createdAt: DateTime.utc(2026),
+  sender: sender,
+  postId: postId,
+);
 
 void main() {
   test('maps notification types to safe deep-link destinations', () {
@@ -23,7 +27,7 @@ void main() {
       NotificationDestination.inbox,
     );
     expect(
-      notificationDestination(item(NotificationType.like)),
+      notificationDestination(item(NotificationType.like, postId: 'p1')),
       NotificationDestination.home,
     );
     expect(

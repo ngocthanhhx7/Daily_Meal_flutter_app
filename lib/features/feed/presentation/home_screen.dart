@@ -17,6 +17,7 @@ import 'package:daily_meal_flutter_app/features/notifications/application/notifi
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({
+    this.initialPostId,
     this.controller,
     this.mediaResolver,
     this.currentUserId,
@@ -24,6 +25,7 @@ class HomeScreen extends ConsumerStatefulWidget {
     super.key,
   });
 
+  final String? initialPostId;
   final FeedController? controller;
   final MediaUrlResolver? mediaResolver;
   final String? currentUserId;
@@ -36,6 +38,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _pageController = PageController();
   int _currentIndex = 0;
+  String? _focusedPostId;
 
   @override
   void initState() {
@@ -43,6 +46,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (widget.controller != null &&
         widget.controller!.state.status == FeedStatus.idle) {
       widget.controller!.loadInitial().catchError((_) {});
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusReferencedPost());
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialPostId != widget.initialPostId) {
+      _focusedPostId = null;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _focusReferencedPost(),
+      );
+    }
+  }
+
+  Future<void> _focusReferencedPost() async {
+    final postId = widget.initialPostId;
+    if (postId == null || postId.isEmpty || _focusedPostId == postId) return;
+    _focusedPostId = postId;
+    final FeedController controller =
+        widget.controller ?? ref.read(feedControllerProvider);
+    try {
+      final index = await controller.findPost(postId);
+      if (!mounted) return;
+      if (index < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bài viết không còn khả dụng.')),
+        );
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_pageController.hasClients) return;
+        _pageController.jumpToPage(index);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể mở bài viết lúc này.')),
+      );
     }
   }
 

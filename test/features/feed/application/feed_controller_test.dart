@@ -120,6 +120,45 @@ void main() {
   });
 
   test(
+    'loads bounded additional pages until a referenced post is found',
+    () async {
+      final repository = _Repository()
+        ..pages[1] = FeedPage(
+          posts: [post('1')],
+          page: 1,
+          limit: 1,
+          hasMore: true,
+        )
+        ..pages[2] = FeedPage(
+          posts: [post('target')],
+          page: 2,
+          limit: 1,
+          hasMore: false,
+        );
+      final controller = FeedController(repository, pageSize: 1);
+
+      expect(await controller.findPost('target'), 1);
+      expect(controller.state.posts.map((item) => item.id), ['1', 'target']);
+    },
+  );
+
+  test('stops looking for a referenced post at the page bound', () async {
+    final repository = _Repository();
+    for (var page = 1; page <= 4; page++) {
+      repository.pages[page] = FeedPage(
+        posts: [post('$page')],
+        page: page,
+        limit: 1,
+        hasMore: true,
+      );
+    }
+    final controller = FeedController(repository, pageSize: 1);
+
+    expect(await controller.findPost('missing', maxAdditionalPages: 2), -1);
+    expect(repository.loadCalls, 3);
+  });
+
+  test(
     'optimistic like rolls back on failure and save adopts server stats',
     () async {
       final repository = _Repository()

@@ -149,7 +149,12 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationDestination.inbox:
         context.pushNamed(AppRoute.inbox.name);
       case NotificationDestination.home:
-        context.goNamed(AppRoute.home.name);
+        context.goNamed(
+          AppRoute.home.name,
+          queryParameters: item.postId == null
+              ? const {}
+              : {'postId': item.postId!},
+        );
     }
   }
 

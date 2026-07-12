@@ -40,7 +40,9 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.login => const LoginScreen(),
             AppRoute.adminLogin => const AdminLoginScreen(),
             AppRoute.onboarding => const OnboardingScreen(),
-            AppRoute.home => const HomeScreen(),
+            AppRoute.home => HomeScreen(
+              initialPostId: state.uri.queryParameters['postId'],
+            ),
             AppRoute.search => const SearchScreen(),
             AppRoute.profile => const ProfileScreen(),
             AppRoute.editProfile => const EditProfileScreen(),
