@@ -53,11 +53,14 @@ Routing notes:
 - Home production-media fallback restored: `C:\tmp\dailymeal-home-media-fallback.png`
 - Android user-route matrix: `C:\tmp\matrix-search.png`, `C:\tmp\matrix-edit-profile.png`, `C:\tmp\matrix-saved.png`, `C:\tmp\matrix-inbox.png`, `C:\tmp\matrix-notifications.png`, `C:\tmp\matrix-premium.png`, `C:\tmp\matrix-post-summary.png`, `C:\tmp\matrix-support.png`, `C:\tmp\matrix-share-account.png`, and `C:\tmp\matrix-create.png`.
 - Settings crash regression fixed and cold-start verified on Android: `C:\tmp\matrix-settings-fixed.png`; device log contained no Flutter assertion, overflow, or fatal exception.
-- Web login responsive evidence: `C:\tmp\web-login-mobile-retry.png`, `C:\tmp\web-login-tablet.png`, and `C:\tmp\web-login-desktop.png`. The 375 px, 768 px, and 1280 px viewports render without overflow; authenticated Web route coverage remains pending a browser login session.
+- Web login responsive evidence: `C:\tmp\web-login-mobile-retry.png`, `C:\tmp\web-login-tablet.png`, and `C:\tmp\web-login-desktop.png`. The 375 px, 768 px, and 1280 px viewports render without overflow.
+- Authenticated Web mobile matrix covers Home, Search, Profile, Edit Profile, Saved, Inbox, Notifications, Premium, Settings, Post Summary, Progress, Support, Share Account, and Create under `C:\tmp\web-matrix-*-mobile.png`.
+- Repeated Google SDK initialization no longer leaks `Bad state: init() has already been called` in Settings; verified at `C:\tmp\web-settings-sdk-fixed-mobile-final.png`. SDK initialization is coalesced application-wide and remains retryable after failure.
+- Inbox empty state now matches the React Native `EmptyState` composition and copy; verified at `C:\tmp\web-inbox-empty-fixed-mobile-final.png`.
 - Web QA follow-up: the Google Identity Services platform button is visually clipped inside the source-style circular social button. Localhost also reports the expected unapproved-origin GSI error and a production analytics-ingest 400; recheck both on the deployed Web origin.
 - Android debug build passed with production API defines.
 - Latest Web release build passed after the Settings regression fix. The standard JavaScript build is healthy; the Socket.IO dependency still emits the known Wasm dry-run compatibility warning.
-- Full Flutter suite verified at 207 passing tests, including exact 28-route coverage and the Settings Material-shape regression.
+- Full Flutter suite verified at 210 passing tests, including exact 28-route coverage, Settings regressions, social SDK lifecycle invariants, and Inbox empty-state parity.
 - No-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
