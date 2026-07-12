@@ -12,11 +12,11 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | Slice | Feature/screen | Source reference | APIs/events | Flutter target | Android | Web | Required evidence |
 |---:|---|---|---|---|---|---|---|
 | 1 | Bootstrap/config | `client/App.tsx`; API base in `client/src/api/client.ts:39` | environment validation | `lib/main.dart`, `lib/app/app.dart`, `lib/app/config/*` | Verified | Verified | config/smoke tests; Android/Web build in `docs/parity/verification-slice-1.md` |
-| 1 | Theme/design system | `client/src/theme/*`; shared components | none | `lib/app/theme/*`, `lib/core/widgets/*` | In progress | In progress | token/widget tests pass; Work Sans runtime assets and goldens remain |
+| 1 | Theme/design system | `client/src/theme/*`; shared components | none | `lib/app/theme/*`, `lib/core/widgets/*` | Verified | Verified | Work Sans 400/500/600/700 bundled, Material 3 token tests and platform builds |
 | 1 | Responsive shell | navigator and PWA shell | none | `lib/core/responsive/*`, `lib/app/router/*` | Verified | Verified | compact/medium/expanded widget tests and builds |
 | 1 | Typed network/errors | `client/src/api/client.ts`; server error middleware | all REST | `lib/core/network/*`, `lib/core/errors/*` | Verified | Verified | bearer/401/error/media URL tests |
 | 1 | Session storage | `client/src/context/AuthContext.tsx` | bearer auth | `lib/core/storage/*` | Verified | Verified | shared storage contract tests and platform builds |
-| 1 | Analytics adapter | `client/src/services/analytics.ts` | POST `/api/ingest/events` | `lib/core/analytics/*` | In progress | In progress | redaction tests pass; production ingest sink/batching remains |
+| 1 | Analytics adapter | `client/src/services/analytics.ts` | POST `/api/ingest/events` | `lib/core/analytics/*` | Verified | Verified | redaction, exact ingest envelope, 100-event chunking and lifecycle flush |
 | 2 | Login/Register | `LoginScreen.tsx`; `AuthContext.tsx` | auth register/login | `features/auth` | Verified | Verified | contract/widget/session tests and Slice 2 builds |
 | 2 | Phone/OTP | `LoginScreen.tsx`; login validation | phone endpoints | `features/auth` | Verified | Verified | validation, request/verify and first-time setup tests |
 | 2 | Forgot password | `LoginScreen.tsx` | forgot OTP endpoints | `features/auth` | Verified | Verified | request/verify state journey and API contract tests |
@@ -64,10 +64,10 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 
 | Capability | Android | Web | Evidence required |
 |---|---|---|---|
-| App icon/splash/assets/fonts | Not started | Not started | build artifact and visual check |
-| Accessibility and 48dp targets | Not started | Not started | semantics/widget/manual evidence |
-| Keyboard/focus/hover | Not applicable | Not started | keyboard walkthrough |
-| Reduced motion | Not started | Not started | setting-driven widget/manual check |
-| Offline/error/retry | Not started | Not started | network failure tests |
+| App icon/splash/assets/fonts | Verified | Verified | Daily Meal logo icons/splash/PWA metadata, Work Sans assets and build artifacts |
+| Accessibility and 48dp targets | In progress | In progress | semantic media/actions and padded Material targets tested; full manual screen-reader walkthrough pending |
+| Keyboard/focus/hover | Not applicable | In progress | Material focus/hover theme and native controls present; deployed Web keyboard walkthrough pending |
+| Reduced motion | Verified | Verified | `MediaQuery.disableAnimations` removes custom heart durations; widget test |
+| Offline/error/retry | In progress | In progress | network mapping, empty/error/retry/controller tests present; full offline journey pending |
 | Production configuration | Verified | Verified | Slice 1 debug APK/Web release builds with production dart-defines |
-| README/setup/build documentation | Not started | Not started | clean setup walkthrough |
+| README/setup/build documentation | Verified | Verified | production defines, run/build commands, architecture and limitations documented |

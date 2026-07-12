@@ -13,12 +13,21 @@ class AnalyticsClient {
   final AnalyticsSink _sink;
   final AnalyticsSanitizer _sanitizer;
   final List<AnalyticsEvent> _queue = [];
+  Future<void>? _flushInFlight;
 
   void track(AnalyticsEvent event) {
     _queue.add(_sanitizer.sanitize(event));
   }
 
-  Future<void> flush() async {
+  Future<void> flush() {
+    final current = _flushInFlight;
+    if (current != null) return current;
+    final future = _flush();
+    _flushInFlight = future;
+    return future.whenComplete(() => _flushInFlight = null);
+  }
+
+  Future<void> _flush() async {
     if (_queue.isEmpty) return;
     final batch = List<AnalyticsEvent>.unmodifiable(_queue);
     await _sink.send(batch);

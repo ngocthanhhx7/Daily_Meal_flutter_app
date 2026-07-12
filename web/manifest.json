@@ -1,11 +1,11 @@
 {
-    "name": "daily_meal_app",
-    "short_name": "daily_meal_app",
+    "name": "Daily Meal",
+    "short_name": "Daily Meal",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F8FAF7",
+    "theme_color": "#9CCB3B",
+    "description": "Daily Meal — chia sẻ món ăn, công thức và hành trình dinh dưỡng.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

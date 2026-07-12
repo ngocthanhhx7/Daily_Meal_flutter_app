@@ -25,14 +25,19 @@ class _PostMediaState extends State<PostMedia> {
   void _doubleTap() {
     if (!widget.post.viewerState.liked) widget.onDoubleTapLike();
     setState(() => _showHeart = true);
-    Future<void>.delayed(const Duration(milliseconds: 550), () {
-      if (mounted) setState(() => _showHeart = false);
-    });
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    Future<void>.delayed(
+      reduceMotion ? Duration.zero : const Duration(milliseconds: 550),
+      () {
+        if (mounted) setState(() => _showHeart = false);
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final videoUri = widget.resolver.resolve(widget.post.video?.url);
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final Widget media;
     if (widget.post.mediaType == PostMediaType.video && videoUri != null) {
       media = FeedVideoPlayer(uri: videoUri);
@@ -69,10 +74,14 @@ class _PostMediaState extends State<PostMedia> {
           IgnorePointer(
             child: AnimatedOpacity(
               opacity: _showHeart ? 1 : 0,
-              duration: const Duration(milliseconds: 140),
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 140),
               child: AnimatedScale(
                 scale: _showHeart ? 1 : 0.55,
-                duration: const Duration(milliseconds: 180),
+                duration: reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
                 curve: Curves.easeOutBack,
                 child: const Icon(
                   Icons.favorite_rounded,

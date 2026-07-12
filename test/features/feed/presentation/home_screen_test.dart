@@ -141,4 +141,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     expect(controller.state.posts.single.viewerState.liked, isTrue);
   });
+
+  testWidgets('honors reduced-motion by disabling heart transitions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: HomeScreen(
+              controller: FeedController(_Repository()),
+              mediaResolver: MediaUrlResolver(
+                Uri.parse('https://api.dailymeal.site'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final opacity = tester.widget<AnimatedOpacity>(
+      find.byType(AnimatedOpacity),
+    );
+    final scale = tester.widget<AnimatedScale>(find.byType(AnimatedScale));
+    expect(opacity.duration, Duration.zero);
+    expect(scale.duration, Duration.zero);
+  });
 }
