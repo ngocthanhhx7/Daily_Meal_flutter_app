@@ -104,6 +104,11 @@ void main() {
     expect(find.byKey(AdminScaffold.compactNavigationKey), findsOneWidget);
     expect(find.text('Tổng người dùng'), findsOneWidget);
     expect(find.text('120'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Xu hướng tương tác'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Xu hướng tương tác'), findsOneWidget);
   });
 
@@ -134,6 +139,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Analytics 24 giờ'), findsOneWidget);
     expect(find.text('Heatmap events'), findsOneWidget);
+    await tester.tap(find.text('Báo cáo AI'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Tạo báo cáo'));
     await tester.pumpAndSettle();
     expect(find.text('Báo cáo AI tuần'), findsOneWidget);

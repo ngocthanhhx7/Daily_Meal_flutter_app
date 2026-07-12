@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_error_view.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_loading_view.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_dashboard_controller.dart';
@@ -106,7 +107,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 widget.onLogout ??
                 () => ref.read(authControllerProvider).logout(),
           ),
-          1 || 2 || 6 => _AnalyticsSection(controller: analytics),
+          1 || 2 || 6 => _AnalyticsSection(
+            controller: analytics,
+            destination: _destination,
+          ),
           3 => _PostsSection(controller: management),
           4 => _ReportsSection(controller: management),
           5 => _PaymentsSection(controller: management),
@@ -197,12 +201,12 @@ class _DashboardBody extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverLayoutBuilder(
               builder: (context, constraints) {
-                final columns = constraints.crossAxisExtent >= 900 ? 4 : 2;
+                final columns = constraints.crossAxisExtent >= 900 ? 3 : 2;
                 return SliverGrid.count(
                   crossAxisCount: columns,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: columns == 2 ? .95 : 1.6,
+                  childAspectRatio: columns == 2 ? .95 : 1.75,
                   children: [
                     _KpiCard(
                       label: 'Tổng người dùng',
@@ -217,6 +221,14 @@ class _DashboardBody extends StatelessWidget {
                       icon: Icons.article,
                     ),
                     _KpiCard(
+                      label: 'Tương tác',
+                      value:
+                          '${dashboard.allTime.comments + dashboard.allTime.likes + dashboard.allTime.saves}',
+                      delta:
+                          '+${dashboard.inRange.comments + dashboard.inRange.likes + dashboard.inRange.saves}',
+                      icon: Icons.favorite_outline,
+                    ),
+                    _KpiCard(
                       label: 'Doanh thu',
                       value: _money(dashboard.allTime.revenue),
                       delta: _money(dashboard.inRange.revenue),
@@ -227,6 +239,12 @@ class _DashboardBody extends StatelessWidget {
                       value: '${dashboard.allTime.openReports}',
                       delta: '${dashboard.inRange.openReports} trong kỳ',
                       icon: Icons.flag,
+                    ),
+                    _KpiCard(
+                      label: 'Bữa ăn AI',
+                      value: '${dashboard.allTime.meals}',
+                      delta: '+${dashboard.inRange.meals}',
+                      icon: Icons.auto_awesome_outlined,
                     ),
                   ],
                 );
@@ -871,8 +889,12 @@ class _PagedList<T> extends StatelessWidget {
 }
 
 class _AnalyticsSection extends StatelessWidget {
-  const _AnalyticsSection({required this.controller});
+  const _AnalyticsSection({
+    required this.controller,
+    required this.destination,
+  });
   final AdminAnalyticsController controller;
+  final int destination;
   @override
   Widget build(BuildContext context) {
     final analytics = controller.analytics;
@@ -884,36 +906,41 @@ class _AnalyticsSection extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Analytics 24 giờ',
+                  switch (destination) {
+                    2 => 'KPI vận hành',
+                    6 => 'Báo cáo điều hành bằng AI',
+                    _ => 'Analytics 24 giờ',
+                  },
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              DropdownButton<String>(
-                value: controller.metric,
-                items: const [
-                  DropdownMenuItem(value: 'events', child: Text('Sự kiện')),
-                  DropdownMenuItem(
-                    value: 'activeUsers',
-                    child: Text('Active users'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'interactions',
-                    child: Text('Tương tác'),
-                  ),
-                  DropdownMenuItem(value: 'aiMeal', child: Text('AI món ăn')),
-                ],
-                onChanged: controller.loading
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          controller
-                              .load(selectedMetric: value)
-                              .catchError((_) {});
-                        }
-                      },
-              ),
+              if (destination != 6)
+                DropdownButton<String>(
+                  value: controller.metric,
+                  items: const [
+                    DropdownMenuItem(value: 'events', child: Text('Sự kiện')),
+                    DropdownMenuItem(
+                      value: 'activeUsers',
+                      child: Text('Active users'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'interactions',
+                      child: Text('Tương tác'),
+                    ),
+                    DropdownMenuItem(value: 'aiMeal', child: Text('AI món ăn')),
+                  ],
+                  onChanged: controller.loading
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            controller
+                                .load(selectedMetric: value)
+                                .catchError((_) {});
+                          }
+                        },
+                ),
             ],
           ),
         ),
@@ -930,7 +957,7 @@ class _AnalyticsSection extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             children: [
-              if (analytics != null) ...[
+              if (analytics != null && destination != 6) ...[
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -960,85 +987,158 @@ class _AnalyticsSection extends StatelessWidget {
                   ),
                 ),
               ],
-              if (controller.heatmap case final heatmap?)
+              if (destination == 1)
+                if (controller.heatmap case final heatmap?)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Heatmap ${heatmap.metric}',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          _HeatmapGrid(cells: heatmap.cells),
+                        ],
+                      ),
+                    ),
+                  ),
+              if (destination == 6) ...[
+                const SizedBox(height: 12),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Heatmap ${heatmap.metric}',
-                          style: Theme.of(context).textTheme.titleLarge,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Báo cáo điều hành bằng AI',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            FilledButton.icon(
+                              onPressed: controller.generating
+                                  ? null
+                                  : () => controller.generate().catchError(
+                                      (_) {},
+                                    ),
+                              icon: controller.generating
+                                  ? const SizedBox.square(
+                                      dimension: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.auto_awesome),
+                              label: const Text('Tạo báo cáo'),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        _HeatmapGrid(cells: heatmap.cells),
+                        if (controller.report case final report?) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            report.title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          for (final line in report.executiveSummary)
+                            ListTile(
+                              leading: const Icon(Icons.insights),
+                              title: Text(line),
+                            ),
+                          for (final section in report.sections)
+                            _AiReportSection(section: section),
+                          if (report.priorityActions.isNotEmpty)
+                            const Text(
+                              'Hành động ưu tiên',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          for (final action in report.priorityActions)
+                            ListTile(
+                              leading: const Icon(Icons.check_circle_outline),
+                              title: Text(action),
+                            ),
+                        ],
                       ],
                     ),
                   ),
                 ),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Báo cáo điều hành bằng AI',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                          FilledButton.icon(
-                            onPressed: controller.generating
-                                ? null
-                                : () =>
-                                      controller.generate().catchError((_) {}),
-                            icon: controller.generating
-                                ? const SizedBox.square(
-                                    dimension: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.auto_awesome),
-                            label: const Text('Tạo báo cáo'),
-                          ),
-                        ],
-                      ),
-                      if (controller.report case final report?) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          report.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        for (final line in report.executiveSummary)
-                          ListTile(
-                            leading: const Icon(Icons.insights),
-                            title: Text(line),
-                          ),
-                        if (report.priorityActions.isNotEmpty)
-                          const Text(
-                            'Hành động ưu tiên',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        for (final action in report.priorityActions)
-                          ListTile(
-                            leading: const Icon(Icons.check_circle_outline),
-                            title: Text(action),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AiReportSection extends StatelessWidget {
+  const _AiReportSection({required this.section});
+  final Map<String, dynamic> section;
+
+  @override
+  Widget build(BuildContext context) {
+    final title =
+        section['title']?.toString() ??
+        section['heading']?.toString() ??
+        'Phân tích';
+    final summary = section['summary']?.toString();
+    final metrics = section['metrics'] is Map
+        ? (section['metrics'] as Map).cast<Object?, Object?>()
+        : const <Object?, Object?>{};
+    final items = <String>[
+      for (final key in ['findings', 'recommendations', 'actions'])
+        if (section[key] is List)
+          ...(section[key] as List).map((item) => item.toString()),
+    ];
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.canvas,
+        border: Border.all(color: AppColors.line),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+          if (summary != null && summary.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(summary),
+          ],
+          if (metrics.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final entry in metrics.entries)
+                  Chip(label: Text('${entry.key}: ${entry.value}')),
+              ],
+            ),
+          ],
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Icon(Icons.circle, size: 6),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(item)),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
