@@ -25,7 +25,7 @@ Invalid/unauthorized room requests emit `room:error` with `{ room, message }` (`
 
 | Event | Payload | Audience | Producer/source | Existing consumer |
 |---|---|---|---|---|
-| `post:stats-updated` | `{ postId, stats }` | global/affected clients | post like/save flows in `server/src/routes/posts.ts` | `client/src/screens/HomeScreen.tsx:246` |
+| `post:stats-updated` | `{ postId, stats }` | global/affected clients | post like/save flows in `server/src/routes/posts.ts` | React Native `HomeScreen.tsx:246`; Flutter `RealtimeClient` → `FeedController` |
 | `comment:created` | comment DTO | `post:<postId>` | comment creation in `server/src/routes/posts.ts` | `client/src/screens/CommentsScreen.tsx:261` |
 | `message:created` | message DTO | `conversation:<id>` | message creation in `server/src/routes/messages.ts` | `client/src/screens/ChatScreen.tsx:77` |
 | `conversation:updated` | conversation DTO scoped for recipient | each participant's `user:<id>` room | `server/src/routes/messages.ts:204` | `client/src/screens/InboxScreen.tsx:51` |

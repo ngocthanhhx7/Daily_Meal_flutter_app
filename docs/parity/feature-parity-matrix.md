@@ -24,7 +24,7 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | In progress | In progress | Web SDK/token exchange implemented; Android Meta Client Token and live-login evidence remain |
 | 2 | Admin login/guards | `AdminScreens.tsx`; navigator | POST `/api/admin/login` | `features/auth`, `features/admin` | Verified | Verified | dedicated route, session separation, guard and widget tests |
 | 2 | Onboarding | `OnboardingScreen.tsx`; preferences constants | PATCH preferences | `features/onboarding` | Verified | Verified | exact options/PATCH contract/controller/widget route tests |
-| 3 | Home feed | `HomeScreen.tsx` | GET feed; post stats event | `features/feed` | Verified | Verified | page contract, refresh/append/dedup tests, responsive widget tests and Slice 3 builds |
+| 3 | Home feed | `HomeScreen.tsx` | GET feed; `post:stats-updated` | `features/feed` | Verified | Verified | page/refresh/append/dedup plus typed live stats update and lifecycle tests, responsive widgets and builds |
 | 3 | Image/video/carousel | `HomeScreen.tsx`; `PostVideoPlayer.tsx` | media URLs | `features/feed/presentation` | Verified | Verified | carousel, 65% viewport autoplay/pause, loop/mute/lifecycle behavior, tests and builds |
 | 3 | Like/save | Home/PostCard | post like/save; stats event | `features/posts` | Verified | Verified | exact mutation contract plus optimistic success/rollback tests |
 | 3 | Double-tap hearts | Home; `tapGestures.ts` | like | `features/feed` | Verified | Verified | like-only gesture/animation widget test and platform builds |

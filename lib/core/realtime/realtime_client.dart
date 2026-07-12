@@ -4,9 +4,11 @@ import 'package:daily_meal_flutter_app/core/storage/session.dart';
 import 'package:daily_meal_flutter_app/core/storage/session_store.dart';
 import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
+import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 abstract interface class RealtimeClient {
+  Stream<PostStatsUpdate> get postStatsUpdates;
   Stream<Conversation> get conversationUpdates;
   Stream<ChatMessage> get createdMessages;
   Stream<Map<String, dynamic>> get createdNotifications;
@@ -20,17 +22,42 @@ abstract interface class RealtimeClient {
   void dispose();
 }
 
+class PostStatsUpdate {
+  const PostStatsUpdate({required this.postId, required this.stats});
+
+  factory PostStatsUpdate.fromJson(Map<String, dynamic> json) {
+    final postId = json['postId'];
+    final rawStats = json['stats'];
+    if (postId is! String || postId.isEmpty || rawStats is! Map) {
+      throw const FormatException('Invalid post stats update');
+    }
+    final stats = rawStats.cast<String, dynamic>();
+    if (stats['likes'] is! num ||
+        stats['comments'] is! num ||
+        stats['saves'] is! num) {
+      throw const FormatException('Incomplete post stats update');
+    }
+    return PostStatsUpdate(postId: postId, stats: PostStats.fromJson(stats));
+  }
+
+  final String postId;
+  final PostStats stats;
+}
+
 class SocketIoRealtimeClient implements RealtimeClient {
   SocketIoRealtimeClient({required this.baseUrl, required this.sessions});
   final Uri baseUrl;
   final SessionStore sessions;
   io.Socket? _socket;
   final _conversations = StreamController<Conversation>.broadcast();
+  final _postStats = StreamController<PostStatsUpdate>.broadcast();
   final _messages = StreamController<ChatMessage>.broadcast();
   final _notifications = StreamController<Map<String, dynamic>>.broadcast();
   final _comments = StreamController<PostComment>.broadcast();
   final _errors = StreamController<String>.broadcast();
 
+  @override
+  Stream<PostStatsUpdate> get postStatsUpdates => _postStats.stream;
   @override
   Stream<Conversation> get conversationUpdates => _conversations.stream;
   @override
@@ -59,6 +86,10 @@ class SocketIoRealtimeClient implements RealtimeClient {
           .build(),
     );
     _socket = socket;
+    socket.on(
+      'post:stats-updated',
+      (data) => _decode(data, PostStatsUpdate.fromJson, _postStats),
+    );
     socket.on(
       'conversation:updated',
       (data) => _decode(data, Conversation.fromJson, _conversations),
@@ -112,6 +143,7 @@ class SocketIoRealtimeClient implements RealtimeClient {
   void dispose() {
     _socket?.dispose();
     _socket = null;
+    _postStats.close();
     _conversations.close();
     _messages.close();
     _notifications.close();

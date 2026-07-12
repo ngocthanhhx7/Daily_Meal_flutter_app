@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
+import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_repository.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -49,10 +52,20 @@ class FeedState {
 }
 
 class FeedController extends ChangeNotifier {
-  FeedController(this._repository, {this.pageSize = 20});
+  FeedController(
+    this._repository, {
+    this.pageSize = 20,
+    RealtimeClient? realtime,
+  }) {
+    if (realtime != null) {
+      _statsSubscription = realtime.postStatsUpdates.listen(_applyStatsUpdate);
+      unawaited(realtime.connect());
+    }
+  }
 
   final FeedRepositoryContract _repository;
   final int pageSize;
+  StreamSubscription<PostStatsUpdate>? _statsSubscription;
   FeedState _state = const FeedState.idle();
   final Set<String> _busyInteractions = {};
 
@@ -228,8 +241,23 @@ class FeedController extends ChangeNotifier {
     _setState(_state.copyWith(posts: posts));
   }
 
+  void _applyStatsUpdate(PostStatsUpdate update) {
+    final index = _state.posts.indexWhere((post) => post.id == update.postId);
+    if (index < 0) return;
+    _replacePost(
+      index,
+      _state.posts[index].withInteraction(nextStats: update.stats),
+    );
+  }
+
   void _setState(FeedState next) {
     _state = next;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _statsSubscription?.cancel();
+    super.dispose();
   }
 }

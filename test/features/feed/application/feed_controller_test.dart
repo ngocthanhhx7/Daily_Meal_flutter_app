@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_controller.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_repository.dart';
@@ -38,6 +41,23 @@ class _Repository implements FeedRepositoryContract {
     active: true,
     stats: PostStats(likes: 1, comments: 0, saves: 1),
   );
+}
+
+class _Realtime implements RealtimeClient {
+  final updates = StreamController<PostStatsUpdate>.broadcast();
+  var connectCalls = 0;
+
+  @override
+  Stream<PostStatsUpdate> get postStatsUpdates => updates.stream;
+
+  @override
+  Future<void> connect() async => connectCalls++;
+
+  @override
+  void dispose() => updates.close();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -141,5 +161,42 @@ void main() {
 
     controller.removePost('1');
     expect(controller.state.posts.map((item) => item.id), ['2']);
+  });
+
+  test('applies live stats to known posts and cancels on dispose', () async {
+    final repository = _Repository()
+      ..pages[1] = FeedPage(
+        posts: [post('1', liked: true)],
+        page: 1,
+        limit: 20,
+        hasMore: false,
+      );
+    final realtime = _Realtime();
+    final controller = FeedController(repository, realtime: realtime);
+    await controller.loadInitial();
+
+    realtime.updates.add(
+      const PostStatsUpdate(
+        postId: '1',
+        stats: PostStats(likes: 9, comments: 4, saves: 2),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(realtime.connectCalls, 1);
+    expect(controller.state.posts.single.stats.likes, 9);
+    expect(controller.state.posts.single.stats.comments, 4);
+    expect(controller.state.posts.single.viewerState.liked, isTrue);
+
+    controller.dispose();
+    realtime.updates.add(
+      const PostStatsUpdate(
+        postId: '1',
+        stats: PostStats(likes: 99, comments: 99, saves: 99),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.state.posts.single.stats.likes, 9);
+    realtime.dispose();
   });
 }
