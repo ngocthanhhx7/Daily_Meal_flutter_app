@@ -390,7 +390,14 @@ class AdminHourlyPoint {
     required this.label,
     this.activeUsers = 0,
     this.events = 0,
+    this.posts = 0,
     this.interactions = 0,
+    this.likes = 0,
+    this.saves = 0,
+    this.comments = 0,
+    this.reportsOpened = 0,
+    this.payments = 0,
+    this.paymentFailed = 0,
     this.revenue = 0,
     this.aiMealUsage = 0,
   });
@@ -400,26 +407,63 @@ class AdminHourlyPoint {
         label: json['label']?.toString() ?? '',
         activeUsers: _integer(json['activeUsers']),
         events: _integer(json['events']),
+        posts: _integer(json['posts']),
         interactions: _integer(json['interactions']),
+        likes: _integer(json['likes']),
+        saves: _integer(json['saves']),
+        comments: _integer(json['comments']),
+        reportsOpened: _integer(json['reportsOpened']),
+        payments: _integer(json['payments']),
+        paymentFailed: _integer(json['paymentFailed']),
         revenue: _number(json['revenue']),
         aiMealUsage: _integer(json['aiMealUsage']),
       );
-  final int hour, activeUsers, events, interactions, aiMealUsage;
+  final int hour,
+      activeUsers,
+      events,
+      posts,
+      interactions,
+      likes,
+      saves,
+      comments,
+      reportsOpened,
+      payments,
+      paymentFailed,
+      aiMealUsage;
   final String label;
   final double revenue;
 }
 
 class AdminAnalytics24h {
-  const AdminAnalytics24h({required this.summary, required this.hourly});
+  const AdminAnalytics24h({
+    required this.summary,
+    required this.hourly,
+    this.range = const {},
+    this.interactionBreakdown = const [],
+    this.aiFunnel = const {},
+    this.sourceTraffic = const [],
+    this.paymentMetrics = const {},
+    this.reportMetrics = const {},
+    this.tables = const {},
+  });
   factory AdminAnalytics24h.fromJson(Map<String, dynamic> json) =>
       AdminAnalytics24h(
+        range: _map(json['range']),
         summary: _map(json['summary']),
         hourly: _maps(
           json['hourly'],
         ).map(AdminHourlyPoint.fromJson).toList(growable: false),
+        interactionBreakdown: _maps(json['interactionBreakdown']),
+        aiFunnel: _map(json['aiFunnel']),
+        sourceTraffic: _maps(json['sourceTraffic']),
+        paymentMetrics: _map(json['paymentMetrics']),
+        reportMetrics: _map(json['reportMetrics']),
+        tables: _map(json['tables']),
       );
-  final Map<String, dynamic> summary;
+  final Map<String, dynamic> range, summary;
   final List<AdminHourlyPoint> hourly;
+  final List<Map<String, dynamic>> interactionBreakdown, sourceTraffic;
+  final Map<String, dynamic> aiFunnel, paymentMetrics, reportMetrics, tables;
 }
 
 class AdminHeatmapCell {

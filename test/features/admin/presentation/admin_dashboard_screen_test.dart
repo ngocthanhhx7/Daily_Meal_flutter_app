@@ -59,6 +59,18 @@ class _Repository implements AdminRepositoryContract {
   Future<AdminAnalytics24h> analytics24h() async => const AdminAnalytics24h(
     summary: {'activeUsers': 8},
     hourly: [AdminHourlyPoint(hour: 9, label: '09:00', events: 12)],
+    interactionBreakdown: [
+      {'type': 'likes', 'count': 6},
+    ],
+    sourceTraffic: [
+      {'source': 'home', 'events': 12, 'users': 8},
+    ],
+    aiFunnel: {'usersUsedAi': 5, 'purchasedAfterAi': 2},
+    tables: {
+      'topActions': [
+        {'name': 'feed_open', 'count': 12},
+      ],
+    },
   );
   @override
   Future<AdminHeatmap> heatmap({String metric = 'events'}) async =>
@@ -145,6 +157,13 @@ void main() {
     await tester.tap(find.text('Analytics 24h'));
     await tester.pumpAndSettle();
     expect(find.text('Analytics 24 giờ'), findsOneWidget);
+    expect(find.text('Nguồn truy cập'), findsOneWidget);
+    expect(find.text('AI Meal → Premium'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Heatmap events'),
+      400,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Heatmap events'), findsOneWidget);
     await tester.tap(find.text('Báo cáo AI'));
     await tester.pumpAndSettle();

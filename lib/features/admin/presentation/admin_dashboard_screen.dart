@@ -1115,6 +1115,8 @@ class _AnalyticsSection extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                _AnalyticsBreakdowns(value: analytics),
               ],
               if (destination == 1)
                 if (controller.heatmap case final heatmap?)
@@ -1203,6 +1205,88 @@ class _AnalyticsSection extends StatelessWidget {
       ],
     );
   }
+}
+
+class _AnalyticsBreakdowns extends StatelessWidget {
+  const _AnalyticsBreakdowns({required this.value});
+  final AdminAnalytics24h value;
+
+  @override
+  Widget build(BuildContext context) {
+    final topActions = value.tables['topActions'] is List
+        ? (value.tables['topActions'] as List).whereType<Map>()
+        : const Iterable<Map>.empty();
+    final cards = <Widget>[
+      _AnalyticsListCard(
+        title: 'Tương tác',
+        items: [
+          for (final item in value.interactionBreakdown)
+            '${item['type']}: ${item['count'] ?? 0}',
+        ],
+      ),
+      _AnalyticsListCard(
+        title: 'Nguồn truy cập',
+        items: [
+          for (final item in value.sourceTraffic)
+            '${item['source']}: ${item['events'] ?? 0} sự kiện · ${item['users'] ?? 0} user',
+        ],
+      ),
+      _AnalyticsListCard(
+        title: 'AI Meal → Premium',
+        items: [
+          'Đã dùng AI: ${value.aiFunnel['usersUsedAi'] ?? 0}',
+          'Mua sau AI: ${value.aiFunnel['purchasedAfterAi'] ?? 0}',
+          'Chưa mua: ${value.aiFunnel['onlyAiNoPurchase'] ?? 0}',
+        ],
+      ),
+      _AnalyticsListCard(
+        title: 'Hành động nổi bật',
+        items: [
+          for (final item in topActions)
+            '${item['name']}: ${item['count'] ?? 0}',
+        ],
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.count(
+        crossAxisCount: constraints.maxWidth >= 900 ? 2 : 1,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: constraints.maxWidth >= 900 ? 2.8 : 2.25,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: cards,
+      ),
+    );
+  }
+}
+
+class _AnalyticsListCard extends StatelessWidget {
+  const _AnalyticsListCard({required this.title, required this.items});
+  final String title;
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (items.isEmpty)
+            const Text('Chưa có dữ liệu')
+          else
+            for (final item in items.take(4))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(item, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _AiReportSection extends StatelessWidget {
