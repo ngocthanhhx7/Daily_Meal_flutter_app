@@ -96,6 +96,24 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
     }
   }
 
+  void _selectTab(FollowTab value) {
+    if (value == _tab) return;
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.replaceNamed(
+        AppRoute.follows.name,
+        pathParameters: {'id': widget.userId},
+        queryParameters: {
+          'tab': value == FollowTab.following ? 'following' : 'followers',
+          'name': ?widget.displayName,
+        },
+      );
+      return;
+    }
+    setState(() => _tab = value);
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final ownId =
@@ -184,10 +202,7 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _FollowSegments(
                       selected: _tab,
-                      onSelected: (value) {
-                        setState(() => _tab = value);
-                        _load();
-                      },
+                      onSelected: _selectTab,
                     ),
                   ),
                   const SizedBox(height: 12),

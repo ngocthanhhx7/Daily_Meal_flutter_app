@@ -1,3 +1,4 @@
+import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/follows_screen.dart';
@@ -5,6 +6,7 @@ import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 class _Repository implements ProfileRepositoryContract {
   final requests = <bool>[];
@@ -30,6 +32,50 @@ class _Repository implements ProfileRepositoryContract {
 }
 
 void main() {
+  testWidgets('switching tabs updates the refresh-safe route query', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final router = GoRouter(
+      initialLocation: '/users/u1/follows?tab=followers&name=Bếp+Bạn',
+      routes: [
+        GoRoute(
+          path: AppRoute.follows.path,
+          name: AppRoute.follows.name,
+          builder: (context, state) => FollowsScreen(
+            userId: state.pathParameters['id']!,
+            initialTab: state.uri.queryParameters['tab'] == 'following'
+                ? FollowTab.following
+                : FollowTab.followers,
+            displayName: state.uri.queryParameters['name'],
+            currentUserId: 'me',
+            repository: repository,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Đang theo dõi'));
+    await tester.pumpAndSettle();
+
+    expect(
+      router.routeInformationProvider.value.uri.queryParameters['tab'],
+      'following',
+    );
+    expect(
+      router.routeInformationProvider.value.uri.queryParameters['name'],
+      'Bếp Bạn',
+    );
+  });
+
   testWidgets('renders full follows surface and switches refresh-safe tabs', (
     tester,
   ) async {
