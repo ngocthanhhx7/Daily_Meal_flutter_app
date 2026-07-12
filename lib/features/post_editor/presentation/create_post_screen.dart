@@ -41,6 +41,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _steps = TextEditingController();
   String? _localError;
   bool _editing = false;
+  bool _stickerEditing = false;
   bool _includeRecipe = false;
 
   PostEditorController get _controller =>
@@ -164,7 +165,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         leadingWidth: 44,
         titleSpacing: 4,
         title: Text(
-          _editing ? 'Chỉnh bài viết' : 'Thêm bài viết',
+          _stickerEditing
+              ? 'Nhãn dán'
+              : _editing
+              ? 'Chỉnh bài viết'
+              : 'Thêm bài viết',
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
         ),
         leading: Padding(
@@ -172,7 +177,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              if (_editing) {
+              if (_stickerEditing) {
+                setState(() => _stickerEditing = false);
+              } else if (_editing) {
                 setState(() => _editing = false);
               } else if (widget.onPublished != null) {
                 Navigator.maybePop(context);
@@ -220,107 +227,136 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       ),
                     ],
                   ] else ...[
-                    _MediaPreview(
-                      state: state,
-                      onRemove: controller.removeMedia,
-                      onPlacementChanged: controller.updateStickerPlacement,
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        border: Border.all(color: AppColors.line),
-                        borderRadius: BorderRadius.circular(16),
+                    if (_stickerEditing) ...[
+                      _MediaPreview(
+                        state: state,
+                        onRemove: controller.removeMedia,
+                        onPlacementChanged: controller.updateStickerPlacement,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextField(
-                              key: CreatePostScreen.captionKey,
-                              controller: _caption,
-                              maxLength: 2000,
-                              maxLines: 5,
-                              decoration: const InputDecoration(
-                                labelText: 'Chú thích',
-                                border: OutlineInputBorder(),
+                      const SizedBox(height: 16),
+                      _StickerCard(
+                        state: state,
+                        controller: controller,
+                        onCustomSticker: _customSticker,
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: () =>
+                            setState(() => _stickerEditing = false),
+                        child: const Text('Hoàn tất'),
+                      ),
+                    ] else ...[
+                      _MediaPreview(
+                        state: state,
+                        onRemove: controller.removeMedia,
+                        onPlacementChanged: controller.updateStickerPlacement,
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          border: Border.all(color: AppColors.line),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextField(
+                                key: CreatePostScreen.captionKey,
+                                controller: _caption,
+                                maxLength: 2000,
+                                maxLines: 5,
+                                decoration: const InputDecoration(
+                                  labelText: 'Chú thích',
+                                  border: OutlineInputBorder(),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              key: CreatePostScreen.tagsKey,
-                              controller: _tags,
-                              decoration: const InputDecoration(
-                                labelText: 'Thẻ — tối đa 20',
-                                hintText: '#healthy dinner',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _VisibilitySelector(
-                              value: state.visibility,
-                              onChanged: controller.updateVisibility,
-                            ),
-                            if (state.media.length > 1) ...[
                               const SizedBox(height: 12),
-                              SegmentedButton<PostLayout>(
-                                segments: const [
-                                  ButtonSegment(
-                                    value: PostLayout.stack,
-                                    label: Text('Xếp chồng'),
-                                  ),
-                                  ButtonSegment(
-                                    value: PostLayout.grid,
-                                    label: Text('Lưới'),
-                                  ),
-                                  ButtonSegment(
-                                    value: PostLayout.cascade,
-                                    label: Text('So le'),
-                                  ),
-                                ],
-                                selected: {state.layout},
-                                onSelectionChanged: (selection) =>
-                                    controller.updateLayout(selection.first),
+                              TextField(
+                                key: CreatePostScreen.tagsKey,
+                                controller: _tags,
+                                decoration: const InputDecoration(
+                                  labelText: 'Thẻ — tối đa 20',
+                                  hintText: '#healthy dinner',
+                                  border: OutlineInputBorder(),
+                                ),
                               ),
+                              const SizedBox(height: 12),
+                              _VisibilitySelector(
+                                value: state.visibility,
+                                onChanged: controller.updateVisibility,
+                              ),
+                              if (state.media.length > 1) ...[
+                                const SizedBox(height: 12),
+                                SegmentedButton<PostLayout>(
+                                  segments: const [
+                                    ButtonSegment(
+                                      value: PostLayout.stack,
+                                      label: Text('Xếp chồng'),
+                                    ),
+                                    ButtonSegment(
+                                      value: PostLayout.grid,
+                                      label: Text('Lưới'),
+                                    ),
+                                    ButtonSegment(
+                                      value: PostLayout.cascade,
+                                      label: Text('So le'),
+                                    ),
+                                  ],
+                                  selected: {state.layout},
+                                  onSelectionChanged: (selection) =>
+                                      controller.updateLayout(selection.first),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _AnalysisCard(
-                      hints: _hints,
-                      state: state,
-                      onAnalyze: _analyze,
-                    ),
-                    const SizedBox(height: 16),
-                    _RecipeCard(
-                      enabled: _includeRecipe,
-                      onEnabledChanged: (value) =>
-                          setState(() => _includeRecipe = value),
-                      title: _recipeTitle,
-                      ingredients: _ingredients,
-                      steps: _steps,
-                    ),
-                    const SizedBox(height: 16),
-                    _StickerCard(
-                      state: state,
-                      controller: controller,
-                      onCustomSticker: _customSticker,
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton.icon(
-                      key: CreatePostScreen.publishKey,
-                      onPressed: state.isBusy ? null : _publish,
-                      icon: state.isBusy
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.publish_rounded),
-                      label: const Text('Đăng bài'),
-                    ),
+                      const SizedBox(height: 16),
+                      _AnalysisCard(
+                        hints: _hints,
+                        state: state,
+                        onAnalyze: _analyze,
+                      ),
+                      const SizedBox(height: 16),
+                      _RecipeCard(
+                        enabled: _includeRecipe,
+                        onEnabledChanged: (value) =>
+                            setState(() => _includeRecipe = value),
+                        title: _recipeTitle,
+                        ingredients: _ingredients,
+                        steps: _steps,
+                      ),
+                      const SizedBox(height: 16),
+                      _StickerEntry(
+                        selectedName: state.selectedStickerId == null
+                            ? null
+                            : state.stickers
+                                  .where(
+                                    (item) =>
+                                        item.id == state.selectedStickerId,
+                                  )
+                                  .map((item) => item.name)
+                                  .firstOrNull,
+                        onTap: () => setState(() => _stickerEditing = true),
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        key: CreatePostScreen.publishKey,
+                        onPressed: state.isBusy ? null : _publish,
+                        icon: state.isBusy
+                            ? const SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.publish_rounded),
+                        label: const Text('Đăng bài'),
+                      ),
+                    ],
                   ],
                   if (_localError ?? state.errorMessage case final error?) ...[
                     const SizedBox(height: 12),
@@ -855,6 +891,49 @@ class _VisibilitySelector extends StatelessWidget {
   );
 }
 
+class _StickerEntry extends StatelessWidget {
+  const _StickerEntry({required this.selectedName, required this.onTap});
+  final String? selectedName;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: const BorderSide(color: AppColors.line),
+    ),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundColor: Color(0xFFE8F0DE),
+              child: Icon(
+                Icons.emoji_emotions_outlined,
+                color: AppColors.greenDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedName == null
+                    ? 'Thêm nhãn dán'
+                    : 'Nhãn dán: $selectedName',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.greenDark),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class _StickerCard extends StatelessWidget {
   const _StickerCard({
     required this.state,
@@ -866,13 +945,26 @@ class _StickerCard extends StatelessWidget {
   final VoidCallback onCustomSticker;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(18),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Nhãn dán', style: Theme.of(context).textTheme.titleMedium),
+          const Text(
+            'Chọn nhãn dán',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Chạm vào nhãn dán rồi kéo trực tiếp trên ảnh để đặt vị trí.',
+            style: TextStyle(fontSize: 12, color: AppColors.muted),
+          ),
           const SizedBox(height: 10),
           if (controller.isPremium) ...[
             OutlinedButton.icon(
@@ -884,17 +976,20 @@ class _StickerCard extends StatelessWidget {
           ],
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: [
-              ChoiceChip(
-                label: const Text('Không dùng'),
+              _StickerChoice(
+                label: 'Không dùng',
+                icon: Icons.block,
                 selected: state.selectedStickerId == null,
-                onSelected: (_) => controller.selectSticker(null),
+                onTap: () => controller.selectSticker(null),
               ),
               for (final sticker in state.stickers)
-                ChoiceChip(
-                  label: Text(sticker.name),
+                _StickerChoice(
+                  label: sticker.name,
+                  icon: Icons.emoji_emotions,
                   selected: state.selectedStickerId == sticker.id,
-                  onSelected: (_) => controller.selectSticker(sticker.id),
+                  onTap: () => controller.selectSticker(sticker.id),
                 ),
             ],
           ),
@@ -931,6 +1026,46 @@ class _StickerCard extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    ),
+  );
+}
+
+class _StickerChoice extends StatelessWidget {
+  const _StickerChoice({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(14),
+    child: Container(
+      width: 104,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.yellow : AppColors.canvasStrong,
+        border: Border.all(color: selected ? AppColors.yellow : AppColors.line),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: selected ? AppColors.black : AppColors.greenDark),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11),
+          ),
         ],
       ),
     ),

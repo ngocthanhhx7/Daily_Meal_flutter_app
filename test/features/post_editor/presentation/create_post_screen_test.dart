@@ -151,6 +151,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('250 kcal'), findsOneWidget);
 
+    await tester.scrollUntilVisible(
+      find.text('Thêm nhãn dán'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -100));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Thêm nhãn dán'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nhãn dán'), findsOneWidget);
+    await tester.tap(find.text('Fresh'));
+    await tester.tap(find.text('Hoàn tất'));
+    await tester.pumpAndSettle();
+
     final publishButton = find.byKey(CreatePostScreen.publishKey);
     await tester.scrollUntilVisible(
       publishButton,
@@ -164,5 +178,6 @@ void main() {
     expect(published?.id, 'post-1');
     expect(repository.published?.caption, 'Bữa trưa');
     expect(repository.published?.tags, ['healthy', 'lunch']);
+    expect(repository.published?.stickerId, 'sticker-1');
   });
 }

@@ -50,6 +50,7 @@ Additional routing gaps:
 - Latest authenticated Android cold-start/Home: `C:\tmp\dailymeal-user-check.png`
 - Latest Android owner Profile: `C:\tmp\dailymeal-profile-check.png`
 - Comments production fallback/composer: `C:\tmp\dailymeal-comments-after.png`
+- Create Post Free capture state: `C:\tmp\dailymeal-create-capture.png`
 - Android debug build passed with production API defines.
 - Web release build passed with production API defines.
 - Full Flutter suite last verified at 185 passing tests after F014/F015; targeted Home/responsive tests passed after F016/F017.
@@ -141,4 +142,10 @@ calorie action, source public/friends visibility segments, bordered content
 surface and opt-in recipe switch. The non-source private dropdown and always-
 expanded recipe editor have been removed from the user-facing flow while the
 backend draft contract remains unchanged.
+
+Premium Create now opens sticker selection as a dedicated `Nhãn dán` step,
+keeps the media preview interactive, exposes none/server/custom choices plus
+scale and rotation, and returns through `Hoàn tất`. A regression test verifies
+the chosen sticker reaches the publish payload. Android debug and Web release
+builds both pass; the Free camera-only capture state was visually verified on AVD.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.
