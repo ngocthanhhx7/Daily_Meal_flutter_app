@@ -78,6 +78,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo/logo-square.png
+    - assets/backgrounds/background1.png
   fonts:
     - family: WorkSans
       fonts:

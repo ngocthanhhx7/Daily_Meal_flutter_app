@@ -88,32 +88,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         : widget.controller!.state;
     final registering = _mode == AuthFormMode.register;
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.black,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.zero,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: Card(
+              constraints: BoxConstraints(
+                maxWidth: 390,
+                minHeight: MediaQuery.sizeOf(context).height,
+              ),
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppColors.canvas,
+                  image: DecorationImage(
+                    image: AssetImage('assets/backgrounds/background1.png'),
+                    fit: BoxFit.fill,
+                  ),
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 236),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(
-                        Icons.restaurant_rounded,
-                        size: 56,
-                        color: AppColors.greenDark,
-                        semanticLabel: 'Daily Meal',
-                      ),
-                      const SizedBox(height: 12),
                       Text(
                         registering ? 'Tạo tài khoản' : 'Đăng nhập',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: AppColors.black,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.1,
+                            ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 2),
+                      Text(
+                        registering
+                            ? 'Bắt đầu hành trình ẩm thực của bạn.'
+                            : 'Chọn phương thức đăng nhập',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
+                      ),
+                      const SizedBox(height: 22),
                       SegmentedButton<bool>(
                         segments: const [
                           ButtonSegment(
