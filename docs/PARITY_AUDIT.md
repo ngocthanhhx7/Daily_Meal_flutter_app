@@ -4,7 +4,7 @@ Updated: 2026-07-13. Authorities, in order: production React Native source, prod
 
 ## Route coverage
 
-React Native registers 29 active routes in `client/src/navigation/AppNavigator.tsx`; Flutter now exposes all 29 route identities in `lib/app/router/app_route.dart`.
+React Native registers 28 active routes in `client/src/navigation/AppNavigator.tsx`; Flutter exposes all 28 route identities uniquely in `lib/app/router/app_route.dart`.
 
 | React Native route | Flutter mapping | Status | Priority |
 |---|---|---|---|
@@ -18,25 +18,24 @@ React Native registers 29 active routes in `client/src/navigation/AppNavigator.t
 | AdminUsers | `/admin/users` / restored Admin destination | Present and refresh-safe | P0 |
 | AdminUserDetail | `/admin/users/:id` / responsive detail workspace | Present and refresh-safe | P0 |
 
-Additional routing gaps:
+Routing notes:
 
-- Edit Post uses `/posts/:id/edit?authorId=` and restores through the author-posts contract after Web refresh.
-- Notification taps return to Home but do not focus the referenced post.
-- Android does not yet expose the `dailymeal://` VIEW/BROWSABLE scheme.
-- The production backend has no verified `GET /api/posts/:id`; Recipe and Edit Post therefore restore through `GET /api/users/:authorId/posts`. Notification focus still needs an author-aware destination or a backend single-post contract.
+- Edit Post and Recipe use author-aware URLs and restore through the production author-posts contract after Web refresh.
+- Notification post taps preserve `postId`; Like routes to Recipe, Comment routes to Comments, and general post targets focus Home.
+- Android exposes the React Native-compatible `dailymeal://` VIEW/BROWSABLE scheme. Verified HTTPS App Links still require Digital Asset Links on the production domain.
 
 ## UI priority matrix
 
 | Surface | Current parity | Remaining highest-impact work |
 |---|---|---|
 | Home header/action bar | Close | Replace remaining Material center icons, badge geometry and motion |
-| Home artwork | Close for one image | Dedicated 2/3/4-image spread, sticker placement, heart rain, expanded video |
+| Home artwork | Close | Complete device visual regression for 2/3/4-image spread and video |
 | Search/Profile/Inbox compact shell | Improved | Complete device-level visual regression and remaining post-result composition |
-| Edit Profile | Feature-complete baseline | Refine TextField/segment/chip geometry and picker permission copy |
-| Profile/Public Profile | Partial | Source header/menu/CTA geometry and dedicated public composition |
+| Edit Profile | Improved | Complete device visual regression and picker permission copy |
+| Profile/Public Profile | Improved | Complete device visual regression for populated profiles |
 | Comments | Improved | Complete populated-production visual regression and category sheet |
-| Recipe | Partial | Full-screen header/author footer and route identity |
-| Create/Edit Post | Improved | Finish Create edit/sticker cards and device visual regression |
+| Recipe | Close | Complete populated-production device visual regression |
+| Create/Edit Post | Improved | Complete Premium capture/sticker device visual regression |
 | Notifications/Chat/Settings | Improved | Complete device-level visual regression and refine edge states |
 | Admin Dashboard/KPI/Analytics | Partial-high | Chart hierarchy and responsive density |
 | Admin Posts/Payments/Reports/AI | Partial | Media previews, filters, charts and complete metadata |
@@ -54,16 +53,16 @@ Additional routing gaps:
 - Home production-media fallback restored: `C:\tmp\dailymeal-home-media-fallback.png`
 - Android debug build passed with production API defines.
 - Web release build passed with production API defines.
-- Full Flutter suite last verified at 185 passing tests after F014/F015; targeted Home/responsive tests passed after F016/F017.
-- Full Flutter suite verified at 203 passing tests after the source-style Edit Post slice; no-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
+- Full Flutter suite verified at 205 passing tests after dedicated Saved and Post Summary coverage.
+- No-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
 
-1. Finish Home 2/3/4-image layouts and source SVG/motion.
-2. Route and rebuild Comments/Recipe using a refresh-safe post retrieval contract.
-3. Refine Profile/Public Profile and Edit Profile visual geometry.
-4. Implement Admin Users and Admin User Detail as URL-addressable responsive screens.
-5. Complete remaining P1 user surfaces.
+1. Run the 28-route user/admin identity audit and complete user-route Android/Web screenshot coverage.
+2. Exercise populated Profile, Saved, Follows, Comments and Recipe states against production data.
+3. Exercise Premium Create video/multi-image/sticker states on Android and Web.
+4. Close remaining user accessibility, keyboard and media edge states.
+5. Resume the deferred Admin visual/parity audit only after user evidence is complete.
 
 Notification post taps now preserve `postId` in the Home URL and search a
 bounded number of feed pages before focusing the referenced post. Missing or

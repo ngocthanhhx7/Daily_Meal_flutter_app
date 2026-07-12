@@ -86,7 +86,7 @@ class _OnboardingBody extends StatelessWidget {
                           _OnboardingChip(
                             label: options[index],
                             selected: selected.contains(options[index]),
-                            alignment: _alignmentFor(index),
+                            alignment: _alignmentFor(index, interests),
                             onPressed: controller.isBusy
                                 ? null
                                 : () => interests
@@ -135,13 +135,6 @@ class _OnboardingBody extends StatelessWidget {
                                 )
                               : Text(interests ? 'Tiếp tục' : 'Vào Daily Meal'),
                         ),
-                        if (!interests)
-                          TextButton(
-                            onPressed: controller.isBusy
-                                ? null
-                                : controller.back,
-                            child: const Text('Quay lại'),
-                          ),
                       ],
                     ),
                   ),
@@ -172,11 +165,11 @@ class _OnboardingBody extends StatelessWidget {
   }
 }
 
-Alignment _alignmentFor(int index) => switch (index % 5) {
+Alignment _alignmentFor(int index, bool interests) => switch (index % 5) {
   0 => const Alignment(.9, 0),
-  1 => const Alignment(-.8, 0),
+  1 => interests ? const Alignment(-.8, 0) : const Alignment(-1, 0),
   2 => const Alignment(.2, 0),
-  3 => Alignment.centerLeft,
+  3 => interests ? Alignment.centerLeft : const Alignment(-.8, 0),
   _ => Alignment.centerRight,
 };
 

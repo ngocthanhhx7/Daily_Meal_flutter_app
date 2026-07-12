@@ -287,7 +287,22 @@ class _AuthorAvatar extends StatelessWidget {
                   ),
                 ),
               )
-            : Image.network(uri.toString(), fit: BoxFit.cover),
+            : Image.network(
+                uri.toString(),
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => ColoredBox(
+                  color: AppColors.canvasStrong,
+                  child: Center(
+                    child: Text(
+                      post.author.displayName.characters.first.toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.green,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -299,7 +314,7 @@ class _AuthorChip extends StatelessWidget {
   final MediaUrlResolver resolver;
   @override
   Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerLeft,
+    alignment: Alignment.center,
     child: Material(
       color: _themeColor(post.author.themeColor),
       borderRadius: BorderRadius.circular(24),
