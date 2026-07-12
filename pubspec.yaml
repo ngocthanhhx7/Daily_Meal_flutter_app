@@ -51,6 +51,7 @@ dependencies:
   socket_io_client: ^3.1.6
   url_launcher: ^6.3.2
   visibility_detector: ^0.4.0+2
+  share_plus: ^13.2.0
 
 dev_dependencies:
   flutter_test:

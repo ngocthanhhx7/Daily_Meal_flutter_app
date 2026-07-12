@@ -28,7 +28,11 @@ void main() {
     );
     expect(
       notificationDestination(item(NotificationType.like, postId: 'p1')),
-      NotificationDestination.home,
+      NotificationDestination.recipe,
+    );
+    expect(
+      notificationDestination(item(NotificationType.comment, postId: 'p1')),
+      NotificationDestination.comments,
     );
     expect(
       notificationDestination(item(NotificationType.comment)),

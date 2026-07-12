@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('renders per-image recipes and nutrition detail', (tester) async {
+  testWidgets('renders the source recipe composition and author footer', (
+    tester,
+  ) async {
     final post = FeedPost.fromJson({
       '_id': 'post-1',
       'author': {'id': 'user-1', 'displayName': 'Bếp Nhà'},
@@ -54,9 +56,10 @@ void main() {
     expect(find.text('Salad gà'), findsOneWidget);
     expect(find.textContaining('100g ức gà'), findsOneWidget);
     expect(find.text('Bước 2: Trộn salad'), findsOneWidget);
-    expect(find.text('Ức gà'), findsOneWidget);
-    expect(find.text('220 kcal'), findsOneWidget);
-    expect(find.text('Giá trị dinh dưỡng là ước tính'), findsOneWidget);
+    expect(find.text('Công thức'), findsOneWidget);
+    expect(find.byKey(const Key('recipe-fallback-artwork')), findsOneWidget);
+    expect(find.byKey(const Key('recipe-author-chip')), findsOneWidget);
+    expect(find.text('220 kcal'), findsNothing);
   });
 
   testWidgets('renders a clear empty state when recipe data is absent', (

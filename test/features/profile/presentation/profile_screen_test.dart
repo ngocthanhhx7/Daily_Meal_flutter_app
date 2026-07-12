@@ -13,6 +13,7 @@ import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 PublicUser _user({bool following = false}) => PublicUser.fromJson({
   'id': 'user-1',
@@ -107,6 +108,82 @@ class _Picker implements MediaPickerService {
 }
 
 void main() {
+  testWidgets('owner post preview opens the edit-post route', (tester) async {
+    final controller = ProfileController(
+      _Repository(),
+      userId: 'user-1',
+      isOwner: true,
+    );
+    addTearDown(controller.dispose);
+    await controller.load();
+    final router = GoRouter(
+      initialLocation: '/profile',
+      routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (_, _) => ProfileScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/posts/:id/edit',
+          name: 'editPost',
+          builder: (_, state) => Text('edit-${state.pathParameters['id']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('profile-post-post-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('edit-post-1'), findsOneWidget);
+  });
+
+  testWidgets('owner exposes the source profile menu and shares profile', (
+    tester,
+  ) async {
+    final controller = ProfileController(
+      _Repository(),
+      userId: 'user-1',
+      isOwner: true,
+    );
+    addTearDown(controller.dispose);
+    await controller.load();
+    String? sharedUserId;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: ProfileScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+            shareProfile: (user) async => sharedUserId = user.id,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('profile-secondary-action')));
+    await tester.pumpAndSettle();
+    expect(sharedUserId, 'user-1');
+
+    await tester.tap(find.byTooltip('Mở menu hồ sơ'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tin nhắn'), findsWidgets);
+    expect(find.text('Đổi mật khẩu'), findsOneWidget);
+    expect(find.text('Cài đặt'), findsOneWidget);
+    expect(find.text('Đăng xuất'), findsOneWidget);
+  });
+
   testWidgets(
     'public profile renders content, follows user and opens followers',
     (tester) async {

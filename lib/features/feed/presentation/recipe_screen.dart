@@ -46,10 +46,18 @@ class _RecipeScreenState extends ConsumerState<RecipeScreen> {
     try {
       final PostLookupRepositoryContract repository =
           widget.repository ?? ref.read(postLookupRepositoryProvider);
-      final post = await repository.findByAuthor(
-        postId: widget.postId,
-        authorId: widget.authorId,
-      );
+      final FeedPost post;
+      if (widget.authorId.isNotEmpty) {
+        post = await repository.findByAuthor(
+          postId: widget.postId,
+          authorId: widget.authorId,
+        );
+      } else {
+        final feed = ref.read(feedControllerProvider);
+        final index = await feed.findPost(widget.postId);
+        if (index < 0) throw StateError('Post is unavailable');
+        post = feed.state.posts[index];
+      }
       if (mounted) setState(() => _post = post);
     } catch (_) {
       if (mounted) {

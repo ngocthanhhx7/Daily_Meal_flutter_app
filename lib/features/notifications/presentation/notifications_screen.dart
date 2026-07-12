@@ -155,6 +155,16 @@ class NotificationsScreen extends ConsumerWidget {
               ? const {}
               : {'postId': item.postId!},
         );
+      case NotificationDestination.comments:
+        context.pushNamed(
+          AppRoute.comments.name,
+          pathParameters: {'id': item.postId!},
+        );
+      case NotificationDestination.recipe:
+        context.pushNamed(
+          AppRoute.recipe.name,
+          pathParameters: {'id': item.postId!},
+        );
     }
   }
 

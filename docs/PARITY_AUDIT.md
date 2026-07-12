@@ -65,4 +65,11 @@ deleted posts produce an explicit message instead of silently opening the
 wrong feed item. Android also accepts the React Native-compatible
 `dailymeal://` custom scheme; verified HTTPS App Links remain out of scope
 until `dailymeal.site` publishes Digital Asset Links.
+
+Profile owner parity now includes the source bottom-sheet menu, native
+Android/Web profile sharing, and post-grid navigation to the refresh-safe edit
+route. Recipe parity now uses the source full-screen header, artwork fallback,
+recipe-only content, author footer and author navigation. Search opens Recipe
+as a full screen, while post notifications follow the source mapping:
+Like -> Recipe and Comment -> Comments.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

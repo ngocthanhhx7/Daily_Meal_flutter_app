@@ -1,6 +1,6 @@
 enum NotificationType { like, comment, follow, message }
 
-enum NotificationDestination { home, inbox, publicProfile }
+enum NotificationDestination { home, inbox, publicProfile, comments, recipe }
 
 class NotificationSender {
   const NotificationSender({
@@ -84,6 +84,12 @@ NotificationDestination notificationDestination(AppNotification value) {
   }
   if (value.type == NotificationType.message) {
     return NotificationDestination.inbox;
+  }
+  if (value.postId != null && value.type == NotificationType.comment) {
+    return NotificationDestination.comments;
+  }
+  if (value.postId != null && value.type == NotificationType.like) {
+    return NotificationDestination.recipe;
   }
   return NotificationDestination.home;
 }

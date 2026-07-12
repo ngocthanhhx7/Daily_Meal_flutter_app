@@ -6,7 +6,6 @@ import 'package:daily_meal_flutter_app/core/widgets/daily_compact_post_preview.d
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
-import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutrition_sheet.dart';
 import 'package:daily_meal_flutter_app/features/search/application/search_controller.dart'
     as app_search;
 import 'package:daily_meal_flutter_app/features/search/application/search_providers.dart';
@@ -266,16 +265,12 @@ class _Results extends StatelessWidget {
     );
   }
 
-  void _recipe(BuildContext context, FeedPost post) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (_) => FractionallySizedBox(
-          heightFactor: 0.92,
-          child: RecipeNutritionSheet(post: post, resolver: resolver),
-        ),
-      );
+  void _recipe(BuildContext context, FeedPost post) => context.pushNamed(
+    AppRoute.recipe.name,
+    pathParameters: {'id': post.id},
+    queryParameters: {'authorId': post.author.id},
+    extra: post,
+  );
 }
 
 class _UserCard extends StatelessWidget {

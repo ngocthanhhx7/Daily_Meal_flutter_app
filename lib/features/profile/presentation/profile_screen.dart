@@ -15,6 +15,7 @@ import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({
@@ -23,6 +24,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
     this.mediaResolver,
     this.mediaPicker,
     this.showSaved = false,
+    this.shareProfile,
     super.key,
   });
   final String? userId;
@@ -30,6 +32,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
   final MediaUrlResolver? mediaResolver;
   final MediaPickerService? mediaPicker;
   final bool showSaved;
+  final Future<void> Function(PublicUser user)? shareProfile;
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -133,6 +136,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onMessage: controller.isOwner
                 ? null
                 : () => _startConversation(user),
+            onShare: controller.isOwner ? () => _shareProfile(user) : null,
+            onOwnerMenu: controller.isOwner
+                ? () => _openOwnerMenu(context)
+                : null,
           ),
         ),
         SliverToBoxAdapter(
@@ -142,7 +149,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onSelected: controller.selectTab,
           ),
         ),
-        _PostGrid(posts: posts, resolver: resolver),
+        _PostGrid(
+          posts: posts,
+          resolver: resolver,
+          onOpen: (post) {
+            if (controller.isOwner && state.tab == ProfileTab.posts) {
+              context.pushNamed(
+                AppRoute.editPost.name,
+                pathParameters: {'id': post.id},
+                queryParameters: {'authorId': post.author.id},
+                extra: post,
+              );
+              return;
+            }
+            context.goNamed(
+              AppRoute.home.name,
+              queryParameters: {'postId': post.id},
+            );
+          },
+        ),
       ],
     );
   }
@@ -166,6 +191,72 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     }
   }
+
+  Future<void> _shareProfile(PublicUser user) async {
+    if (widget.shareProfile case final share?) {
+      await share(user);
+      return;
+    }
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            '${user.displayName} trên Daily Meal '
+            'https://dailymeal.site/users/${user.id}',
+      ),
+    );
+  }
+
+  Future<void> _openOwnerMenu(BuildContext context) async {
+    final selection = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => const SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _OwnerMenuItem('inbox', Icons.chat_bubble_outline, 'Tin nhắn'),
+            _OwnerMenuItem('password', Icons.key_outlined, 'Đổi mật khẩu'),
+            _OwnerMenuItem('settings', Icons.settings_outlined, 'Cài đặt'),
+            _OwnerMenuItem('logout', Icons.logout, 'Đăng xuất', danger: true),
+          ],
+        ),
+      ),
+    );
+    if (!context.mounted || selection == null) return;
+    switch (selection) {
+      case 'inbox':
+        context.pushNamed(AppRoute.inbox.name);
+      case 'password':
+        context.pushNamed(AppRoute.changePassword.name);
+      case 'settings':
+        context.pushNamed(AppRoute.settings.name);
+      case 'logout':
+        await ref.read(authControllerProvider).logout();
+    }
+  }
+}
+
+class _OwnerMenuItem extends StatelessWidget {
+  const _OwnerMenuItem(
+    this.value,
+    this.icon,
+    this.label, {
+    this.danger = false,
+  });
+  final String value;
+  final IconData icon;
+  final String label;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    leading: Icon(icon, color: danger ? AppColors.red : AppColors.black),
+    title: Text(
+      label,
+      style: TextStyle(color: danger ? AppColors.red : AppColors.black),
+    ),
+    onTap: () => Navigator.pop(context, value),
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -176,6 +267,8 @@ class _Header extends StatelessWidget {
     required this.mediaPicker,
     required this.useInlineEditor,
     this.onMessage,
+    this.onShare,
+    this.onOwnerMenu,
   });
   final PublicUser user;
   final ProfileController controller;
@@ -183,6 +276,8 @@ class _Header extends StatelessWidget {
   final MediaPickerService mediaPicker;
   final bool useInlineEditor;
   final VoidCallback? onMessage;
+  final VoidCallback? onShare;
+  final VoidCallback? onOwnerMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +298,8 @@ class _Header extends StatelessWidget {
         onAvatar: () => _pickImage(ProfileImageKind.avatar),
         onCover: () => _pickImage(ProfileImageKind.cover),
         onMessage: onMessage,
+        onShare: onShare,
+        onOwnerMenu: onOwnerMenu,
         onFollow: () => controller.toggleFollow().catchError((_) {}),
         onSafety: (type) => _confirmSafety(context, type),
       );
@@ -613,6 +710,8 @@ class _SourceProfileHeader extends StatelessWidget {
     required this.onFollow,
     required this.onSafety,
     this.onMessage,
+    this.onShare,
+    this.onOwnerMenu,
   });
 
   final PublicUser user;
@@ -628,6 +727,8 @@ class _SourceProfileHeader extends StatelessWidget {
   final VoidCallback onFollow;
   final ValueChanged<String> onSafety;
   final VoidCallback? onMessage;
+  final VoidCallback? onShare;
+  final VoidCallback? onOwnerMenu;
 
   String get _handle {
     final normalized = user.displayName
@@ -674,77 +775,85 @@ class _SourceProfileHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  PopupMenuButton<String>(
-                    tooltip: isOwner ? 'Mở menu hồ sơ' : 'An toàn tài khoản',
-                    icon: const Icon(Icons.more_horiz, size: 26),
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'avatar':
-                          onAvatar();
-                        case 'cover':
-                          onCover();
-                        case 'blocked':
-                          context.pushNamed(AppRoute.blocked.name);
-                        case 'premium':
-                          context.pushNamed(AppRoute.premium.name);
-                        case 'settings':
-                          context.pushNamed(AppRoute.settings.name);
-                        case 'restrict':
-                        case 'block':
-                        case 'report':
-                          onSafety(value);
-                      }
-                    },
-                    itemBuilder: (_) => isOwner
-                        ? const [
-                            PopupMenuItem(
-                              value: 'avatar',
-                              child: Text('Đổi avatar'),
-                            ),
-                            PopupMenuItem(
-                              value: 'cover',
-                              child: Text('Đổi ảnh bìa'),
-                            ),
-                            PopupMenuItem(
-                              value: 'blocked',
-                              child: Text('Đã chặn'),
-                            ),
-                            PopupMenuItem(
-                              value: 'premium',
-                              child: Text('Daily Premium'),
-                            ),
-                            PopupMenuItem(
-                              value: 'settings',
-                              child: Text('Cài đặt'),
-                            ),
-                          ]
-                        : [
-                            PopupMenuItem(
-                              value: 'restrict',
-                              child: Text(
-                                user.viewerInteraction.restricted
-                                    ? 'Bỏ hạn chế'
-                                    : 'Hạn chế',
+                  if (isOwner)
+                    IconButton(
+                      key: const Key('profile-owner-menu'),
+                      tooltip: 'Mở menu hồ sơ',
+                      onPressed: onOwnerMenu,
+                      icon: const Icon(Icons.more_horiz, size: 26),
+                    )
+                  else
+                    PopupMenuButton<String>(
+                      tooltip: isOwner ? 'Mở menu hồ sơ' : 'An toàn tài khoản',
+                      icon: const Icon(Icons.more_horiz, size: 26),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'avatar':
+                            onAvatar();
+                          case 'cover':
+                            onCover();
+                          case 'blocked':
+                            context.pushNamed(AppRoute.blocked.name);
+                          case 'premium':
+                            context.pushNamed(AppRoute.premium.name);
+                          case 'settings':
+                            context.pushNamed(AppRoute.settings.name);
+                          case 'restrict':
+                          case 'block':
+                          case 'report':
+                            onSafety(value);
+                        }
+                      },
+                      itemBuilder: (_) => isOwner
+                          ? const [
+                              PopupMenuItem(
+                                value: 'avatar',
+                                child: Text('Đổi avatar'),
                               ),
-                            ),
-                            PopupMenuItem(
-                              value: 'block',
-                              child: Text(
-                                user.viewerInteraction.blocked
-                                    ? 'Bỏ chặn'
-                                    : 'Chặn',
+                              PopupMenuItem(
+                                value: 'cover',
+                                child: Text('Đổi ảnh bìa'),
                               ),
-                            ),
-                            PopupMenuItem(
-                              value: 'report',
-                              child: Text(
-                                user.viewerInteraction.reported
-                                    ? 'Gỡ báo cáo'
-                                    : 'Báo cáo',
+                              PopupMenuItem(
+                                value: 'blocked',
+                                child: Text('Đã chặn'),
                               ),
-                            ),
-                          ],
-                  ),
+                              PopupMenuItem(
+                                value: 'premium',
+                                child: Text('Daily Premium'),
+                              ),
+                              PopupMenuItem(
+                                value: 'settings',
+                                child: Text('Cài đặt'),
+                              ),
+                            ]
+                          : [
+                              PopupMenuItem(
+                                value: 'restrict',
+                                child: Text(
+                                  user.viewerInteraction.restricted
+                                      ? 'Bỏ hạn chế'
+                                      : 'Hạn chế',
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'block',
+                                child: Text(
+                                  user.viewerInteraction.blocked
+                                      ? 'Bỏ chặn'
+                                      : 'Chặn',
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'report',
+                                child: Text(
+                                  user.viewerInteraction.reported
+                                      ? 'Gỡ báo cáo'
+                                      : 'Báo cáo',
+                                ),
+                              ),
+                            ],
+                    ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -881,7 +990,11 @@ class _SourceProfileHeader extends StatelessWidget {
                           : user.relationship.isFollowing
                           ? 'Đang theo dõi'
                           : 'Theo dõi',
-                      onPressed: isOwner || followBusy ? null : onFollow,
+                      onPressed: isOwner
+                          ? onShare
+                          : followBusy
+                          ? null
+                          : onFollow,
                     ),
                   ),
                 ],
@@ -980,9 +1093,14 @@ class _Count extends StatelessWidget {
 }
 
 class _PostGrid extends StatelessWidget {
-  const _PostGrid({required this.posts, required this.resolver});
+  const _PostGrid({
+    required this.posts,
+    required this.resolver,
+    required this.onOpen,
+  });
   final List<FeedPost> posts;
   final MediaUrlResolver resolver;
+  final ValueChanged<FeedPost> onOpen;
   @override
   Widget build(BuildContext context) {
     if (posts.isEmpty) {
@@ -1004,9 +1122,11 @@ class _PostGrid extends StatelessWidget {
         itemBuilder: (_, index) {
           final post = posts[index];
           return DailyCompactPostPreview(
+            key: Key('profile-post-${post.id}'),
             post: post,
             resolver: resolver,
             showAuthor: false,
+            onOpen: () => onOpen(post),
           );
         },
       ),

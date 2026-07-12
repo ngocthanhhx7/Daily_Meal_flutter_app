@@ -56,7 +56,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.postId, 'p1');
     expect(repository.authorId, 'u1');
-    expect(find.text('Công thức & dinh dưỡng'), findsOneWidget);
+    expect(find.text('Công thức'), findsOneWidget);
+    expect(find.text('Bếp Nhà'), findsOneWidget);
+    expect(find.byKey(const Key('recipe-fallback-artwork')), findsOneWidget);
     expect(find.text('Salad gà'), findsOneWidget);
   });
 }
