@@ -418,17 +418,14 @@ class _Header extends StatelessWidget {
     );
   }
 
-  void _follows(BuildContext context, bool followers) =>
-      showModalBottomSheet<void>(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        builder: (_) => _FollowsSheet(
-          title: followers ? 'Người theo dõi' : 'Đang theo dõi',
-          future: controller.loadFollows(followers: followers),
-          resolver: resolver,
-        ),
-      );
+  void _follows(BuildContext context, bool followers) => context.pushNamed(
+    AppRoute.follows.name,
+    pathParameters: {'id': user.id},
+    queryParameters: {
+      'tab': followers ? 'followers' : 'following',
+      'name': user.displayName,
+    },
+  );
 
   Future<void> _edit(BuildContext context) async {
     var name = user.displayName;
@@ -1015,63 +1012,4 @@ class _PostGrid extends StatelessWidget {
       ),
     );
   }
-}
-
-class _FollowsSheet extends StatelessWidget {
-  const _FollowsSheet({
-    required this.title,
-    required this.future,
-    required this.resolver,
-  });
-  final String title;
-  final Future<List<PublicUser>> future;
-  final MediaUrlResolver resolver;
-  @override
-  Widget build(BuildContext context) => FractionallySizedBox(
-    heightFactor: .75,
-    child: Column(
-      children: [
-        ListTile(
-          title: Text(title),
-          trailing: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<List<PublicUser>>(
-            future: future,
-            builder: (_, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return const Center(child: Text('Không thể tải danh sách.'));
-              }
-              final users = snapshot.data ?? const [];
-              if (users.isEmpty) {
-                return const Center(child: Text('Danh sách đang trống.'));
-              }
-              return ListView.builder(
-                itemCount: users.length,
-                itemBuilder: (context, index) => ListTile(
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.person_outline),
-                  ),
-                  title: Text(users[index].displayName),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.pushNamed(
-                      AppRoute.publicProfile.name,
-                      pathParameters: {'id': users[index].id},
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    ),
-  );
 }

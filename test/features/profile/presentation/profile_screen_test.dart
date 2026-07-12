@@ -142,12 +142,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Đang theo dõi'), findsWidgets);
 
-      await tester.tap(find.byKey(const Key('profile-followers-count')));
-      await tester.pumpAndSettle();
-      expect(find.text('Bạn Bếp'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
-
       await tester.tap(find.byTooltip('An toàn tài khoản'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chặn'));

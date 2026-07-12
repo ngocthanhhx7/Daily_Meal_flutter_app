@@ -10,6 +10,7 @@ import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/edit_profile_screen.dart';
+import 'package:daily_meal_flutter_app/features/profile/presentation/follows_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/blocked_screen.dart';
 import 'package:daily_meal_flutter_app/features/messaging/presentation/inbox_screen.dart';
 import 'package:daily_meal_flutter_app/features/messaging/presentation/chat_screen.dart';
@@ -44,6 +45,13 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.saved => const ProfileScreen(showSaved: true),
             AppRoute.publicProfile => ProfileScreen(
               userId: state.pathParameters['id'],
+            ),
+            AppRoute.follows => FollowsScreen(
+              userId: state.pathParameters['id']!,
+              initialTab: state.uri.queryParameters['tab'] == 'following'
+                  ? FollowTab.following
+                  : FollowTab.followers,
+              displayName: state.uri.queryParameters['name'],
             ),
             AppRoute.blocked => const BlockedScreen(),
             AppRoute.inbox => const InboxScreen(),

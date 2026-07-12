@@ -8,6 +8,7 @@ enum AppRoute {
   editProfile('/profile/edit'),
   saved('/profile/saved'),
   publicProfile('/users/:id'),
+  follows('/users/:id/follows'),
   blocked('/profile/blocked'),
   inbox('/messages'),
   chat('/messages/:id'),
