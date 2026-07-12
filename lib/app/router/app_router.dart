@@ -28,6 +28,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   return GoRouter(
     initialLocation: AppRoute.login.path,
     refreshListenable: sessionState,
