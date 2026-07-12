@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/comments/application/comments_controller.dart';
 import 'package:daily_meal_flutter_app/features/comments/application/comments_providers.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
@@ -82,78 +83,80 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
 
   Widget _buildBody(CommentsController controller) {
     final state = controller.state;
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
-            child: Row(
-              children: [
-                Text(
-                  'Bình luận',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const Spacer(),
-                if (Navigator.canPop(context))
-                  IconButton(
-                    tooltip: 'Đóng',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(child: _commentsBody(state, controller)),
-          if (state.errorMessage case final error?)
+    return DailyMealBackground(
+      child: SafeArea(
+        child: Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                error,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+              child: Row(
+                children: [
+                  Text(
+                    'Bình luận',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Spacer(),
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      tooltip: 'Đóng',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                ],
               ),
             ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              10,
-              16,
-              12 + MediaQuery.viewInsetsOf(context).bottom,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: CommentsSheet.inputKey,
-                    controller: _input,
-                    minLines: 1,
-                    maxLines: 4,
-                    maxLength: 500,
-                    decoration: InputDecoration(
-                      hintText: 'Viết bình luận...',
-                      errorText: _validationMessage,
-                      border: const OutlineInputBorder(),
-                      counterText: '',
+            const Divider(height: 1),
+            Expanded(child: _commentsBody(state, controller)),
+            if (state.errorMessage case final error?)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  error,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                10,
+                16,
+                12 + MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      key: CommentsSheet.inputKey,
+                      controller: _input,
+                      minLines: 1,
+                      maxLines: 4,
+                      maxLength: 500,
+                      decoration: InputDecoration(
+                        hintText: 'Viết bình luận...',
+                        errorText: _validationMessage,
+                        border: const OutlineInputBorder(),
+                        counterText: '',
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  key: CommentsSheet.sendKey,
-                  tooltip: 'Gửi bình luận',
-                  onPressed: state.isSending ? null : () => _send(controller),
-                  icon: state.isSending
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    key: CommentsSheet.sendKey,
+                    tooltip: 'Gửi bình luận',
+                    onPressed: state.isSending ? null : () => _send(controller),
+                    icon: state.isSending
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.send_rounded),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

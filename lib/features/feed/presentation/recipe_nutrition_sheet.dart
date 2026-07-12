@@ -1,5 +1,6 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:flutter/material.dart';
 
@@ -35,71 +36,74 @@ class RecipeNutritionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipes = _recipes;
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 8, 8),
-            child: Row(
-              children: [
-                Text(
-                  'Công thức & dinh dưỡng',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const Spacer(),
-                if (Navigator.canPop(context))
-                  IconButton(
-                    tooltip: 'Đóng',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
+    return DailyMealBackground(
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 8, 8),
+              child: Row(
+                children: [
+                  Text(
+                    'Công thức & dinh dưỡng',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-              ],
+                  const Spacer(),
+                  if (Navigator.canPop(context))
+                    IconButton(
+                      tooltip: 'Đóng',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (recipes.isEmpty)
-                        const _EmptyRecipe()
-                      else
-                        for (
-                          var index = 0;
-                          index < recipes.length;
-                          index++
-                        ) ...[
-                          _RecipeCard(
-                            recipe: recipes[index],
-                            imageUri: _imageUri(recipes[index].imageIndex),
+            const Divider(height: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (recipes.isEmpty)
+                          const _EmptyRecipe()
+                        else
+                          for (
+                            var index = 0;
+                            index < recipes.length;
+                            index++
+                          ) ...[
+                            _RecipeCard(
+                              recipe: recipes[index],
+                              imageUri: _imageUri(recipes[index].imageIndex),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        if (post.nutritionDetails.isNotEmpty) ...[
+                          Text(
+                            'Chi tiết dinh dưỡng',
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                          const SizedBox(height: 16),
-                        ],
-                      if (post.nutritionDetails.isNotEmpty) ...[
-                        Text(
-                          'Chi tiết dinh dưỡng',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 12),
-                        for (final detail in post.nutritionDetails) ...[
-                          _NutritionCard(detail: detail),
                           const SizedBox(height: 12),
+                          for (final detail in post.nutritionDetails) ...[
+                            _NutritionCard(detail: detail),
+                            const SizedBox(height: 12),
+                          ],
+                        ] else if (post.nutritionSummary
+                            case final summary?) ...[
+                          _NutritionSummaryCard(summary: summary),
                         ],
-                      ] else if (post.nutritionSummary case final summary?) ...[
-                        _NutritionSummaryCard(summary: summary),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -142,14 +146,40 @@ class _RecipeCard extends StatelessWidget {
       children: [
         if (imageUri != null)
           AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Image.network(
-              imageUri.toString(),
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => const ColoredBox(
-                color: AppColors.canvasStrong,
-                child: Center(child: Icon(Icons.broken_image_outlined)),
-              ),
+            aspectRatio: 1.2,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  imageUri.toString(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const ColoredBox(
+                        color: AppColors.canvasStrong,
+                        child: Center(child: Icon(Icons.broken_image_outlined)),
+                      ),
+                ),
+                Positioned(
+                  left: 14,
+                  top: 14,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .92),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      child: Text(
+                        recipe.title.isEmpty ? 'Công thức' : recipe.title,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         Padding(
@@ -157,12 +187,14 @@ class _RecipeCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                recipe.title.isEmpty ? 'Công thức' : recipe.title,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              if (imageUri == null) ...[
+                Text(
+                  recipe.title.isEmpty ? 'Công thức' : recipe.title,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+              ],
               if (recipe.ingredients.isNotEmpty) ...[
-                const SizedBox(height: 16),
                 Text(
                   '1. Chuẩn bị nguyên liệu',
                   style: Theme.of(context).textTheme.titleMedium,
