@@ -5,6 +5,7 @@ import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/login_screen.dart';
 import 'package:daily_meal_flutter_app/features/auth/presentation/phone_auth_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 AppUser onboardedUser() => AppUser.fromJson({
@@ -107,5 +108,34 @@ void main() {
 
     expect(find.byKey(PhoneAuthForm.phoneFieldKey), findsOneWidget);
     expect(find.byKey(LoginScreen.emailFieldKey), findsNothing);
+  });
+
+  testWidgets('moves keyboard focus from email to password with Tab', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(controller: AuthController(_Repository()))),
+    );
+
+    await tester.tap(find.byKey(LoginScreen.emailFieldKey));
+    await tester.pump();
+    final emailEditable = tester.widget<EditableText>(
+      find.descendant(
+        of: find.byKey(LoginScreen.emailFieldKey),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(emailEditable.focusNode.hasFocus, isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+
+    final passwordEditable = tester.widget<EditableText>(
+      find.descendant(
+        of: find.byKey(LoginScreen.passwordFieldKey),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(passwordEditable.focusNode.hasFocus, isTrue);
   });
 }
