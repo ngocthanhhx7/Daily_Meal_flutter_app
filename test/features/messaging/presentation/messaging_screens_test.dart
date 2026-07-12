@@ -99,7 +99,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byKey(AdaptiveScaffold.compactNavigationKey), findsOneWidget);
+    expect(find.byKey(AdaptiveScaffold.compactNavigationKey), findsNothing);
     expect(find.text('Bếp Bạn'), findsOneWidget);
     expect(find.text('Chào bạn'), findsOneWidget);
   });

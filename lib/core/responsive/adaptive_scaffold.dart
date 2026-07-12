@@ -37,12 +37,7 @@ class AdaptiveScaffold extends StatelessWidget {
           return Scaffold(
             body: body,
             bottomNavigationBar: dailyMealStyle
-                ? _DailyMealBottomNavigation(
-                    key: compactNavigationKey,
-                    destinations: destinations,
-                    selectedIndex: selectedIndex,
-                    onDestinationSelected: onDestinationSelected,
-                  )
+                ? null
                 : NavigationBar(
                     key: compactNavigationKey,
                     selectedIndex: selectedIndex,
@@ -89,99 +84,6 @@ class AdaptiveScaffold extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _DailyMealBottomNavigation extends StatelessWidget {
-  const _DailyMealBottomNavigation({
-    required this.destinations,
-    required this.selectedIndex,
-    required this.onDestinationSelected,
-    super.key,
-  });
-
-  final List<AdaptiveDestination> destinations;
-  final int selectedIndex;
-  final ValueChanged<int> onDestinationSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final middle = <int>[
-      0,
-      2,
-      3,
-    ].where((index) => index < destinations.length).toList(growable: false);
-    return Material(
-      color: const Color(0xFFF5F5F5),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(34, 8, 34, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _PlainDestinationButton(
-                destination: destinations[1],
-                selected: selectedIndex == 1,
-                onPressed: () => onDestinationSelected(1),
-              ),
-              Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D0D0D),
-                  borderRadius: BorderRadius.circular(19),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final index in middle)
-                      IconButton(
-                        tooltip: destinations[index].label,
-                        onPressed: () => onDestinationSelected(index),
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 18,
-                        color: selectedIndex == index
-                            ? const Color(0xFFF6DE68)
-                            : Colors.white,
-                        icon: Icon(destinations[index].icon),
-                      ),
-                  ],
-                ),
-              ),
-              _PlainDestinationButton(
-                destination: destinations[4],
-                selected: selectedIndex == 4,
-                onPressed: () => onDestinationSelected(4),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PlainDestinationButton extends StatelessWidget {
-  const _PlainDestinationButton({
-    required this.destination,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  final AdaptiveDestination destination;
-  final bool selected;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: destination.label,
-      onPressed: onPressed,
-      iconSize: 22,
-      color: selected ? const Color(0xFF4F6F3D) : const Color(0xFF0D0D0D),
-      icon: Icon(destination.icon),
     );
   }
 }
