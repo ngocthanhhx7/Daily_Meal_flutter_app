@@ -45,6 +45,11 @@ class _Repository implements MessagingRepositoryContract {
       message('m2', body);
 }
 
+class _EmptyRepository extends _Repository {
+  @override
+  Future<List<Conversation>> conversations() async => const [];
+}
+
 class _Realtime implements RealtimeClient {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -74,6 +79,39 @@ class _Realtime implements RealtimeClient {
 }
 
 void main() {
+  testWidgets('inbox empty state matches the source composition', (
+    tester,
+  ) async {
+    final realtime = _Realtime();
+    final controller = InboxController(_EmptyRepository(), realtime);
+    await controller.initialize();
+    addTearDown(() {
+      controller.dispose();
+      realtime.dispose();
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: InboxScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.chat_bubble_outline_rounded), findsOneWidget);
+    expect(find.text('Chưa có tin nhắn'), findsOneWidget);
+    expect(
+      find.text('Mở trang cá nhân người khác và nhấn Nhắn tin để bắt đầu.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('inbox renders responsive conversation list', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;

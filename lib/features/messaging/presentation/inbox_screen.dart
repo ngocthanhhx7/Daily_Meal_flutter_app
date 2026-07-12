@@ -134,9 +134,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
       );
     }
     if (controller.conversations.isEmpty) {
-      return const Center(
-        child: Text('Chưa có tin nhắn. Hãy mở hồ sơ một người để bắt đầu.'),
-      );
+      return const Center(child: _InboxEmptyState());
     }
     return RefreshIndicator(
       onRefresh: controller.load,
@@ -191,4 +189,51 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     pathParameters: {'id': conversation.id},
     extra: conversation.otherUser,
   );
+}
+
+class _InboxEmptyState extends StatelessWidget {
+  const _InboxEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.canvas,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: 28,
+              color: AppColors.muted,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Chưa có tin nhắn',
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: const Text(
+              'Mở trang cá nhân người khác và nhấn Nhắn tin để bắt đầu.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.muted),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
