@@ -110,50 +110,76 @@ class _ImageCarousel extends StatefulWidget {
 }
 
 class _ImageCarouselState extends State<_ImageCarousel> {
-  int _page = 0;
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        AspectRatio(
-          aspectRatio: 4 / 3,
-          child: PageView.builder(
-            itemCount: widget.images.length,
-            onPageChanged: (value) => setState(() => _page = value),
-            itemBuilder: (context, index) => Image.network(
-              widget.images[index].toString(),
-              fit: BoxFit.cover,
-              semanticLabel: 'Ảnh món ăn ${index + 1}',
-              errorBuilder: (context, error, stackTrace) => const ColoredBox(
-                color: Color(0xFFECE9DF),
-                child: Center(child: Icon(Icons.broken_image_outlined)),
-              ),
-            ),
-          ),
-        ),
-        if (widget.images.length > 1)
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+    final images = widget.images.take(3).toList(growable: false);
+    return SizedBox(
+      height: 390,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final cardWidth = constraints.maxWidth * 0.72;
+          final cardHeight = 330.0;
+          final offsets = switch (images.length) {
+            1 => [Offset((constraints.maxWidth - cardWidth) / 2, 22)],
+            2 => [
+              const Offset(8, 35),
+              Offset(constraints.maxWidth - cardWidth - 8, 10),
+            ],
+            _ => [
+              const Offset(4, 42),
+              Offset((constraints.maxWidth - cardWidth) / 2, 4),
+              Offset(constraints.maxWidth - cardWidth - 4, 48),
+            ],
+          };
+          final rotations = switch (images.length) {
+            1 => [0.0],
+            2 => [-0.055, 0.045],
+            _ => [-0.075, 0.02, 0.07],
+          };
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              for (var index = 0; index < images.length; index++)
+                Positioned(
+                  left: offsets[index].dx,
+                  top: offsets[index].dy,
+                  width: cardWidth,
+                  height: cardHeight,
+                  child: Transform.rotate(
+                    angle: rotations[index],
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.34),
+                            offset: Offset(0, 16),
+                            blurRadius: 24,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: Image.network(
+                          images[index].toString(),
+                          fit: BoxFit.cover,
+                          semanticLabel: 'Ảnh món ăn ${index + 1}',
+                          errorBuilder: (context, error, stackTrace) =>
+                              const ColoredBox(
+                                color: Color(0xFFECE9DF),
+                                child: Center(
+                                  child: Icon(Icons.broken_image_outlined),
+                                ),
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                child: Text(
-                  '${_page + 1}/${widget.images.length}',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-      ],
+            ],
+          );
+        },
+      ),
     );
   }
 }

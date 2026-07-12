@@ -133,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           children: [
             Material(
-              color: AppColors.surface,
+              color: Colors.transparent,
               child: SafeArea(
                 bottom: false,
                 child: Padding(
@@ -143,14 +143,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.restaurant_rounded,
-                        color: AppColors.greenDark,
-                      ),
-                      const SizedBox(width: 10),
                       Text(
-                        'Daily Meal',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        'Bảng tin',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: AppColors.greenDark,
+                              fontSize: 34,
+                              height: 42 / 34,
+                            ),
                       ),
                       const Spacer(),
                       IconButton(
@@ -177,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: ListView.separated(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                     itemCount: posts.length + (state.isLoadingMore ? 1 : 0),
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
@@ -193,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       final post = posts[index];
                       return Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 680),
+                          constraints: const BoxConstraints(maxWidth: 383),
                           child: FeedPostCard(
                             post: post,
                             resolver: resolver,

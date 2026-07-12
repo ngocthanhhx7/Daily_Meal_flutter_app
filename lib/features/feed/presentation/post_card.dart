@@ -31,121 +31,226 @@ class FeedPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nutrition = post.nutritionSummary;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppColors.green,
-              child: Text(
-                post.author.displayName.characters.first.toUpperCase(),
-                style: const TextStyle(color: Colors.white),
+    final caption = post.caption.isEmpty
+        ? 'Một bữa ăn đáng nhớ trong ngày.'
+        : post.caption;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            PostMedia(
+              post: post,
+              resolver: resolver,
+              onDoubleTapLike: interactionBusy ? () {} : onLike,
+            ),
+            Positioned(
+              right: 8,
+              top: 0,
+              child: _OverlayPill(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.chat_bubble_outline, size: 13),
+                    const SizedBox(width: 3),
+                    Text('${post.stats.comments}'),
+                    const SizedBox(width: 7),
+                    const Icon(
+                      Icons.favorite_rounded,
+                      size: 13,
+                      color: AppColors.red,
+                    ),
+                    const SizedBox(width: 3),
+                    Text('${post.stats.likes}'),
+                  ],
+                ),
               ),
             ),
-            title: Text(
-              post.author.displayName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              post.author.isPremium
-                  ? 'Premium creator • ${post.author.streakDays} ngày liên tiếp'
-                  : 'Food journal • ${post.author.streakDays} ngày liên tiếp',
-            ),
-            trailing: isOwner
-                ? IconButton(
-                    tooltip: 'Quản lý bài viết',
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.more_horiz_rounded),
-                  )
-                : null,
-          ),
-          PostMedia(
-            post: post,
-            resolver: resolver,
-            onDoubleTapLike: interactionBusy ? () {} : onLike,
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (post.sticker != null) ...[
-                  Chip(label: Text(post.sticker!.name)),
-                  const SizedBox(height: 8),
-                ],
-                Text(
-                  post.caption.isEmpty
-                      ? 'Một bữa ăn đáng nhớ trong ngày.'
-                      : post.caption,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+            Positioned(
+              left: 4,
+              bottom: 18,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 210),
+                child: _OverlayPill(
+                  child: Text(
+                    caption,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                if (post.tags.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+              ),
+            ),
+            if (post.sticker != null)
+              Positioned(
+                right: 2,
+                bottom: 0,
+                child: Image.asset(
+                  'assets/stickers/openmoji-yum.png',
+                  width: 56,
+                  height: 56,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            if (isOwner)
+              Positioned(
+                right: 0,
+                top: 40,
+                child: IconButton.filledTonal(
+                  tooltip: 'Quản lý bài viết',
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.more_horiz_rounded),
+                ),
+              ),
+          ],
+        ),
+        Transform.translate(
+          offset: const Offset(0, -8),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.green,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.12),
+                  offset: Offset(0, 4),
+                  blurRadius: 9,
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 10,
+                    backgroundColor: AppColors.surface,
+                    child: Text(
+                      post.author.displayName.characters.first.toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.greenDark,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    post.author.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (post.tags.isNotEmpty || nutrition != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              children: [
+                if (post.tags.isNotEmpty)
                   Text(
                     post.tags.map((tag) => '#$tag').join('  '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.muted),
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontSize: 11,
+                    ),
                   ),
-                ],
-                if (nutrition != null) ...[
-                  const SizedBox(height: 10),
+                if (nutrition != null)
                   Text(
-                    '${nutrition.calories.round()} kcal • '
-                    'P ${nutrition.protein.round()}g • '
-                    'C ${nutrition.carbs.round()}g • '
-                    'F ${nutrition.fat.round()}g',
-                    style: Theme.of(context).textTheme.labelMedium,
+                    '${nutrition.calories.round()} kcal',
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontSize: 11,
+                    ),
                   ),
-                ],
               ],
             ),
           ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                _Action(
-                  key: Key('like-${post.id}'),
-                  icon: post.viewerState.liked
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
-                  color: post.viewerState.liked ? AppColors.red : null,
-                  count: post.stats.likes,
-                  tooltip: 'Thích bài viết',
-                  onPressed: interactionBusy ? null : onLike,
-                ),
-                _Action(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  count: post.stats.comments,
-                  tooltip: 'Bình luận',
-                  onPressed: onComment,
-                ),
-                _Action(
-                  key: Key('save-${post.id}'),
-                  icon: post.viewerState.saved
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_border_rounded,
-                  count: post.stats.saves,
-                  tooltip: 'Lưu bài viết',
-                  onPressed: interactionBusy ? null : onSave,
-                ),
-                const Spacer(),
-                IconButton(
-                  tooltip: 'Công thức',
-                  onPressed: onRecipe,
-                  icon: const Icon(Icons.restaurant_outlined),
-                ),
-              ],
-            ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.black,
+            borderRadius: BorderRadius.circular(22),
           ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _Action(
+                key: Key('like-${post.id}'),
+                icon: post.viewerState.liked
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: post.viewerState.liked ? AppColors.red : AppColors.white,
+                count: post.stats.likes,
+                tooltip: 'Thích bài viết',
+                onPressed: interactionBusy ? null : onLike,
+              ),
+              _Action(
+                icon: Icons.chat_bubble_outline_rounded,
+                count: post.stats.comments,
+                tooltip: 'Bình luận',
+                color: AppColors.white,
+                onPressed: onComment,
+              ),
+              _Action(
+                key: Key('save-${post.id}'),
+                icon: post.viewerState.saved
+                    ? Icons.bookmark_rounded
+                    : Icons.bookmark_border_rounded,
+                count: post.stats.saves,
+                tooltip: 'Lưu bài viết',
+                color: post.viewerState.saved
+                    ? AppColors.yellow
+                    : AppColors.white,
+                onPressed: interactionBusy ? null : onSave,
+              ),
+              IconButton(
+                tooltip: 'Công thức',
+                onPressed: onRecipe,
+                color: AppColors.white,
+                icon: const Icon(Icons.restaurant_outlined, size: 18),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OverlayPill extends StatelessWidget {
+  const _OverlayPill({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .92),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, offset: Offset(0, 3), blurRadius: 7),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        child: DefaultTextStyle(
+          style: const TextStyle(color: AppColors.black, fontSize: 10),
+          child: child,
+        ),
       ),
     );
   }
@@ -176,15 +281,17 @@ class _Action extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(24),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          constraints: const BoxConstraints(minWidth: 42, minHeight: 42),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: 21, color: color),
-                const SizedBox(width: 5),
-                Text('$count'),
+                if (tooltip == 'Lưu bài viết') ...[
+                  const SizedBox(width: 4),
+                  Text('$count', style: TextStyle(color: color)),
+                ],
               ],
             ),
           ),
