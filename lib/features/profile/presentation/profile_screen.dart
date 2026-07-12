@@ -2,6 +2,7 @@ import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -91,8 +92,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         context.goNamed(AppRoute.profile.name);
       }
     },
-    body: ColoredBox(
-      color: AppColors.canvas,
+    body: DailyMealBackground(
       child: _content(
         controller,
         widget.mediaResolver ?? ref.watch(mediaUrlResolverProvider),

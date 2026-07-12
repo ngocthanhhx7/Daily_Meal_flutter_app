@@ -2,6 +2,7 @@ import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -68,8 +69,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       if (index == 4) context.goNamed(AppRoute.profile.name);
       if (index == 3) context.goNamed(AppRoute.inbox.name);
     },
-    body: ColoredBox(
-      color: AppColors.canvas,
+    body: DailyMealBackground(
       child: SafeArea(
         child: Column(
           children: [

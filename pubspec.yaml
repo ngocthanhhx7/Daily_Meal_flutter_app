@@ -77,8 +77,14 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/logo/logo-square.png
-    - assets/backgrounds/background1.png
+    - assets/avatar/
+    - assets/backgrounds/
+    - assets/feed/
+    - assets/figma-snapshots/
+    - assets/icons/Dark/
+    - assets/icons/White/
+    - assets/logo/
+    - assets/stickers/
   fonts:
     - family: WorkSans
       fonts:
