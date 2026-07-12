@@ -6,7 +6,7 @@ import 'package:daily_meal_flutter_app/features/onboarding/presentation/onboardi
 import 'package:daily_meal_flutter_app/features/feed/presentation/home_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_screen.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_post_screen.dart';
-import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_screen.dart';
+import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_route_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
@@ -92,14 +92,15 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
               userId: state.pathParameters['id']!,
             ),
             AppRoute.createPost => const CreatePostScreen(),
-            AppRoute.editPost =>
-              state.extra is FeedPost
-                  ? EditPostScreen(
-                      post: state.extra! as FeedPost,
-                      onUpdated: (post) => context.pop(post),
-                      onDeleted: (id) => context.pop(id),
-                    )
-                  : FoundationRouteProbe(route: route),
+            AppRoute.editPost => EditPostRouteScreen(
+              postId: state.pathParameters['id']!,
+              authorId:
+                  state.uri.queryParameters['authorId'] ??
+                  (state.extra is FeedPost
+                      ? (state.extra! as FeedPost).author.id
+                      : ''),
+              post: state.extra is FeedPost ? state.extra! as FeedPost : null,
+            ),
           },
         ),
     ],

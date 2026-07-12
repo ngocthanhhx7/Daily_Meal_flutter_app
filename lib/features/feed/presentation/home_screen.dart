@@ -299,6 +299,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _editPost(FeedController controller, FeedPost post) async {
     final result = await context.pushNamed<Object?>(
       AppRoute.editPost.name,
+      pathParameters: {'id': post.id},
+      queryParameters: {'authorId': post.author.id},
       extra: post,
     );
     if (!mounted) return;

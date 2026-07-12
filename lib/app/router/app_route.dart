@@ -23,7 +23,7 @@ enum AppRoute {
   support('/support'),
   shareAccount('/profile/share'),
   createPost('/create'),
-  editPost('/posts/edit'),
+  editPost('/posts/:id/edit'),
   adminDashboard('/admin'),
   adminUsers('/admin/users'),
   adminUserDetail('/admin/users/:id');
