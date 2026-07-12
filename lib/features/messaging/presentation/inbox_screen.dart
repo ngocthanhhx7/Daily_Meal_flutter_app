@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
+import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
@@ -68,10 +69,15 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            const ListTile(
-              leading: Icon(Icons.chat_bubble_outline_rounded),
-              title: Text('Tin nhắn'),
-              subtitle: Text('Các cuộc trò chuyện trong Daily Meal'),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Tin nhắn',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
             Expanded(
               child: _content(
@@ -111,8 +117,18 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         itemBuilder: (context, index) {
           final conversation = controller.conversations[index];
           final avatar = resolver.resolve(conversation.otherUser.avatarUrl);
-          return Card(
+          return Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(18),
             child: ListTile(
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(color: AppColors.line),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 6,
+              ),
               leading: CircleAvatar(
                 backgroundImage: avatar == null
                     ? null

@@ -1,5 +1,6 @@
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/notifications/application/notifications_controller.dart';
 import 'package:daily_meal_flutter_app/features/notifications/application/notifications_providers.dart';
 import 'package:daily_meal_flutter_app/features/notifications/domain/app_notification.dart';
@@ -31,7 +32,12 @@ class NotificationsScreen extends ConsumerWidget {
           );
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thông báo'),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Thông báo',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
         actions: [
           if (value.unreadCount > 0)
             TextButton(
@@ -46,11 +52,13 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          if (push != null) _WebPushBanner(controller: push),
-          Expanded(child: body),
-        ],
+      body: DailyMealBackground(
+        child: Column(
+          children: [
+            if (push != null) _WebPushBanner(controller: push),
+            Expanded(child: body),
+          ],
+        ),
       ),
     );
   }
@@ -96,11 +104,14 @@ class NotificationsScreen extends ConsumerWidget {
               ),
             ),
             onDismissed: (_) => controller.delete(item.id).catchError((_) {}),
-            child: Card(
-              color: item.read
-                  ? AppColors.surface
-                  : Theme.of(context).colorScheme.primaryContainer,
+            child: Material(
+              color: item.read ? AppColors.surface : AppColors.canvasStrong,
+              borderRadius: BorderRadius.circular(14),
               child: ListTile(
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(color: AppColors.line),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 leading: CircleAvatar(child: Icon(_icon(item.type))),
                 title: Text(item.sender?.displayName ?? 'Daily Meal'),
                 subtitle: Text(item.body),

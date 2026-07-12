@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/messaging/application/chat_controller.dart';
 import 'package:daily_meal_flutter_app/features/messaging/application/messaging_providers.dart';
@@ -62,12 +63,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         widget.currentUserId ??
         ref.watch(authControllerProvider).state.user?.id;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.otherUser?.displayName ?? 'Tin nhắn')),
-      body: ColoredBox(
-        color: AppColors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          widget.otherUser?.displayName ?? 'Tin nhắn',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: DailyMealBackground(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
+            constraints: const BoxConstraints(maxWidth: 390),
             child: Column(
               children: [
                 Expanded(
@@ -86,7 +93,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   : Alignment.centerLeft,
                               child: Container(
                                 constraints: const BoxConstraints(
-                                  maxWidth: 560,
+                                  maxWidth: 270,
                                 ),
                                 margin: const EdgeInsets.only(bottom: 8),
                                 padding: const EdgeInsets.symmetric(
@@ -95,13 +102,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: mine
-                                      ? Theme.of(
-                                          context,
-                                        ).colorScheme.primaryContainer
+                                      ? AppColors.green
                                       : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: const Radius.circular(16),
+                                    topRight: const Radius.circular(16),
+                                    bottomLeft: Radius.circular(mine ? 16 : 2),
+                                    bottomRight: Radius.circular(mine ? 2 : 16),
+                                  ),
+                                  border: mine
+                                      ? null
+                                      : Border.all(color: AppColors.line),
                                 ),
-                                child: Text(message.body),
+                                child: Text(
+                                  message.body,
+                                  style: TextStyle(
+                                    color: mine
+                                        ? AppColors.white
+                                        : AppColors.ink,
+                                  ),
+                                ),
                               ),
                             );
                           },
