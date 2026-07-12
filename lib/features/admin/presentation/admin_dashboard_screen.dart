@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_error_view.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_loading_view.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_dashboard_controller.dart';
@@ -8,6 +7,7 @@ import 'package:daily_meal_flutter_app/features/admin/application/admin_provider
 import 'package:daily_meal_flutter_app/features/admin/application/admin_management_controller.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_analytics_controller.dart';
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
+import 'package:daily_meal_flutter_app/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,36 +55,49 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
     return ListenableBuilder(
       listenable: Listenable.merge([controller, management, analytics]),
-      builder: (context, _) => AdaptiveScaffold(
+      builder: (context, _) => AdminScaffold(
         selectedIndex: _destination,
         onDestinationSelected: (value) {
           setState(() => _destination = value);
           final future = switch (value) {
-            1 => management.loadUsers(),
-            2 => management.loadPosts(),
-            3 => management.loadReports(),
-            4 => management.loadPayments(),
-            5 => analytics.load(),
+            1 || 2 || 6 => analytics.load(),
+            3 => management.loadPosts(),
+            4 => management.loadReports(),
+            5 => management.loadPayments(),
+            7 => management.loadUsers(),
             _ => Future<void>.value(),
           };
           future.catchError((_) {});
         },
+        onRefresh: () {
+          final future = switch (_destination) {
+            0 => controller.load(),
+            1 || 2 || 6 => analytics.load(),
+            3 => management.loadPosts(),
+            4 => management.loadReports(),
+            5 => management.loadPayments(),
+            7 => management.loadUsers(),
+            _ => Future<void>.value(),
+          };
+          future.catchError((_) {});
+        },
+        onLogout:
+            widget.onLogout ?? () => ref.read(authControllerProvider).logout(),
         destinations: const [
-          AdaptiveDestination(
-            icon: Icons.dashboard_outlined,
-            label: 'Tổng quan',
+          AdminDestination(icon: Icons.dashboard_outlined, label: 'Tổng quan'),
+          AdminDestination(
+            icon: Icons.schedule_outlined,
+            label: 'Analytics 24h',
           ),
-          AdaptiveDestination(icon: Icons.people_outline, label: 'Người dùng'),
-          AdaptiveDestination(icon: Icons.article_outlined, label: 'Bài viết'),
-          AdaptiveDestination(icon: Icons.flag_outlined, label: 'Báo cáo'),
-          AdaptiveDestination(
-            icon: Icons.payments_outlined,
-            label: 'Thanh toán',
+          AdminDestination(icon: Icons.speed_outlined, label: 'KPI'),
+          AdminDestination(icon: Icons.article_outlined, label: 'Bài đăng'),
+          AdminDestination(icon: Icons.flag_outlined, label: 'Báo cáo'),
+          AdminDestination(icon: Icons.payments_outlined, label: 'Thanh toán'),
+          AdminDestination(
+            icon: Icons.auto_awesome_outlined,
+            label: 'Báo cáo AI',
           ),
-          AdaptiveDestination(
-            icon: Icons.analytics_outlined,
-            label: 'Phân tích',
-          ),
+          AdminDestination(icon: Icons.people_outline, label: 'Người dùng'),
         ],
         body: switch (_destination) {
           0 => _DashboardBody(
@@ -93,11 +106,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 widget.onLogout ??
                 () => ref.read(authControllerProvider).logout(),
           ),
-          1 => _UsersSection(controller: management),
-          2 => _PostsSection(controller: management),
-          3 => _ReportsSection(controller: management),
-          4 => _PaymentsSection(controller: management),
-          _ => _AnalyticsSection(controller: analytics),
+          1 || 2 || 6 => _AnalyticsSection(controller: analytics),
+          3 => _PostsSection(controller: management),
+          4 => _ReportsSection(controller: management),
+          5 => _PaymentsSection(controller: management),
+          _ => _UsersSection(controller: management),
         },
       ),
     );
@@ -184,20 +197,12 @@ class _DashboardBody extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverLayoutBuilder(
               builder: (context, constraints) {
-                final columns = constraints.crossAxisExtent >= 900
-                    ? 4
-                    : constraints.crossAxisExtent >= 560
-                    ? 2
-                    : 1;
+                final columns = constraints.crossAxisExtent >= 900 ? 4 : 2;
                 return SliverGrid.count(
                   crossAxisCount: columns,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: columns == 1
-                      ? 3.1
-                      : columns == 2
-                      ? 2
-                      : 1.6,
+                  childAspectRatio: columns == 2 ? .95 : 1.6,
                   children: [
                     _KpiCard(
                       label: 'Tổng người dùng',
@@ -276,16 +281,27 @@ class _KpiCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11, height: 1.2),
+                ),
                 Text(
                   value,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  style: const TextStyle(
+                    fontSize: 22,
+                    height: 1.2,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
                   delta,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
+                    fontSize: 10,
+                    height: 1.2,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),

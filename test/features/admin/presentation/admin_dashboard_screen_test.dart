@@ -4,7 +4,7 @@ import 'package:daily_meal_flutter_app/features/admin/application/admin_analytic
 import 'package:daily_meal_flutter_app/features/admin/data/admin_repository.dart';
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
-import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
+import 'package:daily_meal_flutter_app/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -101,7 +101,7 @@ Future<void> pump(WidgetTester tester, Size size) async {
 void main() {
   testWidgets('uses compact navigation and shows KPI cards', (tester) async {
     await pump(tester, const Size(390, 844));
-    expect(find.byKey(AdaptiveScaffold.compactNavigationKey), findsOneWidget);
+    expect(find.byKey(AdminScaffold.compactNavigationKey), findsOneWidget);
     expect(find.text('Tổng người dùng'), findsOneWidget);
     expect(find.text('120'), findsOneWidget);
     expect(find.text('Xu hướng tương tác'), findsOneWidget);
@@ -109,7 +109,7 @@ void main() {
 
   testWidgets('uses expanded navigation on desktop web', (tester) async {
     await pump(tester, const Size(1440, 900));
-    expect(find.byKey(AdaptiveScaffold.expandedNavigationKey), findsOneWidget);
+    expect(find.byKey(AdminScaffold.desktopNavigationKey), findsOneWidget);
     expect(find.text('Daily Meal Admin'), findsOneWidget);
   });
 
@@ -117,6 +117,8 @@ void main() {
     tester,
   ) async {
     await pump(tester, const Size(390, 844));
+    await tester.ensureVisible(find.text('Người dùng'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Người dùng'));
     await tester.pumpAndSettle();
     expect(find.text('Quản lý người dùng'), findsOneWidget);
@@ -128,7 +130,7 @@ void main() {
     tester,
   ) async {
     await pump(tester, const Size(1440, 900));
-    await tester.tap(find.text('Phân tích'));
+    await tester.tap(find.text('Analytics 24h'));
     await tester.pumpAndSettle();
     expect(find.text('Analytics 24 giờ'), findsOneWidget);
     expect(find.text('Heatmap events'), findsOneWidget);
