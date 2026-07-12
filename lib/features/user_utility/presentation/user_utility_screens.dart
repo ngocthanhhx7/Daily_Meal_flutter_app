@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/auth/services/social_identity_provider.dart';
@@ -209,7 +210,7 @@ class _GoogleLinkTileState extends ConsumerState<_GoogleLinkTile> {
       );
       if (mounted) setState(() => ready = true);
     } catch (value) {
-      if (mounted) setState(() => error = value.toString());
+      if (mounted) setState(() => error = userErrorMessage(value));
     }
   }
 
@@ -230,7 +231,7 @@ class _GoogleLinkTileState extends ConsumerState<_GoogleLinkTile> {
         ).showSnackBar(const SnackBar(content: Text('Đã liên kết Google.')));
       }
     } catch (value) {
-      if (mounted) setState(() => error = value.toString());
+      if (mounted) setState(() => error = userErrorMessage(value));
     } finally {
       if (mounted) setState(() => busy = false);
     }

@@ -20,7 +20,29 @@ abstract interface class SocialIdentityProvider {
   void dispose();
 }
 
+class SocialSdkInitializer {
+  Future<void>? _initialization;
+
+  Future<void> run(Future<void> Function() initialize) {
+    final existing = _initialization;
+    if (existing != null) return existing;
+
+    late final Future<void> attempt;
+    attempt = Future<void>.sync(initialize).catchError((
+      Object error,
+      StackTrace stackTrace,
+    ) {
+      if (identical(_initialization, attempt)) _initialization = null;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
+    _initialization = attempt;
+    return attempt;
+  }
+}
+
 class PluginSocialIdentityProvider implements SocialIdentityProvider {
+  static final SocialSdkInitializer _sdkInitializer = SocialSdkInitializer();
+
   final _google = GoogleSignIn.instance;
   final _googleTokens = StreamController<String>.broadcast();
   StreamSubscription<GoogleSignInAuthenticationEvent>? _googleSubscription;
@@ -38,27 +60,29 @@ class PluginSocialIdentityProvider implements SocialIdentityProvider {
     if (googleWebClientId.isEmpty) {
       throw StateError('GOOGLE_WEB_CLIENT_ID chưa được cấu hình.');
     }
-    await _google.initialize(
-      clientId: kIsWeb ? googleWebClientId : null,
-      serverClientId: kIsWeb ? null : googleWebClientId,
-    );
-    _googleSubscription = _google.authenticationEvents.listen((event) {
+    await _sdkInitializer.run(() async {
+      await _google.initialize(
+        clientId: kIsWeb ? googleWebClientId : null,
+        serverClientId: kIsWeb ? null : googleWebClientId,
+      );
+      if (kIsWeb) {
+        if (facebookAppId.isEmpty) {
+          throw StateError('FACEBOOK_APP_ID chưa được cấu hình.');
+        }
+        await FacebookAuth.instance.webAndDesktopInitialize(
+          appId: facebookAppId,
+          cookie: true,
+          xfbml: true,
+          version: 'v21.0',
+        );
+      }
+    });
+    _googleSubscription ??= _google.authenticationEvents.listen((event) {
       if (event is GoogleSignInAuthenticationEventSignIn) {
         final token = event.user.authentication.idToken;
         if (token != null && token.isNotEmpty) _googleTokens.add(token);
       }
     });
-    if (kIsWeb) {
-      if (facebookAppId.isEmpty) {
-        throw StateError('FACEBOOK_APP_ID chưa được cấu hình.');
-      }
-      await FacebookAuth.instance.webAndDesktopInitialize(
-        appId: facebookAppId,
-        cookie: true,
-        xfbml: true,
-        version: 'v21.0',
-      );
-    }
     _initialized = true;
   }
 
