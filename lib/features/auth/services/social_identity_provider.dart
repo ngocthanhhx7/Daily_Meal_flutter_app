@@ -15,6 +15,7 @@ abstract interface class SocialIdentityProvider {
   });
 
   Widget googleButton({required bool enabled});
+  Future<void> authenticateGoogle();
   Future<String?> facebookAccessToken();
   void dispose();
 }
@@ -72,6 +73,13 @@ class PluginSocialIdentityProvider implements SocialIdentityProvider {
             }
           : null,
     );
+  }
+
+  @override
+  Future<void> authenticateGoogle() async {
+    if (!kIsWeb && _google.supportsAuthenticate()) {
+      await _google.authenticate();
+    }
   }
 
   @override

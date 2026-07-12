@@ -58,6 +58,11 @@ class _IdentityProvider implements SocialIdentityProvider {
   );
 
   @override
+  Future<void> authenticateGoogle() async {
+    googleTokens.add('google-id-token');
+  }
+
+  @override
   Future<String?> facebookAccessToken() async => 'facebook-access-token';
 
   @override
@@ -89,11 +94,11 @@ void main() {
     expect(identity.initializedGoogleId, 'google-client-id');
     expect(identity.initializedFacebookId, 'facebook-app-id');
 
-    await tester.tap(find.text('Tiếp tục với Google'));
+    await tester.tap(find.byKey(const Key('auth-google-button')));
     await tester.pumpAndSettle();
     expect(repository.googleToken, 'google-id-token');
 
-    await tester.tap(find.text('Tiếp tục với Facebook'));
+    await tester.tap(find.byKey(const Key('auth-facebook-button')));
     await tester.pumpAndSettle();
     expect(repository.facebookToken, 'facebook-access-token');
   });

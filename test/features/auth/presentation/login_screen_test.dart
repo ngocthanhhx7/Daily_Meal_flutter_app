@@ -91,7 +91,7 @@ void main() {
       MaterialApp(home: LoginScreen(controller: AuthController(_Repository()))),
     );
 
-    await tester.tap(find.text('Tạo tài khoản'));
+    await tester.tap(find.byKey(const Key('auth-mode-button')));
     await tester.pump();
 
     expect(find.byKey(LoginScreen.displayNameFieldKey), findsOneWidget);
@@ -103,7 +103,7 @@ void main() {
       MaterialApp(home: LoginScreen(controller: AuthController(_Repository()))),
     );
 
-    await tester.tap(find.text('Số điện thoại'));
+    await tester.tap(find.byKey(const Key('auth-phone-button')));
     await tester.pump();
 
     expect(find.byKey(PhoneAuthForm.phoneFieldKey), findsOneWidget);

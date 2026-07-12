@@ -107,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 236),
+                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 236),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -116,9 +116,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               color: AppColors.black,
-                              fontSize: 28,
+                              fontSize: 30,
+                              height: 37 / 30,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1,
+                              letterSpacing: 0,
                             ),
                       ),
                       const SizedBox(height: 2),
@@ -130,65 +131,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           context,
                         ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
                       ),
-                      const SizedBox(height: 22),
-                      SegmentedButton<bool>(
-                        segments: const [
-                          ButtonSegment(
-                            value: false,
-                            icon: Icon(Icons.email_outlined),
-                            label: Text('Email'),
-                          ),
-                          ButtonSegment(
-                            value: true,
-                            icon: Icon(Icons.phone_outlined),
-                            label: Text('Số điện thoại'),
-                          ),
-                        ],
-                        selected: {_usePhone},
-                        onSelectionChanged: (selection) => setState(() {
-                          _usePhone = selection.first;
-                          _submitError = null;
-                        }),
-                      ),
-                      const SizedBox(height: 20),
-                      if (_usePhone)
-                        PhoneAuthForm(controller: _controller)
-                      else ...[
-                        if (registering) ...[
-                          TextField(
-                            key: LoginScreen.displayNameFieldKey,
-                            controller: _displayName,
-                            textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(
-                              labelText: 'Tên hiển thị',
-                              border: OutlineInputBorder(),
+                      const SizedBox(height: 16),
+                      if (_usePhone) ...[
+                        PhoneAuthForm(controller: _controller),
+                        TextButton(
+                          onPressed: () => setState(() => _usePhone = false),
+                          child: const Text('Đăng nhập bằng email'),
+                        ),
+                      ] else ...[
+                        if (!registering)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'Đăng nhập vào tài khoản hiện có',
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 16 / 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.black,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                        if (registering) ...[
+                          _FigmaAuthField(
+                            label: 'Tên hiển thị',
+                            child: TextField(
+                              key: LoginScreen.displayNameFieldKey,
+                              controller: _displayName,
+                              textInputAction: TextInputAction.next,
+                              decoration: _figmaInputDecoration(
+                                hintText: 'Nguyễn Văn A',
+                              ),
+                            ),
+                          ),
                         ],
-                        TextField(
-                          key: LoginScreen.emailFieldKey,
-                          controller: _email,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          autofillHints: const [AutofillHints.email],
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            errorText: _emailError,
-                            border: const OutlineInputBorder(),
+                        _FigmaAuthField(
+                          label: registering ? 'Email' : 'Tên đăng nhập',
+                          child: TextField(
+                            key: LoginScreen.emailFieldKey,
+                            controller: _email,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            decoration: _figmaInputDecoration(
+                              hintText: registering
+                                  ? 'email@example.com'
+                                  : 'Nhập tên đăng nhập',
+                              errorText: _emailError,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          key: LoginScreen.passwordFieldKey,
-                          controller: _password,
-                          obscureText: true,
-                          onSubmitted: (_) => _submit(),
-                          autofillHints: const [AutofillHints.password],
-                          decoration: InputDecoration(
-                            labelText: 'Mật khẩu',
-                            errorText: _passwordError,
-                            border: const OutlineInputBorder(),
+                        _FigmaAuthField(
+                          label: 'Mật khẩu',
+                          child: TextField(
+                            key: LoginScreen.passwordFieldKey,
+                            controller: _password,
+                            obscureText: true,
+                            onSubmitted: (_) => _submit(),
+                            autofillHints: const [AutofillHints.password],
+                            decoration: _figmaInputDecoration(
+                              hintText: 'Nhập mật khẩu',
+                              errorText: _passwordError,
+                            ),
                           ),
                         ),
                         if (_submitError != null) ...[
@@ -200,11 +204,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 2),
                         FilledButton(
                           onPressed: state.isBusy ? null : _submit,
                           style: FilledButton.styleFrom(
                             minimumSize: const Size.fromHeight(48),
+                            backgroundColor: AppColors.black,
+                            foregroundColor: AppColors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           child: state.isBusy
                               ? const SizedBox.square(
@@ -217,40 +226,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   registering ? 'Tạo tài khoản' : 'Đăng nhập',
                                 ),
                         ),
-                        if (!registering)
-                          TextButton(
-                            onPressed: () => showModalBottomSheet<void>(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) =>
-                                  PasswordResetSheet(controller: _controller),
-                            ),
-                            child: const Text('Quên mật khẩu?'),
-                          ),
-                        if (!registering && widget.controller == null) ...[
-                          const Row(
-                            children: [
-                              Expanded(child: Divider()),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
-                                child: Text('hoặc'),
-                              ),
-                              Expanded(child: Divider()),
-                            ],
-                          ),
-                          SocialAuthButtons(
-                            controller: _controller,
-                            googleWebClientId: ref
-                                .watch(appConfigProvider)
-                                .googleWebClientId,
-                            facebookAppId: ref
-                                .watch(appConfigProvider)
-                                .facebookAppId,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        const Divider(),
                         TextButton(
+                          key: const Key('auth-mode-button'),
                           onPressed: () => setState(() {
                             _mode = registering
                                 ? AuthFormMode.login
@@ -261,18 +238,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Text(
                             registering
                                 ? 'Đã có tài khoản? Đăng nhập'
-                                : 'Tạo tài khoản',
+                                : 'Chưa có tài khoản? Đăng ký ngay',
                           ),
                         ),
-                        if (!registering)
-                          TextButton.icon(
+                        if (!registering) ...[
+                          TextButton(
+                            onPressed: () => showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) =>
+                                  PasswordResetSheet(controller: _controller),
+                            ),
+                            child: const Text('Quên mật khẩu?'),
+                          ),
+                          TextButton(
                             onPressed: () =>
                                 context.goNamed(AppRoute.adminLogin.name),
-                            icon: const Icon(
-                              Icons.admin_panel_settings_outlined,
-                            ),
-                            label: const Text('Đăng nhập quản trị'),
+                            child: const Text('Đăng nhập admin'),
                           ),
+                        ],
+                        if (!registering && widget.controller == null) ...[
+                          const SizedBox(height: 24),
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Phương thức đăng nhập khác',
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 16 / 12,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SocialAuthButtons(
+                            controller: _controller,
+                            googleWebClientId: ref
+                                .watch(appConfigProvider)
+                                .googleWebClientId,
+                            facebookAppId: ref
+                                .watch(appConfigProvider)
+                                .facebookAppId,
+                            onPhonePressed: () =>
+                                setState(() => _usePhone = true),
+                          ),
+                        ] else if (!registering) ...[
+                          Center(
+                            child: IconButton.filled(
+                              key: const Key('auth-phone-button'),
+                              onPressed: () => setState(() => _usePhone = true),
+                              icon: const Icon(Icons.phone_outlined),
+                            ),
+                          ),
+                        ],
                       ],
                     ],
                   ),
@@ -284,4 +302,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+class _FigmaAuthField extends StatelessWidget {
+  const _FigmaAuthField({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color.fromRGBO(68, 68, 68, 0.62),
+              fontSize: 12,
+              height: 15 / 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DecoratedBox(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(14),
+                topRight: Radius.circular(14),
+                bottomLeft: Radius.circular(12),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.16),
+                  offset: Offset(0, 4),
+                  blurRadius: 15,
+                ),
+              ],
+            ),
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+InputDecoration _figmaInputDecoration({
+  required String hintText,
+  String? errorText,
+}) {
+  const border = OutlineInputBorder(
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(14),
+      topRight: Radius.circular(14),
+      bottomLeft: Radius.circular(12),
+    ),
+    borderSide: BorderSide.none,
+  );
+  return InputDecoration(
+    hintText: hintText,
+    errorText: errorText,
+    filled: true,
+    fillColor: AppColors.white,
+    isDense: true,
+    constraints: const BoxConstraints(minHeight: 44),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+    border: border,
+    enabledBorder: border,
+    focusedBorder: border,
+    errorBorder: border.copyWith(
+      borderSide: const BorderSide(color: AppColors.red),
+    ),
+    focusedErrorBorder: border.copyWith(
+      borderSide: const BorderSide(color: AppColors.red),
+    ),
+  );
 }
