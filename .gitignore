@@ -55,6 +55,7 @@ android/.kotlin/
 
 # Local config & superpowers
 .superpowers/
+.worktrees/
 .codex/
 .gstack/
 .claude/
