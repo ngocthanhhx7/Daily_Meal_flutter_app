@@ -114,7 +114,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = controller.state;
     return Material(
-      color: AppColors.surface,
+      color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
         child: Center(
@@ -123,72 +123,171 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SearchBar(
-                  controller: query,
-                  hintText: 'Tìm món ăn, bài viết hoặc người dùng',
-                  leading: const Icon(Icons.search_rounded),
-                  onChanged: controller.updateQuery,
-                  onSubmitted: (_) => controller.searchNow().catchError((_) {}),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => context.pop(),
+                      icon: const Icon(Icons.chevron_left, size: 26),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Tìm kiếm',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => context.goNamed(AppRoute.home.name),
+                      icon: const Icon(Icons.home_outlined, size: 24),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F5E8),
+                    border: Border.all(color: AppColors.line),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Row(
                     children: [
-                      FilterChip(
-                        label: const Text('Dưới 500 kcal'),
-                        selected: state.filters.maxCalories == 500,
-                        onSelected: (value) => controller.updateFilters(
-                          state.filters.copyWith(
-                            maxCalories: value ? 500 : null,
-                            clearMaxCalories: !value,
-                          ),
+                      CircleAvatar(
+                        radius: 21,
+                        backgroundColor: Color(0xFFE8F0DE),
+                        child: Icon(
+                          Icons.auto_awesome_outlined,
+                          color: AppColors.greenDark,
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Đã lưu'),
-                        selected: state.filters.saved,
-                        onSelected: (value) => controller.updateFilters(
-                          state.filters.copyWith(saved: value),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Sticker Premium'),
-                        selected: state.filters.premiumSticker,
-                        onSelected: (value) => controller.updateFilters(
-                          state.filters.copyWith(premiumSticker: value),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Cá nhân hóa'),
-                        selected: state.filters.personalized,
-                        onSelected: (value) => controller.updateFilters(
-                          state.filters.copyWith(personalized: value),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Khám phá bữa ăn phù hợp',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Tìm món ăn, nguyên liệu, người dùng hoặc thẻ yêu thích.',
+                              style: TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                SegmentedButton<app_search.SearchMode>(
-                  segments: [
-                    ButtonSegment(
-                      value: app_search.SearchMode.posts,
-                      icon: const Icon(Icons.grid_view_rounded),
-                      label: Text('Bài viết (${state.posts.length})'),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: query,
+                        textInputAction: TextInputAction.search,
+                        onChanged: controller.updateQuery,
+                        onSubmitted: (_) =>
+                            controller.searchNow().catchError((_) {}),
+                        decoration: const InputDecoration(
+                          hintText: 'Tìm kiếm...',
+                        ),
+                      ),
                     ),
-                    ButtonSegment(
-                      value: app_search.SearchMode.people,
-                      icon: const Icon(Icons.people_outline_rounded),
-                      label: Text('Mọi người (${state.users.length})'),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: AppColors.black,
+                          foregroundColor: AppColors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        onPressed: () =>
+                            controller.searchNow().catchError((_) {}),
+                        child: Icon(
+                          state.status == app_search.SearchStatus.loading
+                              ? Icons.refresh_rounded
+                              : Icons.search_rounded,
+                          size: 20,
+                        ),
+                      ),
                     ),
                   ],
-                  selected: {state.mode},
-                  onSelectionChanged: (value) =>
-                      controller.updateMode(value.first),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _SearchFilter(
+                      label: 'Dưới 500 calo',
+                      selected: state.filters.maxCalories == 500,
+                      onTap: () => controller.updateFilters(
+                        state.filters.copyWith(
+                          maxCalories: state.filters.maxCalories == 500
+                              ? null
+                              : 500,
+                          clearMaxCalories: state.filters.maxCalories == 500,
+                        ),
+                      ),
+                    ),
+                    _SearchFilter(
+                      label: 'Đã lưu',
+                      selected: state.filters.saved,
+                      onTap: () => controller.updateFilters(
+                        state.filters.copyWith(saved: !state.filters.saved),
+                      ),
+                    ),
+                    _SearchFilter(
+                      label: 'Sticker VIP',
+                      selected: state.filters.premiumSticker,
+                      onTap: () => controller.updateFilters(
+                        state.filters.copyWith(
+                          premiumSticker: !state.filters.premiumSticker,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEEAE0),
+                    border: Border.all(color: AppColors.line),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      _SearchModeButton(
+                        label: 'Bài viết',
+                        selected: state.mode == app_search.SearchMode.posts,
+                        onTap: () =>
+                            controller.updateMode(app_search.SearchMode.posts),
+                      ),
+                      const SizedBox(width: 6),
+                      _SearchModeButton(
+                        label: 'Người dùng',
+                        selected: state.mode == app_search.SearchMode.people,
+                        onTap: () =>
+                            controller.updateMode(app_search.SearchMode.people),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -197,6 +296,71 @@ class _Header extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SearchFilter extends StatelessWidget {
+  const _SearchFilter({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.black : AppColors.surface,
+        border: Border.all(color: selected ? AppColors.black : AppColors.line),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: selected ? AppColors.white : AppColors.ink,
+          fontSize: 12,
+        ),
+      ),
+    ),
+  );
+}
+
+class _SearchModeButton extends StatelessWidget {
+  const _SearchModeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        alignment: Alignment.center,
+        constraints: const BoxConstraints(minHeight: 38),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.black : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? AppColors.white : AppColors.muted,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _Results extends StatelessWidget {
@@ -308,32 +472,92 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatar = resolver.resolve(user.avatarUrl);
-    return Card(
-      child: ListTile(
-        onTap: onOpen,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundImage: avatar == null
-              ? null
-              : NetworkImage(avatar.toString()),
-          child: avatar == null
-              ? Text(user.displayName.characters.first.toUpperCase())
-              : null,
-        ),
-        title: Text(
-          user.displayName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          '${user.counts.posts} bài viết • ${user.counts.followers} người theo dõi',
-        ),
-        trailing: FilledButton.tonal(
-          onPressed: busy ? null : onFollow,
-          child: Text(
-            user.relationship.isFollowing ? 'Đang theo dõi' : 'Theo dõi',
+    final following = user.relationship.isFollowing;
+    final label = user.relationship.isFriend
+        ? 'Bạn bè'
+        : following
+        ? 'Đang theo dõi'
+        : user.relationship.followsMe
+        ? 'Theo dõi lại'
+        : 'Theo dõi';
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.line),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
           ),
-        ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: onOpen,
+              borderRadius: BorderRadius.circular(12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: AppColors.green,
+                    backgroundImage: avatar == null
+                        ? null
+                        : NetworkImage(avatar.toString()),
+                    child: avatar == null
+                        ? Text(
+                            user.displayName.characters.first.toUpperCase(),
+                            style: const TextStyle(color: AppColors.white),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          (user.bio?.trim().isNotEmpty ?? false)
+                              ? user.bio!
+                              : '${user.counts.followers} người theo dõi',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: following ? AppColors.surface : AppColors.yellow,
+              foregroundColor: AppColors.black,
+              side: BorderSide(
+                color: following ? AppColors.line : AppColors.yellow,
+              ),
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: busy ? null : onFollow,
+            child: Text(label),
+          ),
+        ],
       ),
     );
   }

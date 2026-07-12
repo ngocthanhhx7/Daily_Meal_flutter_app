@@ -86,7 +86,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Salad mùa hè'), findsOneWidget);
-    await tester.tap(find.text('Mọi người (1)'));
+    await tester.tap(find.text('Người dùng'));
     await tester.pumpAndSettle();
     expect(find.text('Bếp Nhà'), findsOneWidget);
 

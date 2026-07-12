@@ -31,7 +31,7 @@ Additional routing gaps:
 |---|---|---|
 | Home header/action bar | Close | Replace remaining Material center icons, badge geometry and motion |
 | Home artwork | Close for one image | Dedicated 2/3/4-image spread, sticker placement, heart rain, expanded video |
-| Search/Profile/Inbox compact shell | Improved | Common non-source bottom tab bar removed in F017 |
+| Search/Profile/Inbox compact shell | Improved | Complete device-level visual regression and remaining post-result composition |
 | Edit Profile | Feature-complete baseline | Refine TextField/segment/chip geometry and picker permission copy |
 | Profile/Public Profile | Partial | Source header/menu/CTA geometry and dedicated public composition |
 | Comments | Low | Full-screen hero, bubbles, time/reply/like metadata and source action bar |
@@ -107,4 +107,9 @@ Settings and user utilities now share source-style compact headers, bordered
 rows/cards, yellow logout/unblock actions, FAQ and family-share copy, explicit
 empty/error states, and confirmation before unblocking. The intentionally
 unavailable family API remains clearly disclosed instead of simulating success.
+
+Search now uses the source back/home title row, discovery hero, 56px search
+action, branded quick filters and black segmented control. People results use
+the source 50px avatar card, bio/follower fallback and friend/follow-back labels;
+the existing API filters, URL initialization and public-profile routing remain intact.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.
