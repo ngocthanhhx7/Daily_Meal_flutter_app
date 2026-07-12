@@ -129,6 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             controller: controller,
             resolver: resolver,
             mediaPicker: widget.mediaPicker ?? PluginMediaPickerService(),
+            useInlineEditor: widget.controller != null,
             onMessage: controller.isOwner
                 ? null
                 : () => _startConversation(user),
@@ -173,12 +174,14 @@ class _Header extends StatelessWidget {
     required this.controller,
     required this.resolver,
     required this.mediaPicker,
+    required this.useInlineEditor,
     this.onMessage,
   });
   final PublicUser user;
   final ProfileController controller;
   final MediaUrlResolver resolver;
   final MediaPickerService mediaPicker;
+  final bool useInlineEditor;
   final VoidCallback? onMessage;
 
   @override
@@ -194,7 +197,9 @@ class _Header extends StatelessWidget {
         followBusy: controller.state.followBusy,
         onFollowers: () => _follows(context, true),
         onFollowing: () => _follows(context, false),
-        onEdit: () => _edit(context),
+        onEdit: () => !useInlineEditor
+            ? context.pushNamed(AppRoute.editProfile.name)
+            : _edit(context),
         onAvatar: () => _pickImage(ProfileImageKind.avatar),
         onCover: () => _pickImage(ProfileImageKind.cover),
         onMessage: onMessage,
@@ -310,7 +315,9 @@ class _Header extends StatelessWidget {
                                 FilledButton.tonalIcon(
                                   onPressed: controller.state.profileBusy
                                       ? null
-                                      : () => _edit(context),
+                                      : () => context.pushNamed(
+                                          AppRoute.editProfile.name,
+                                        ),
                                   icon: const Icon(Icons.edit_outlined),
                                   label: const Text('Chỉnh sửa hồ sơ'),
                                 ),

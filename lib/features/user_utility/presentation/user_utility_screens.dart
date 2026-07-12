@@ -25,7 +25,7 @@ class SettingsScreen extends ConsumerWidget {
           _tile(
             Icons.person_outline,
             'Trung tâm tài khoản',
-            () => context.goNamed(AppRoute.profile.name),
+            () => context.pushNamed(AppRoute.editProfile.name),
           ),
           _tile(
             Icons.workspace_premium_outlined,
@@ -96,23 +96,23 @@ class SettingsScreen extends ConsumerWidget {
   ) => Padding(
     padding: const EdgeInsets.only(bottom: 18),
     child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
+          child: Text(title, style: Theme.of(context).textTheme.labelLarge),
+        ),
+        for (final child in children)
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
-            child: Text(title, style: Theme.of(context).textTheme.labelLarge),
-          ),
-          for (final child in children)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(10),
-                child: child,
-              ),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(10),
+              child: child,
             ),
-        ],
-      ),
+          ),
+      ],
+    ),
   );
   static Widget _tile(IconData icon, String title, VoidCallback onTap) =>
       ListTile(
@@ -680,12 +680,12 @@ class _UtilityScaffold extends StatelessWidget {
     ),
     body: DailyMealBackground(
       child: SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 390),
-          child: Padding(padding: const EdgeInsets.all(16), child: child),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 390),
+            child: Padding(padding: const EdgeInsets.all(16), child: child),
+          ),
         ),
-      ),
       ),
     ),
   );

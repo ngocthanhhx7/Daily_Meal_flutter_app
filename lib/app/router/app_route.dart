@@ -5,6 +5,7 @@ enum AppRoute {
   home('/'),
   search('/search'),
   profile('/profile'),
+  editProfile('/profile/edit'),
   saved('/profile/saved'),
   publicProfile('/users/:id'),
   blocked('/profile/blocked'),
