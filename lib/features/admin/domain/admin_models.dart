@@ -135,6 +135,69 @@ class AdminRecentItem {
   final Map<String, dynamic> data;
 }
 
+class AdminKpiAnalytics {
+  const AdminKpiAnalytics({
+    this.dau = 0,
+    this.wau = 0,
+    this.mau = 0,
+    this.returning = 0,
+    this.averageSessionDurationMs = 0,
+    this.bounceRate = 0,
+    this.feedCtr = 0,
+    this.averageScrollDepth = 0,
+    this.averageApiResponseMs = 0,
+    this.averageImageLoadMs = 0,
+    this.runtimeErrors = 0,
+    this.crashRate = 0,
+    this.creatorConversionRate = 0,
+    this.postCompletionRate = 0,
+    this.mealCompletionRate = 0,
+    this.paymentCompletionRate = 0,
+  });
+
+  factory AdminKpiAnalytics.fromJson(Map<String, dynamic> json) {
+    final active = _map(json['activeUsers']);
+    final sessions = _map(json['sessions']);
+    final feed = _map(json['feed']);
+    final technical = _map(json['technical']);
+    final creator = _map(json['creatorConversion']);
+    final post = _map(json['postCreation']);
+    final meal = _map(json['mealAnalysis']);
+    final premium = _map(json['premiumFunnel']);
+    return AdminKpiAnalytics(
+      dau: _integer(active['dau']),
+      wau: _integer(active['wau']),
+      mau: _integer(active['mau']),
+      returning: _integer(active['returning']),
+      averageSessionDurationMs: _number(sessions['averageDurationMs']),
+      bounceRate: _number(sessions['bounceRate']),
+      feedCtr: _number(feed['ctr']),
+      averageScrollDepth: _number(feed['averageScrollDepth']),
+      averageApiResponseMs: _number(technical['averageApiResponseMs']),
+      averageImageLoadMs: _number(technical['averageImageLoadMs']),
+      runtimeErrors: _integer(technical['runtimeErrors']),
+      crashRate: _number(technical['crashRate']),
+      creatorConversionRate: _number(creator['rate']),
+      postCompletionRate: _number(post['completionRate']),
+      mealCompletionRate: _number(meal['completionRate']),
+      paymentCompletionRate: _number(premium['paymentCompletionRate']),
+    );
+  }
+
+  final int dau, wau, mau, returning, runtimeErrors;
+  final double averageSessionDurationMs,
+      bounceRate,
+      feedCtr,
+      averageScrollDepth,
+      averageApiResponseMs,
+      averageImageLoadMs,
+      crashRate,
+      creatorConversionRate,
+      postCompletionRate,
+      mealCompletionRate,
+      paymentCompletionRate;
+}
+
 class AdminDashboard {
   const AdminDashboard({
     required this.range,
@@ -144,6 +207,7 @@ class AdminDashboard {
     required this.daily,
     required this.breakdowns,
     required this.recent,
+    this.analytics = const AdminKpiAnalytics(),
   });
 
   factory AdminDashboard.fromJson(Map<String, dynamic> json) {
@@ -169,6 +233,7 @@ class AdminDashboard {
         _map(json['charts'])['daily'],
       ).map(AdminDailyPoint.fromJson).toList(growable: false),
       breakdowns: AdminBreakdowns.fromJson(_map(json['breakdowns'])),
+      analytics: AdminKpiAnalytics.fromJson(_map(json['analytics'])),
       recent: recent,
     );
   }
@@ -178,6 +243,7 @@ class AdminDashboard {
   final AdminToday today;
   final List<AdminDailyPoint> daily;
   final AdminBreakdowns breakdowns;
+  final AdminKpiAnalytics analytics;
   final List<AdminRecentItem> recent;
 }
 

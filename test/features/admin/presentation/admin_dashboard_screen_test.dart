@@ -19,6 +19,13 @@ class _Repository implements AdminRepositoryContract {
     breakdowns: const AdminBreakdowns(
       usersByPremium: [AdminBreakdownItem('premium', 10)],
     ),
+    analytics: const AdminKpiAnalytics(
+      dau: 8,
+      wau: 24,
+      mau: 60,
+      returning: 5,
+      feedCtr: .25,
+    ),
     recent: const [],
   );
   @override
@@ -145,5 +152,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Báo cáo AI tuần'), findsOneWidget);
     expect(find.text('Theo dõi retention'), findsOneWidget);
+  });
+
+  testWidgets('renders KPI from dashboard analytics contract', (tester) async {
+    await pump(tester, const Size(1440, 900));
+    await tester.tap(find.text('KPI'));
+    await tester.pumpAndSettle();
+    expect(find.text('KPI vận hành'), findsOneWidget);
+    expect(find.text('8 / 24 / 60'), findsOneWidget);
+    expect(find.text('25.0%'), findsOneWidget);
   });
 }

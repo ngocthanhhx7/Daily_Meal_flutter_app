@@ -61,7 +61,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         onDestinationSelected: (value) {
           setState(() => _destination = value);
           final future = switch (value) {
-            1 || 2 || 6 => analytics.load(),
+            1 || 6 => analytics.load(),
+            2 => controller.load(),
             3 => management.loadPosts(),
             4 => management.loadReports(),
             5 => management.loadPayments(),
@@ -73,7 +74,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         onRefresh: () {
           final future = switch (_destination) {
             0 => controller.load(),
-            1 || 2 || 6 => analytics.load(),
+            1 || 6 => analytics.load(),
+            2 => controller.load(),
             3 => management.loadPosts(),
             4 => management.loadReports(),
             5 => management.loadPayments(),
@@ -107,10 +109,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 widget.onLogout ??
                 () => ref.read(authControllerProvider).logout(),
           ),
-          1 || 2 || 6 => _AnalyticsSection(
+          1 || 6 => _AnalyticsSection(
             controller: analytics,
             destination: _destination,
           ),
+          2 => _KpiSection(controller: controller),
           3 => _PostsSection(controller: management),
           4 => _ReportsSection(controller: management),
           5 => _PaymentsSection(controller: management),
@@ -886,6 +889,132 @@ class _PagedList<T> extends StatelessWidget {
       ],
     );
   }
+}
+
+class _KpiSection extends StatelessWidget {
+  const _KpiSection({required this.controller});
+  final AdminDashboardController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final dashboard = controller.dashboard;
+    if (dashboard == null && controller.loading) return const AppLoadingView();
+    if (dashboard == null && controller.errorMessage != null) {
+      return AppErrorView(
+        message: controller.errorMessage!,
+        onRetry: () => controller.load().catchError((_) {}),
+      );
+    }
+    if (dashboard == null) return const SizedBox.shrink();
+    final value = dashboard.analytics;
+    final metrics = <(String, String, String, IconData)>[
+      (
+        'DAU / WAU / MAU',
+        '${value.dau} / ${value.wau} / ${value.mau}',
+        '${value.returning} user quay lại',
+        Icons.people_outline,
+      ),
+      (
+        'Phiên trung bình',
+        '${(value.averageSessionDurationMs / 1000).round()}s',
+        'Thoát nhanh ${_percent(value.bounceRate)}',
+        Icons.timer_outlined,
+      ),
+      (
+        'Tỷ lệ bấm bảng tin',
+        _percent(value.feedCtr),
+        'Độ sâu cuộn TB ${value.averageScrollDepth.round()}%',
+        Icons.touch_app_outlined,
+      ),
+      (
+        'Phản hồi API',
+        '${value.averageApiResponseMs.round()}ms',
+        'Độ trễ trung bình',
+        Icons.speed_outlined,
+      ),
+      (
+        'Tải ảnh',
+        '${value.averageImageLoadMs.round()}ms',
+        'Thời gian tải trung bình',
+        Icons.image_outlined,
+      ),
+      (
+        'Lỗi runtime',
+        '${value.runtimeErrors}',
+        'Tỷ lệ lỗi ${_percent(value.crashRate)}',
+        Icons.bug_report_outlined,
+      ),
+      (
+        'Chuyển đổi creator',
+        _percent(value.creatorConversionRate),
+        'Bắt đầu → hoàn tất',
+        Icons.edit_note_outlined,
+      ),
+      (
+        'Hoàn tất đăng bài',
+        _percent(value.postCompletionRate),
+        'Luồng tạo bài',
+        Icons.article_outlined,
+      ),
+      (
+        'Hoàn tất AI món ăn',
+        _percent(value.mealCompletionRate),
+        'Luồng phân tích AI',
+        Icons.auto_awesome_outlined,
+      ),
+      (
+        'Thanh toán premium',
+        _percent(value.paymentCompletionRate),
+        'Bắt đầu → thanh toán',
+        Icons.workspace_premium_outlined,
+      ),
+    ];
+    return CustomScrollView(
+      slivers: [
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
+          sliver: SliverToBoxAdapter(
+            child: Text(
+              'KPI vận hành',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.crossAxisExtent >= 900 ? 3 : 2;
+              return SliverGrid.count(
+                crossAxisCount: columns,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: columns == 2 ? .92 : 1.65,
+                children: [
+                  for (final metric in metrics)
+                    _KpiCard(
+                      label: metric.$1,
+                      value: metric.$2,
+                      delta: metric.$3,
+                      icon: metric.$4,
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          sliver: SliverToBoxAdapter(
+            child: _TrendCard(points: dashboard.daily),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _percent(double value) =>
+      '${(value * 100).toStringAsFixed(1)}%';
 }
 
 class _AnalyticsSection extends StatelessWidget {
