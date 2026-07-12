@@ -127,7 +127,6 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Material(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(

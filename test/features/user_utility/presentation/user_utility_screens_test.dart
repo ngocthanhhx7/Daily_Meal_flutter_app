@@ -44,6 +44,18 @@ class _Repository implements UserUtilityRepositoryContract {
 }
 
 void main() {
+  testWidgets('settings renders without conflicting Material shape', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: SettingsScreen())),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Cài đặt'), findsOneWidget);
+  });
+
   testWidgets('change password exposes validation without calling backend', (
     tester,
   ) async {
