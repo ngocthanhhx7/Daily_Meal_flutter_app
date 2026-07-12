@@ -4,7 +4,7 @@ Updated: 2026-07-12. Authorities, in order: production React Native source, prod
 
 ## Route coverage
 
-React Native registers 29 active routes in `client/src/navigation/AppNavigator.tsx`; Flutter currently exposes 25 URL routes in `lib/app/router/app_route.dart`.
+React Native registers 29 active routes in `client/src/navigation/AppNavigator.tsx`; Flutter currently exposes 26 URL routes in `lib/app/router/app_route.dart`.
 
 | React Native route | Flutter mapping | Status | Priority |
 |---|---|---|---|
@@ -12,7 +12,7 @@ React Native registers 29 active routes in `client/src/navigation/AppNavigator.t
 | Inbox, Chat, EditProfile, Settings, ChangePassword, Notifications | Equivalent named routes | Present | P0/P1 |
 | Saved, PostSummary, Blocked, Support, ShareAccount, PremiumBenefits, Progress | Equivalent feature route, sometimes shared surface | Present with composition differences | P1/P2 |
 | AdminDashboard | `/admin` | Present | P0 |
-| Follows | `_FollowsSheet` only | Missing route identity | P1 |
+| Follows | `/users/:id/follows?tab=` / `FollowsScreen` | Present and refresh-safe | P1 |
 | Comments | `/posts/:id/comments` / `CommentsScreen` | Present; hero gracefully falls back after refresh | P0 |
 | Recipe | `RecipeNutritionSheet` only | Missing full-screen route identity | P0 |
 | AdminUsers | Local Admin destination only | Missing Web URL/back/refresh state | P0 |
