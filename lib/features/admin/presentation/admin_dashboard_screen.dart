@@ -616,7 +616,7 @@ class _UsersSection extends StatelessWidget {
                       const Icon(Icons.workspace_premium, color: Colors.amber),
                     Switch(
                       value: user.isPremium,
-                      onChanged: controller.mutating
+                      onChanged: controller.isMutating(user.id)
                           ? null
                           : (value) => controller
                                 .setPremium(user, value)
@@ -675,7 +675,7 @@ class _PostsSection extends StatelessWidget {
                   '${post.authorName} • ${post.visibility} • ${post.interactions} tương tác',
                 ),
                 trailing: PopupMenuButton<String>(
-                  enabled: !controller.mutating,
+                  enabled: !controller.isMutating(post.id),
                   initialValue: post.moderationStatus,
                   onSelected: (value) =>
                       controller.moderate(post, value).catchError((_) {}),
@@ -726,7 +726,7 @@ class _ReportsSection extends StatelessWidget {
           ),
           subtitle: Text('${report.actorName} → ${report.targetName}'),
           trailing: PopupMenuButton<String>(
-            enabled: !controller.mutating,
+            enabled: !controller.isMutating(report.id),
             onSelected: (value) =>
                 controller.resolve(report, value).catchError((_) {}),
             itemBuilder: (_) => const [

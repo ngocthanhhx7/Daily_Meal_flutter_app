@@ -7,7 +7,10 @@ class AdminManagementController extends ChangeNotifier {
   AdminManagementController(this._repository);
   final AdminRepositoryContract _repository;
 
-  bool loading = false, mutating = false;
+  bool loading = false;
+  final Set<String> _mutatingIds = <String>{};
+  bool get mutating => _mutatingIds.isNotEmpty;
+  bool isMutating(String id) => _mutatingIds.contains(id);
   String query = '', reportStatus = 'open';
   String? moderationStatus, errorMessage;
   AdminPage<AdminUser>? userPage;
@@ -52,7 +55,7 @@ class AdminManagementController extends ChangeNotifier {
   });
 
   Future<void> setPremium(AdminUser user, bool value, {String note = ''}) =>
-      _mutate(() async {
+      _mutate(user.id, () async {
         final updated = await _repository.setPremium(
           user.id,
           value,
@@ -64,7 +67,7 @@ class AdminManagementController extends ChangeNotifier {
     selectedUserDetail = await _repository.userDetail(id);
   });
   Future<void> moderate(AdminPost post, String status, {String reason = ''}) =>
-      _mutate(() async {
+      _mutate(post.id, () async {
         final updated = await _repository.moderatePost(
           post.id,
           status,
@@ -73,7 +76,7 @@ class AdminManagementController extends ChangeNotifier {
         postPage = _replace(postPage, updated, (item) => item.id);
       });
   Future<void> resolve(AdminReport report, String status, {String note = ''}) =>
-      _mutate(() async {
+      _mutate(report.id, () async {
         final updated = await _repository.updateReport(
           report.id,
           status,
@@ -109,8 +112,8 @@ class AdminManagementController extends ChangeNotifier {
     }
   }
 
-  Future<void> _mutate(Future<void> Function() action) async {
-    mutating = true;
+  Future<void> _mutate(String id, Future<void> Function() action) async {
+    _mutatingIds.add(id);
     errorMessage = null;
     notifyListeners();
     try {
@@ -119,7 +122,7 @@ class AdminManagementController extends ChangeNotifier {
       errorMessage = userErrorMessage(error);
       rethrow;
     } finally {
-      mutating = false;
+      _mutatingIds.remove(id);
       notifyListeners();
     }
   }
