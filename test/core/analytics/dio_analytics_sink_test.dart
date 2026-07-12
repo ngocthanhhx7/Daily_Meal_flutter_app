@@ -28,6 +28,20 @@ class _Adapter implements HttpClientAdapter {
 }
 
 void main() {
+  test('omits optional screen when an event has no screen context', () async {
+    final adapter = _Adapter();
+    final sink = DioAnalyticsSink(
+      Dio()..httpClientAdapter = adapter,
+      sessionId: 'session-1',
+    );
+
+    await sink.send([const AnalyticsEvent(name: 'app_open')]);
+
+    final event =
+        (adapter.requests.single.data['events'] as List).single as Map;
+    expect(event, isNot(contains('screen')));
+  });
+
   test('sends the exact production ingest envelope', () async {
     final adapter = _Adapter();
     final sink = DioAnalyticsSink(

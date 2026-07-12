@@ -27,7 +27,8 @@ class DioAnalyticsSink implements AnalyticsSink {
                 'sessionId': sessionId,
                 'source': 'client',
                 'platform': kIsWeb ? 'web' : defaultTargetPlatform.name,
-                'screen': event.properties['screen'],
+                if (event.properties['screen'] case final String screen)
+                  'screen': screen,
                 'properties': event.properties,
               },
           ],
