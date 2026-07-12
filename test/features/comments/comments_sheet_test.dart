@@ -16,6 +16,7 @@ class _Repository implements CommentsRepositoryContract {
       body: 'Món này đẹp quá',
       author: const CommentAuthor(id: 'user-1', displayName: 'Bếp Nhà'),
       createdAt: DateTime.utc(2026, 7, 11),
+      likes: 2,
     ),
   ];
 
@@ -41,6 +42,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Món này đẹp quá'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+    await tester.tap(find.text('Món này đẹp quá'));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('Món này đẹp quá'));
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(find.text('3'), findsOneWidget);
     await tester.enterText(find.byKey(CommentsSheet.inputKey), 'Ngon quá!');
     await tester.tap(find.byKey(CommentsSheet.sendKey));
     await tester.pumpAndSettle();

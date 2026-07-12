@@ -34,7 +34,7 @@ Additional routing gaps:
 | Search/Profile/Inbox compact shell | Improved | Complete device-level visual regression and remaining post-result composition |
 | Edit Profile | Feature-complete baseline | Refine TextField/segment/chip geometry and picker permission copy |
 | Profile/Public Profile | Partial | Source header/menu/CTA geometry and dedicated public composition |
-| Comments | Low | Full-screen hero, bubbles, time/reply/like metadata and source action bar |
+| Comments | Improved | Complete populated-production visual regression and category sheet |
 | Recipe | Partial | Full-screen header/author footer and route identity |
 | Create/Edit Post | Improved | Finish Create capture-state visual regression and device QA |
 | Notifications/Chat/Settings | Improved | Complete device-level visual regression and refine edge states |
@@ -49,6 +49,7 @@ Additional routing gaps:
 - Home artwork/overlay after: `C:\tmp\dailymeal-home-artwork-after.png`
 - Latest authenticated Android cold-start/Home: `C:\tmp\dailymeal-user-check.png`
 - Latest Android owner Profile: `C:\tmp\dailymeal-profile-check.png`
+- Comments production fallback/composer: `C:\tmp\dailymeal-comments-after.png`
 - Android debug build passed with production API defines.
 - Web release build passed with production API defines.
 - Full Flutter suite last verified at 185 passing tests after F014/F015; targeted Home/responsive tests passed after F016/F017.
@@ -121,4 +122,10 @@ media preview and caption metadata card lead into action rows for feed focus,
 bottom-sheet caption/tag editing, optional Recipe navigation and confirmed
 deletion. Existing refresh-safe route restoration and update/delete contracts
 remain unchanged.
+
+Comments now preserves backend like counts, renders source-style participant
+bubbles with avatar overlap, relative time, reply focus, local double-tap heart
+feedback and the translucent rounded composer. Its 128px post hero uses the
+production fade mask and falls back to the bundled source asset when legacy
+production media returns 404, verified on the authenticated Android AVD.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

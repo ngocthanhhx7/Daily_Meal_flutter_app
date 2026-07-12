@@ -12,6 +12,7 @@ class CommentsSheet extends ConsumerStatefulWidget {
     this.postId,
     this.controller,
     this.mediaResolver,
+    this.currentUserId,
     this.embedded = false,
     super.key,
   }) : assert(postId != null || controller != null);
@@ -22,6 +23,7 @@ class CommentsSheet extends ConsumerStatefulWidget {
   final String? postId;
   final CommentsController? controller;
   final MediaUrlResolver? mediaResolver;
+  final String? currentUserId;
   final bool embedded;
 
   @override
@@ -30,6 +32,7 @@ class CommentsSheet extends ConsumerStatefulWidget {
 
 class _CommentsSheetState extends ConsumerState<CommentsSheet> {
   final _input = TextEditingController();
+  final _inputFocus = FocusNode();
   final _scroll = ScrollController();
   String? _validationMessage;
 
@@ -45,6 +48,7 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
   @override
   void dispose() {
     _input.dispose();
+    _inputFocus.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -126,42 +130,68 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
               ),
             Padding(
               padding: EdgeInsets.fromLTRB(
-                16,
-                10,
-                16,
-                12 + MediaQuery.viewInsetsOf(context).bottom,
+                12,
+                8,
+                12,
+                10 + MediaQuery.viewInsetsOf(context).bottom,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      key: CommentsSheet.inputKey,
-                      controller: _input,
-                      minLines: 1,
-                      maxLines: 4,
-                      maxLength: 500,
-                      decoration: InputDecoration(
-                        hintText: 'Viết bình luận...',
-                        errorText: _validationMessage,
-                        border: const OutlineInputBorder(),
-                        counterText: '',
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: .92),
+                  border: const Border(top: BorderSide(color: AppColors.line)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        key: CommentsSheet.inputKey,
+                        controller: _input,
+                        focusNode: _inputFocus,
+                        minLines: 1,
+                        maxLines: 4,
+                        maxLength: 500,
+                        decoration: InputDecoration(
+                          hintText: 'Viết bình luận...',
+                          errorText: _validationMessage,
+                          filled: true,
+                          fillColor: AppColors.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: const BorderSide(color: AppColors.line),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: const BorderSide(color: AppColors.line),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          counterText: '',
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    key: CommentsSheet.sendKey,
-                    tooltip: 'Gửi bình luận',
-                    onPressed: state.isSending ? null : () => _send(controller),
-                    icon: state.isSending
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send_rounded),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    IconButton(
+                      key: CommentsSheet.sendKey,
+                      tooltip: 'Gửi bình luận',
+                      onPressed: state.isSending
+                          ? null
+                          : () => _send(controller),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.canvasStrong,
+                        foregroundColor: AppColors.greenDark,
+                      ),
+                      icon: state.isSending
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send_rounded, size: 18),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -193,71 +223,170 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
         itemBuilder: (context, index) => _CommentTile(
           comment: state.comments[index],
           resolver: widget.mediaResolver,
+          isMine: state.comments[index].author.id == widget.currentUserId,
+          onReply: _inputFocus.requestFocus,
         ),
       ),
     };
   }
 }
 
-class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment, required this.resolver});
+class _CommentTile extends StatefulWidget {
+  const _CommentTile({
+    required this.comment,
+    required this.resolver,
+    required this.isMine,
+    required this.onReply,
+  });
   final PostComment comment;
   final MediaUrlResolver? resolver;
+  final bool isMine;
+  final VoidCallback onReply;
+
+  @override
+  State<_CommentTile> createState() => _CommentTileState();
+}
+
+class _CommentTileState extends State<_CommentTile> {
+  late int likes = widget.comment.likes;
 
   @override
   Widget build(BuildContext context) {
+    final comment = widget.comment;
     final author = comment.author.displayName;
-    final avatar = resolver?.resolve(comment.author.avatarUrl);
+    final avatar = widget.resolver?.resolve(comment.author.avatarUrl);
     final accent = _color(comment.author.themeColor) ?? AppColors.green;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: widget.isMine
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.start,
       children: [
-        CircleAvatar(
-          backgroundColor: accent,
-          backgroundImage: avatar == null
-              ? null
-              : NetworkImage(avatar.toString()),
-          child: avatar == null
-              ? Text(
-                  author.characters.first.toUpperCase(),
-                  style: const TextStyle(color: Colors.white),
-                )
-              : null,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.canvasStrong,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        Flexible(
+          child: Column(
+            crossAxisAlignment: widget.isMine
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  author,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                textDirection: widget.isMine
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
                 children: [
-                  Row(
+                  Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      Expanded(
-                        child: Text(
-                          author,
-                          style: Theme.of(context).textTheme.labelLarge,
+                      GestureDetector(
+                        onDoubleTap: () => setState(() => likes += 1),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 260),
+                          padding: EdgeInsets.fromLTRB(
+                            widget.isMine ? 14 : 28,
+                            11,
+                            14,
+                            11,
+                          ),
+                          decoration: BoxDecoration(
+                            color: widget.isMine
+                                ? AppColors.surface
+                                : accent.withValues(alpha: .78),
+                            border: widget.isMine
+                                ? Border.all(color: AppColors.line)
+                                : null,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(comment.body),
                         ),
                       ),
-                      Text(
-                        _relativeTime(comment.createdAt),
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.muted,
+                      if (!widget.isMine)
+                        Positioned(
+                          left: -10,
+                          top: 5,
+                          child: CircleAvatar(
+                            radius: 16,
+                            backgroundColor: accent,
+                            backgroundImage: avatar == null
+                                ? null
+                                : NetworkImage(avatar.toString()),
+                            child: avatar == null
+                                ? Text(
+                                    author.characters.first.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
-                      ),
+                      if (likes > 0)
+                        Positioned(
+                          right: widget.isMine ? null : 10,
+                          left: widget.isMine ? 10 : null,
+                          bottom: -8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black12, blurRadius: 4),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                if (likes > 1)
+                                  Text(
+                                    '$likes',
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                const Icon(
+                                  Icons.favorite,
+                                  size: 12,
+                                  color: AppColors.red,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(comment.body),
+                  const SizedBox(width: 8),
+                  Text(
+                    _relativeTime(comment.createdAt),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 5),
+              TextButton(
+                onPressed: widget.onReply,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: AppColors.muted,
+                ),
+                child: const Text('trả lời', style: TextStyle(fontSize: 11)),
+              ),
+            ],
           ),
         ),
       ],

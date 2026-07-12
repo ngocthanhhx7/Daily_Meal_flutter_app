@@ -30,6 +30,7 @@ class PostComment {
     required this.createdAt,
     this.updatedAt,
     this.postId,
+    this.likes = 0,
   });
 
   factory PostComment.fromJson(Map<String, dynamic> json) {
@@ -49,6 +50,7 @@ class PostComment {
       createdAt: createdAt,
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
       postId: (json['post'] ?? json['postId'])?.toString(),
+      likes: json['likes'] is num ? (json['likes'] as num).toInt() : 0,
     );
   }
 
@@ -58,4 +60,5 @@ class PostComment {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? postId;
+  final int likes;
 }

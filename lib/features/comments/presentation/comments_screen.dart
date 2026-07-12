@@ -5,6 +5,7 @@ import 'package:daily_meal_flutter_app/features/comments/application/comments_co
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
+import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -31,6 +32,19 @@ class CommentsScreen extends ConsumerWidget {
     final MediaUrlResolver resolver =
         mediaResolver ?? ref.watch(mediaUrlResolverProvider);
     final uri = resolver.resolve(firstImage);
+    final fallback = Image.asset(
+      'assets/figma-snapshots/image3.png',
+      width: double.infinity,
+      fit: BoxFit.cover,
+    );
+    final hero = uri == null
+        ? fallback
+        : Image.network(
+            uri.toString(),
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => fallback,
+          );
     return Scaffold(
       body: DailyMealBackground(
         child: SafeArea(
@@ -60,11 +74,9 @@ class CommentsScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        SvgPicture.asset(
-                          'assets/icons/White/user_1.svg',
-                          width: 30,
-                          height: 30,
-                        ),
+                        const Icon(Icons.more_horiz, size: 30),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.person, size: 30),
                       ],
                     ),
                   ),
@@ -81,17 +93,21 @@ class CommentsScreen extends ConsumerWidget {
                             bottom: Radius.circular(28),
                           ),
                         ),
-                        child: uri == null
-                            ? Image.asset(
-                                'assets/figma-snapshots/image3.png',
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                uri.toString(),
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+                        child: ShaderMask(
+                          blendMode: BlendMode.dstIn,
+                          shaderCallback: (bounds) => const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white,
+                              Colors.white,
+                              Color(0x17FFFFFF),
+                              Colors.transparent,
+                            ],
+                            stops: [0, .18, .55, 1],
+                          ).createShader(bounds),
+                          child: hero,
+                        ),
                       ),
                       Transform.translate(
                         offset: const Offset(0, 20),
@@ -147,6 +163,9 @@ class CommentsScreen extends ConsumerWidget {
                       postId: controller == null ? postId : null,
                       controller: controller,
                       mediaResolver: resolver,
+                      currentUserId: controller == null
+                          ? ref.watch(authControllerProvider).state.user?.id
+                          : null,
                       embedded: true,
                     ),
                   ),
