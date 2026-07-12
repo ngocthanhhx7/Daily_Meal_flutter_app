@@ -764,7 +764,13 @@ class _SourceProfileHeader extends StatelessWidget {
                   IconButton.filled(
                     tooltip: 'Quay lại',
                     visualDensity: VisualDensity.compact,
-                    onPressed: () => Navigator.maybePop(context),
+                    onPressed: () {
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      } else {
+                        context.goNamed(AppRoute.home.name);
+                      }
+                    },
                     iconSize: 18,
                     style: IconButton.styleFrom(
                       fixedSize: const Size.square(24),
