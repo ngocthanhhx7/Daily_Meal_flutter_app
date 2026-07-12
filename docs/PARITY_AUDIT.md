@@ -36,7 +36,7 @@ Additional routing gaps:
 | Profile/Public Profile | Partial | Source header/menu/CTA geometry and dedicated public composition |
 | Comments | Improved | Complete populated-production visual regression and category sheet |
 | Recipe | Partial | Full-screen header/author footer and route identity |
-| Create/Edit Post | Improved | Finish Create capture-state visual regression and device QA |
+| Create/Edit Post | Improved | Finish Create edit/sticker cards and device visual regression |
 | Notifications/Chat/Settings | Improved | Complete device-level visual regression and refine edge states |
 | Admin Dashboard/KPI/Analytics | Partial-high | Chart hierarchy and responsive density |
 | Admin Posts/Payments/Reports/AI | Partial | Media previews, filters, charts and complete metadata |
@@ -128,4 +128,11 @@ bubbles with avatar overlap, relative time, reply focus, local double-tap heart
 feedback and the translucent rounded composer. Its 128px post hero uses the
 production fade mask and falls back to the bundled source asset when legacy
 production media returns 404, verified on the authenticated Android AVD.
+
+Create Post now preserves the production capture-to-edit state transition
+instead of opening the form immediately after selection. The compact source
+header changes from `Thêm bài viết` to `Chỉnh bài viết`, selected media remains
+in the capture preview until `Tiếp tục`, Free accounts expose camera-only input,
+and Premium retains album/video actions. Existing multi-media, AI nutrition,
+recipe, sticker and publish contracts remain intact.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

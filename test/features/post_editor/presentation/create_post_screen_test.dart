@@ -126,6 +126,8 @@ void main() {
     await tester.tap(galleryButton);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('selected-media-0')), findsOneWidget);
+    await tester.tap(find.text('Tiếp tục'));
+    await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
       find.byKey(CreatePostScreen.captionKey),

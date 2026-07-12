@@ -40,6 +40,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _ingredients = TextEditingController();
   final _steps = TextEditingController();
   String? _localError;
+  bool _editing = false;
 
   PostEditorController get _controller =>
       widget.controller ?? ref.read(postEditorControllerProvider);
@@ -159,14 +160,31 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Thêm bài viết',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        leadingWidth: 44,
+        titleSpacing: 4,
+        title: Text(
+          _editing ? 'Chỉnh bài viết' : 'Thêm bài viết',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
         ),
-        leading: BackButton(
-          onPressed: () => widget.onPublished != null
-              ? Navigator.maybePop(context)
-              : context.goNamed(AppRoute.home.name),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              if (_editing) {
+                setState(() => _editing = false);
+              } else if (widget.onPublished != null) {
+                Navigator.maybePop(context);
+              } else {
+                context.goNamed(AppRoute.home.name);
+              }
+            },
+            child: const CircleAvatar(
+              radius: 12,
+              backgroundColor: AppColors.black,
+              child: Icon(Icons.arrow_back, size: 18, color: AppColors.white),
+            ),
+          ),
         ),
       ),
       body: DailyMealBackground(
@@ -177,14 +195,30 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  if (state.media.isEmpty)
-                    _CaptureCard(
-                      isPremium: controller.isPremium,
-                      onGallery: _pickImages,
-                      onCamera: _capture,
-                      onVideo: _pickVideo,
-                    )
-                  else ...[
+                  if (!_editing) ...[
+                    if (state.media.isEmpty)
+                      _CaptureCard(
+                        isPremium: controller.isPremium,
+                        onGallery: _pickImages,
+                        onCamera: _capture,
+                        onVideo: _pickVideo,
+                      )
+                    else ...[
+                      _MediaPreview(
+                        state: state,
+                        onRemove: controller.removeMedia,
+                        onPlacementChanged: controller.updateStickerPlacement,
+                      ),
+                      const SizedBox(height: 14),
+                      _CaptureControls(
+                        isPremium: controller.isPremium,
+                        onGallery: _pickImages,
+                        onCamera: _capture,
+                        onVideo: _pickVideo,
+                        onContinue: () => setState(() => _editing = true),
+                      ),
+                    ],
+                  ] else ...[
                     _MediaPreview(
                       state: state,
                       onRemove: controller.removeMedia,
@@ -380,7 +414,7 @@ class _CaptureCard extends StatelessWidget {
         children: [
           IconButton.filledTonal(
             tooltip: 'Chọn ảnh',
-            onPressed: onGallery,
+            onPressed: isPremium ? onGallery : null,
             icon: const Icon(Icons.photo_library_outlined),
           ),
           const SizedBox(width: 18),
@@ -402,6 +436,81 @@ class _CaptureCard extends StatelessWidget {
             icon: const Icon(Icons.videocam_outlined),
           ),
         ],
+      ),
+    ],
+  );
+}
+
+class _CaptureControls extends StatelessWidget {
+  const _CaptureControls({
+    required this.isPremium,
+    required this.onGallery,
+    required this.onCamera,
+    required this.onVideo,
+    required this.onContinue,
+  });
+  final bool isPremium;
+  final VoidCallback onGallery, onCamera, onVideo, onContinue;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton(
+            onPressed: isPremium ? onGallery : null,
+            child: Text(isPremium ? 'Chọn từ album' : 'Free: chỉ chụp camera'),
+          ),
+          if (isPremium)
+            IconButton(
+              tooltip: 'Chọn video',
+              onPressed: onVideo,
+              icon: const Icon(Icons.videocam_outlined),
+            ),
+        ],
+      ),
+      SizedBox(
+        height: 80,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InkWell(
+              onTap: onCamera,
+              customBorder: const CircleBorder(),
+              child: Container(
+                width: 68,
+                height: 68,
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: AppColors.white,
+                  shape: BoxShape.circle,
+                  border: Border.fromBorderSide(
+                    BorderSide(color: AppColors.line, width: 4),
+                  ),
+                ),
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.canvasStrong,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                onPressed: onContinue,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.black,
+                  foregroundColor: AppColors.white,
+                  visualDensity: VisualDensity.compact,
+                ),
+                child: const Text('Tiếp tục'),
+              ),
+            ),
+          ],
+        ),
       ),
     ],
   );
