@@ -41,6 +41,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ref.read(messagingRepositoryProvider),
       ref.read(realtimeClientProvider),
       conversationId: widget.conversationId,
+      initialOtherUser: widget.otherUser,
     )..initialize().catchError((_) {});
   }
 
@@ -78,7 +79,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             constraints: const BoxConstraints(maxWidth: 430),
             child: Column(
               children: [
-                _ChatHeader(name: widget.otherUser?.displayName ?? 'Tin nhắn'),
+                _ChatHeader(
+                  name:
+                      widget.otherUser?.displayName ??
+                      controller.otherUser?.displayName ??
+                      'Tin nhắn',
+                ),
                 Expanded(
                   child: controller.loading && controller.messages.isEmpty
                       ? const Center(child: CircularProgressIndicator())

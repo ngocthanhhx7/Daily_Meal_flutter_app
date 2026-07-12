@@ -11,10 +11,12 @@ class ChatController extends ChangeNotifier {
     this._repository,
     this._realtime, {
     required this.conversationId,
-  });
+    ChatUser? initialOtherUser,
+  }) : otherUser = initialOtherUser;
   final MessagingRepositoryContract _repository;
   final RealtimeClient _realtime;
   final String conversationId;
+  ChatUser? otherUser;
   List<ChatMessage> messages = const [];
   bool loading = false;
   bool sending = false;
@@ -32,7 +34,23 @@ class ChatController extends ChangeNotifier {
     });
     await _realtime.connect();
     _realtime.joinConversation(conversationId);
-    await _loadMessages();
+    await Future.wait([_restoreOtherUser(), _loadMessages()]);
+  }
+
+  Future<void> _restoreOtherUser() async {
+    if (otherUser != null) return;
+    try {
+      final conversations = await _repository.conversations();
+      for (final conversation in conversations) {
+        if (conversation.id == conversationId) {
+          otherUser = conversation.otherUser;
+          notifyListeners();
+          return;
+        }
+      }
+    } catch (_) {
+      // Participant metadata is optional; messages and composer remain usable.
+    }
   }
 
   Future<void> _loadMessages() async {

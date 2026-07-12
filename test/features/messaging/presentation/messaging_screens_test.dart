@@ -179,4 +179,39 @@ void main() {
     expect(find.text('Hẹn gặp lại'), findsOneWidget);
     expect(find.byType(TextField).evaluate().single.widget, isA<TextField>());
   });
+
+  testWidgets('chat restores the participant header without route extra', (
+    tester,
+  ) async {
+    final realtime = _Realtime();
+    final controller = ChatController(
+      _Repository(),
+      realtime,
+      conversationId: 'c1',
+    );
+    await controller.initialize();
+    addTearDown(() {
+      controller.dispose();
+      realtime.dispose();
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: ChatScreen(
+            conversationId: 'c1',
+            controller: controller,
+            currentUserId: 'me',
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bếp Bạn'), findsOneWidget);
+    expect(find.text('Tin nhắn'), findsNothing);
+  });
 }
