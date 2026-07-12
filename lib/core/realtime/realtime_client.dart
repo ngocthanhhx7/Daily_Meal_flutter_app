@@ -7,6 +7,22 @@ import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dar
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+Map<String, dynamic> buildRealtimeSocketOptions(String token) {
+  final options = io.OptionBuilder()
+      .setTransports(['websocket'])
+      .setAuth({'token': token})
+      .disableAutoConnect()
+      .enableReconnection()
+      .setReconnectionAttempts(6)
+      .setReconnectionDelay(1000)
+      .setReconnectionDelayMax(10000)
+      .setRandomizationFactor(0.5)
+      .enableForceNew()
+      .build();
+  options['reconnection'] = true;
+  return options;
+}
+
 abstract interface class RealtimeClient {
   Stream<PostStatsUpdate> get postStatsUpdates;
   Stream<Conversation> get conversationUpdates;
@@ -77,13 +93,7 @@ class SocketIoRealtimeClient implements RealtimeClient {
     if (session == null) return;
     final socket = io.io(
       baseUrl.origin,
-      io.OptionBuilder()
-          .setTransports(['websocket'])
-          .setAuth({'token': session.token})
-          .disableAutoConnect()
-          .enableReconnection()
-          .enableForceNew()
-          .build(),
+      buildRealtimeSocketOptions(session.token),
     );
     _socket = socket;
     socket.on(

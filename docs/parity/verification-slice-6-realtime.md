@@ -6,7 +6,8 @@ Date: 2026-07-12
 
 - Typed conversation/message models and exact REST endpoints.
 - Shared Socket.IO 3.x client compatible with the production Socket.IO 4.x
-  server, JWT handshake, websocket transport, reconnect and room errors.
+  server, JWT handshake, websocket transport, room errors and bounded
+  exponential reconnect (6 attempts, 1-10 second delay, 0.5 jitter).
 - Inbox realtime upsert/sort and Chat REST/socket/send deduplication.
 - Responsive Inbox and Chat routes, message creation from Public Profile and
   primary navigation.
@@ -18,6 +19,8 @@ Date: 2026-07-12
 - API tests assert exact methods, paths and trimmed payloads.
 - Controller tests assert event filtering, ordering, deduplication, join/leave,
   mutation rollback and unread counts.
+- Option-map tests assert the reconnect limits are actually passed to the
+  Socket.IO package rather than relying on its infinite-attempt default.
 - Widget tests cover compact Inbox and Chat send journeys.
 - Analyzer and both platform builds are run at the checkpoint.
 
@@ -26,6 +29,11 @@ Date: 2026-07-12
 Live two-session production Socket.IO delivery/reconnect and physical/browser
 push permission/subscription evidence remain pending; these capabilities are
 therefore kept `In progress` in the parity matrix.
+
+Fresh gates after the reconnect policy change: 168 tests passed, analyzer
+reported no issues, and production-defined Web release plus Android debug APK
+builds both succeeded. The optional Wasm dry-run warning remains confined to
+the upstream `socket_io_common` JS-interop adapter.
 
 ## Push contract finding
 

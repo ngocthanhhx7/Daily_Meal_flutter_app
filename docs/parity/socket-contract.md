@@ -37,7 +37,9 @@ Invalid/unauthorized room requests emit `room:error` with `{ room, message }` (`
 
 - Exactly one managed socket per authenticated session.
 - Disconnect and clear all listeners when token changes or user logs out.
-- Use bounded exponential reconnect backoff; never reconnect after explicit logout or terminal auth error.
+- Use bounded exponential reconnect backoff: Flutter allows 6 attempts with a
+  1 second initial delay, 10 second cap and 0.5 jitter. Never reconnect after
+  explicit logout or terminal auth error.
 - Join a post room only while its realtime comments surface is active.
 - Join a conversation room only while that conversation is active; leave on route disposal/change.
 - Register named handlers and remove the same handlers during disposal.
