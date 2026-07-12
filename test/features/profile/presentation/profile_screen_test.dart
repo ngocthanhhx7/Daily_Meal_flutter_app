@@ -9,6 +9,7 @@ import 'package:daily_meal_flutter_app/features/profile/application/profile_cont
 import 'package:daily_meal_flutter_app/features/profile/data/profile_api.dart';
 import 'package:daily_meal_flutter_app/features/profile/data/profile_repository.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
+import 'package:daily_meal_flutter_app/features/profile/presentation/saved_screen.dart';
 import 'package:daily_meal_flutter_app/features/search/domain/public_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,6 +121,34 @@ class _Picker implements MediaPickerService {
 }
 
 void main() {
+  testWidgets('saved route renders its dedicated source composition', (
+    tester,
+  ) async {
+    final controller = ProfileController(
+      _Repository(),
+      userId: 'user-1',
+      isOwner: true,
+    );
+    addTearDown(controller.dispose);
+    await controller.load();
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: SavedScreen(
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Đã lưu'), findsOneWidget);
+    expect(find.text('Người dùng'), findsOneWidget);
+    expect(find.text('Món đã lưu'), findsOneWidget);
+  });
+
   testWidgets('owner post preview opens the edit-post route', (tester) async {
     final controller = ProfileController(
       _Repository(),

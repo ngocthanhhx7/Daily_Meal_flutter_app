@@ -182,20 +182,10 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SegmentedButton<FollowTab>(
-                      segments: const [
-                        ButtonSegment(
-                          value: FollowTab.followers,
-                          label: Text('Người theo dõi'),
-                        ),
-                        ButtonSegment(
-                          value: FollowTab.following,
-                          label: Text('Đang theo dõi'),
-                        ),
-                      ],
-                      selected: {_tab},
-                      onSelectionChanged: (value) {
-                        setState(() => _tab = value.first);
+                    child: _FollowSegments(
+                      selected: _tab,
+                      onSelected: (value) {
+                        setState(() => _tab = value);
                         _load();
                       },
                     ),
@@ -224,10 +214,38 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
     }
     if (_users.isEmpty) {
       return Center(
-        child: Text(
-          _tab == FollowTab.followers
-              ? 'Chưa có người theo dõi'
-              : 'Chưa theo dõi ai',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 34),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _tab == FollowTab.followers
+                    ? Icons.people_outline
+                    : Icons.person_add_outlined,
+                size: 64,
+                color: AppColors.muted,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                _tab == FollowTab.followers
+                    ? 'Chưa có người theo dõi'
+                    : 'Chưa theo dõi ai',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _tab == FollowTab.followers
+                    ? 'Tương tác và chia sẻ nhiều hơn để mọi người tìm thấy bạn.'
+                    : 'Khám phá những người sáng tạo khác tại màn hình Tìm kiếm.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.muted),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -283,7 +301,19 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
                 ),
               ),
               if (user.id != ownId)
-                FilledButton.tonal(
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: user.relationship.isFollowing
+                        ? AppColors.surface
+                        : AppColors.yellow,
+                    foregroundColor: AppColors.black,
+                    side: BorderSide(
+                      color: user.relationship.isFollowing
+                          ? AppColors.line
+                          : AppColors.yellow,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
                   onPressed: _busyId == user.id ? null : () => _toggle(user),
                   child: Text(
                     user.relationship.isFriend
@@ -301,4 +331,48 @@ class _FollowsScreenState extends ConsumerState<FollowsScreen> {
       },
     );
   }
+}
+
+class _FollowSegments extends StatelessWidget {
+  const _FollowSegments({required this.selected, required this.onSelected});
+  final FollowTab selected;
+  final ValueChanged<FollowTab> onSelected;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFEEEAE0),
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: Row(
+      children: [
+        for (final tab in FollowTab.values)
+          Expanded(
+            child: InkWell(
+              onTap: () => onSelected(tab),
+              borderRadius: BorderRadius.circular(14),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                alignment: Alignment.center,
+                constraints: const BoxConstraints(minHeight: 38),
+                decoration: BoxDecoration(
+                  color: selected == tab ? AppColors.black : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  tab == FollowTab.followers
+                      ? 'Người theo dõi'
+                      : 'Đang theo dõi',
+                  style: TextStyle(
+                    color: selected == tab ? AppColors.white : AppColors.muted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
 }

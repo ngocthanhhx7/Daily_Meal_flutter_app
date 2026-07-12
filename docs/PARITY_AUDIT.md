@@ -154,4 +154,11 @@ single-scroll two-column layout with the right column offset by 50px. Progress
 uses the source compact comments/likes total pill instead of Material chips.
 Both surfaces open the referenced post through the existing Home focus URL and
 gracefully replace missing/failed media with branded placeholders.
+
+Saved is no longer an alias that opens the full Profile screen on a selected
+tab. `/profile/saved` now has its own source header, `Người dùng` action label,
+bookmark empty state and staggered compact-post grid with Home focus routing.
+Follows now uses the source black segmented control, full explanatory empty
+states and yellow/ghost relationship actions while preserving refresh-safe
+user URLs and follow mutations.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.
