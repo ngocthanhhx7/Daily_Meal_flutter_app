@@ -14,6 +14,14 @@ PickedMedia image(String name) => PickedMedia(
   mediaType: DraftMediaType.image,
 );
 
+PickedMedia video(String name) => PickedMedia(
+  bytes: Uint8List.fromList([4, 5, 6]),
+  fileName: name,
+  mimeType: 'video/mp4',
+  mediaType: DraftMediaType.video,
+  durationMs: 12000,
+);
+
 class _Repository implements PostEditorRepositoryContract {
   bool failPublish = false;
   PostDraft? publishedDraft;
@@ -113,6 +121,21 @@ void main() {
       'rau',
     ]);
     expect(repository.publishedDraft?.nutritionDetails.length, 2);
+  });
+
+  test('premium video publish preserves the exact video contract', () async {
+    final repository = _Repository();
+    final controller = PostEditorController(repository, isPremium: true);
+    controller.selectVideo(video('meal.mp4'));
+    controller.updateCaption('Bữa tối dạng video');
+
+    await controller.publish();
+
+    final draft = repository.publishedDraft!;
+    expect(draft.mediaType, DraftMediaType.video);
+    expect(draft.images, isEmpty);
+    expect(draft.video?.url, '/uploads/meal.mp4');
+    expect(draft.videoDurationMs, 12000);
   });
 
   test('preserves draft and exposes retry error on publish failure', () async {

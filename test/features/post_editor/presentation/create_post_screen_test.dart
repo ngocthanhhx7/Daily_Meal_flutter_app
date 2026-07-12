@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
@@ -11,22 +12,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-PickedMedia pickedImage() => PickedMedia(
-  bytes: Uint8List.fromList([1, 2, 3]),
-  fileName: 'meal.jpg',
+PickedMedia pickedImage([String fileName = 'meal.jpg']) => PickedMedia(
+  bytes: Uint8List.fromList(
+    base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    ),
+  ),
+  fileName: fileName,
   mimeType: 'image/jpeg',
   mediaType: DraftMediaType.image,
 );
 
+PickedMedia pickedVideo() => PickedMedia(
+  bytes: Uint8List.fromList([4, 5, 6]),
+  fileName: 'meal.mp4',
+  mimeType: 'video/mp4',
+  mediaType: DraftMediaType.video,
+  durationMs: 12000,
+);
+
 class _Picker implements MediaPickerService {
+  _Picker({this.images, this.video});
+
+  final List<PickedMedia>? images;
+  final PickedMedia? video;
+
   @override
   Future<PickedMedia?> captureImage() async => pickedImage();
   @override
-  Future<List<PickedMedia>> pickImages({required int limit}) async => [
-    pickedImage(),
-  ];
+  Future<List<PickedMedia>> pickImages({required int limit}) async =>
+      images ?? [pickedImage()];
   @override
-  Future<PickedMedia?> pickVideo() async => null;
+  Future<PickedMedia?> pickVideo() async => video;
 }
 
 class _Repository implements PostEditorRepositoryContract {
@@ -96,6 +113,47 @@ class _Repository implements PostEditorRepositoryContract {
 }
 
 void main() {
+  testWidgets('premium capture switches between three images and one video', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = PostEditorController(_Repository(), isPremium: true);
+    final picker = _Picker(
+      images: [
+        pickedImage('one.jpg'),
+        pickedImage('two.jpg'),
+        pickedImage('three.jpg'),
+      ],
+      video: pickedVideo(),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: CreatePostScreen(controller: controller, picker: picker),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Chọn ảnh'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('selected-media-0')), findsOneWidget);
+    expect(find.byKey(const Key('selected-media-1')), findsOneWidget);
+    expect(find.byKey(const Key('selected-media-2')), findsOneWidget);
+    expect(controller.state.media, hasLength(3));
+
+    await tester.tap(find.byTooltip('Chọn video'));
+    await tester.pumpAndSettle();
+    expect(controller.state.media, hasLength(1));
+    expect(controller.state.media.single.mediaType, DraftMediaType.video);
+    expect(find.byKey(const Key('selected-media-0')), findsOneWidget);
+    expect(find.byKey(const Key('selected-media-1')), findsNothing);
+  });
+
   testWidgets('selects media, analyzes and publishes a post', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
