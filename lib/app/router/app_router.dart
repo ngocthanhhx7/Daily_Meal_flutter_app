@@ -15,6 +15,7 @@ import 'package:daily_meal_flutter_app/features/messaging/presentation/chat_scre
 import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
 import 'package:daily_meal_flutter_app/features/notifications/presentation/notifications_screen.dart';
 import 'package:daily_meal_flutter_app/features/premium/presentation/premium_screen.dart';
+import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,6 +50,7 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             ),
             AppRoute.notifications => const NotificationsScreen(),
             AppRoute.premium => const PremiumScreen(),
+            AppRoute.adminDashboard => const AdminDashboardScreen(),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost
@@ -58,7 +60,6 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
                       onDeleted: (id) => context.pop(id),
                     )
                   : FoundationRouteProbe(route: route),
-            _ => FoundationRouteProbe(route: route),
           },
         ),
     ],

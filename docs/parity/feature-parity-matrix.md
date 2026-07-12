@@ -52,13 +52,13 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 6 | Web Push | PWA web push/context | VAPID/subscription endpoints | `core/notifications/web` | In progress | In progress | service worker, permission, register/unregister tests and Web build pass; live browser delivery pending |
 | 7 | Premium benefits/plans | `PremiumBenefitsScreen.tsx` | plans/trial | `features/premium` | Verified | Verified | exact plan/trial contracts, auth update and responsive widget tests |
 | 7 | PayOS payment | Premium screen | create/status | `features/premium/payment` | Verified | Verified | HTTPS checkout abstraction, PENDING/PAID terminal refresh and platform builds |
-| 8 | Admin dashboard/KPI | `AdminScreens.tsx` | dashboard/summary | `features/admin/dashboard` | Not started | Not started | ranges/responsive charts |
-| 8 | Admin AI report | `AdminScreens.tsx` | POST reports/ai | `features/admin/reports` | Not started | Not started | loading/error/result tests |
-| 8 | Admin analytics | Admin charts | 24h/heatmap/summary | `features/admin/analytics` | Not started | Not started | chart mapping/golden tests |
-| 8 | Admin users | `AdminScreens.tsx` | users/insights/detail/premium | `features/admin/users` | Not started | Not started | search/page/action journey |
-| 8 | Admin posts/moderation | `AdminScreens.tsx` | posts/insights/moderation | `features/admin/posts` | Not started | Not started | filter/moderate tests |
-| 8 | Admin reports | `AdminScreens.tsx` | reports/update | `features/admin/reports` | Not started | Not started | resolve/dismiss journey |
-| 8 | Admin payments | `AdminScreens.tsx` | payments | `features/admin/payments` | Not started | Not started | search/page/responsive tests |
+| 8 | Admin dashboard/KPI | `AdminScreens.tsx` | dashboard/summary | `features/admin` | Verified | Verified | exact range contract, responsive KPI/custom chart, controller/widget tests |
+| 8 | Admin AI report | `AdminScreens.tsx` | POST reports/ai | `features/admin` | Verified | Verified | range body, loading/error/result journey |
+| 8 | Admin analytics | Admin charts | 24h/heatmap/summary | `features/admin` | Verified | Verified | timezone/preset/metric contracts, 24h chart and semantic heatmap |
+| 8 | Admin users | `AdminScreens.tsx` | users/insights/detail/premium | `features/admin` | Verified | Verified | search/page/detail/insights/Premium action contracts and responsive journey |
+| 8 | Admin posts/moderation | `AdminScreens.tsx` | posts/insights/moderation | `features/admin` | Verified | Verified | search/filter/page/insights/moderation contracts and responsive cards |
+| 8 | Admin reports | `AdminScreens.tsx` | reports/update | `features/admin` | Verified | Verified | status pagination and resolve/dismiss/reopen mutations |
+| 8 | Admin payments | `AdminScreens.tsx` | payments | `features/admin` | Verified | Verified | search/page responsive list and exact contract tests |
 
 ## Cross-Cutting Acceptance Rows
 
