@@ -5,6 +5,7 @@ import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.
 import 'package:daily_meal_flutter_app/features/feed/application/feed_controller.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_repository.dart';
+import 'package:daily_meal_flutter_app/features/feed/data/post_lookup_repository.dart';
 import 'package:daily_meal_flutter_app/features/messaging/application/messaging_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -16,6 +17,10 @@ final feedRepositoryProvider = Provider<FeedRepositoryContract>((ref) {
 final mediaUrlResolverProvider = Provider<MediaUrlResolver>((ref) {
   return MediaUrlResolver(ref.watch(appConfigProvider).apiBaseUrl);
 });
+
+final postLookupRepositoryProvider = Provider<PostLookupRepositoryContract>(
+  (ref) => PostLookupRepository(ref.watch(dioProvider)),
+);
 
 final feedControllerProvider =
     ChangeNotifierProvider.autoDispose<FeedController>((ref) {

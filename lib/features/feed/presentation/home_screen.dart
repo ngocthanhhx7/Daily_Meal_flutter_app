@@ -6,7 +6,6 @@ import 'package:daily_meal_flutter_app/features/feed/application/feed_controller
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
-import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutrition_sheet.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -191,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     .toggleSave(post.id)
                                     .catchError((_) {}),
                                 onComment: () => _comments(post),
-                                onRecipe: () => _recipe(post, resolver),
+                                onRecipe: () => _recipe(post),
                               ),
                             ),
                           ),
@@ -252,16 +251,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     extra: post,
   );
 
-  void _recipe(FeedPost post, MediaUrlResolver resolver) =>
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (context) => FractionallySizedBox(
-          heightFactor: .92,
-          child: RecipeNutritionSheet(post: post, resolver: resolver),
-        ),
-      );
+  void _recipe(FeedPost post) => context.pushNamed(
+    AppRoute.recipe.name,
+    pathParameters: {'id': post.id},
+    queryParameters: {'authorId': post.author.id},
+    extra: post,
+  );
 
   void _showCategory() => showModalBottomSheet<void>(
     context: context,
