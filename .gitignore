@@ -47,4 +47,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Local config & superpowers
+.superpowers/
+.codex/
 .gstack/
+.claude/
+
+# Local project docs (keep only README.md)
+docs/
+MASTER_PROMPT_DAILY_MEAL_FLUTTER.md
