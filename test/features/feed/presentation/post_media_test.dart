@@ -7,4 +7,10 @@ void main() {
     expect(shouldPlayVisibleVideo(.65), isTrue);
     expect(shouldPlayVisibleVideo(1), isTrue);
   });
+
+  test('sizes feed image cache near its rendered physical width', () {
+    expect(feedImageCacheWidth(276, 2.5), 690);
+    expect(feedImageCacheWidth(100, 1), 320);
+    expect(feedImageCacheWidth(1200, 3), 2048);
+  });
 }

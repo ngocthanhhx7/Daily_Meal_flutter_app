@@ -6,6 +6,9 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 bool shouldPlayVisibleVideo(double visibleFraction) => visibleFraction >= 0.65;
 
+int feedImageCacheWidth(double logicalWidth, double devicePixelRatio) =>
+    (logicalWidth * devicePixelRatio).round().clamp(320, 2048);
+
 class PostMedia extends StatefulWidget {
   const PostMedia({
     required this.post,
@@ -119,6 +122,10 @@ class _ImageCarouselState extends State<_ImageCarousel> {
         builder: (context, constraints) {
           final cardWidth = constraints.maxWidth * 0.72;
           final cardHeight = 330.0;
+          final cacheWidth = feedImageCacheWidth(
+            cardWidth,
+            MediaQuery.devicePixelRatioOf(context),
+          );
           final offsets = switch (images.length) {
             1 => [Offset((constraints.maxWidth - cardWidth) / 2, 22)],
             2 => [
@@ -163,6 +170,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                         child: Image.network(
                           images[index].toString(),
                           fit: BoxFit.cover,
+                          cacheWidth: cacheWidth,
                           semanticLabel: 'Ảnh món ăn ${index + 1}',
                           errorBuilder: (context, error, stackTrace) =>
                               const ColoredBox(
