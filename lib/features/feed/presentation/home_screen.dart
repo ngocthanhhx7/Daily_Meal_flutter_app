@@ -358,38 +358,42 @@ class _HomeActionBar extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: onComment,
-                    icon: const Icon(
-                      Icons.chat_bubble,
-                      color: Colors.white,
-                      size: 26,
+                    icon: SvgPicture.asset(
+                      'assets/icons/Dark/Message_1.svg',
+                      width: 26,
+                      height: 26,
                     ),
                     tooltip: 'Bình luận',
                   ),
                   IconButton(
                     key: Key('like-${post.id}'),
                     onPressed: busy ? null : onLike,
-                    icon: Icon(
-                      post.viewerState.liked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: post.viewerState.liked
-                          ? AppColors.red
-                          : Colors.white,
-                      size: 28,
+                    icon: SvgPicture.asset(
+                      'assets/icons/Dark/Heart.svg',
+                      width: 28,
+                      height: 28,
+                      colorFilter: post.viewerState.liked
+                          ? const ColorFilter.mode(
+                              AppColors.red,
+                              BlendMode.srcIn,
+                            )
+                          : null,
                     ),
                     tooltip: 'Thích',
                   ),
                   IconButton(
                     key: Key('save-${post.id}'),
                     onPressed: busy ? null : onSave,
-                    icon: Icon(
-                      post.viewerState.saved
-                          ? Icons.bookmark
-                          : Icons.bookmark_border,
-                      color: post.viewerState.saved
-                          ? AppColors.yellow
-                          : Colors.white,
-                      size: 27,
+                    icon: SvgPicture.asset(
+                      'assets/icons/Dark/bookmark.svg',
+                      width: 27,
+                      height: 27,
+                      colorFilter: post.viewerState.saved
+                          ? const ColorFilter.mode(
+                              AppColors.yellow,
+                              BlendMode.srcIn,
+                            )
+                          : null,
                     ),
                     tooltip: 'Lưu',
                   ),
