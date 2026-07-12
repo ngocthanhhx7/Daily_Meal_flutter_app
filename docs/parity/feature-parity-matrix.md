@@ -71,3 +71,4 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | Offline/error/retry | Verified | Verified | Dio failures map to safe user messages at the HTTP boundary; Home offline-to-retry recovery and queue-retention tests pass |
 | Production configuration | Verified | Verified | Slice 1 debug APK/Web release builds with production dart-defines |
 | README/setup/build documentation | Verified | Verified | production defines, run/build commands, architecture and limitations documented |
+| React Native route parity | Verified | Verified | reverse navigator audit maps every active source screen to a Flutter route, sheet, tab or responsive Admin destination |
