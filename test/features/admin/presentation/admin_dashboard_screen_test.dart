@@ -98,7 +98,11 @@ class _Repository implements AdminRepositoryContract {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-Future<void> pump(WidgetTester tester, Size size) async {
+Future<void> pump(
+  WidgetTester tester,
+  Size size, {
+  int initialDestination = 0,
+}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -107,6 +111,7 @@ Future<void> pump(WidgetTester tester, Size size) async {
   await tester.pumpWidget(
     MaterialApp(
       home: AdminDashboardScreen(
+        initialDestination: initialDestination,
         controller: controller,
         managementController: AdminManagementController(_Repository()),
         analyticsController: AdminAnalyticsController(_Repository()),
@@ -129,6 +134,14 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     expect(find.text('Xu hướng tương tác'), findsOneWidget);
+  });
+
+  testWidgets('restores the users destination from its Web route', (
+    tester,
+  ) async {
+    await pump(tester, const Size(1440, 900), initialDestination: 7);
+    expect(find.text('Quản lý người dùng'), findsOneWidget);
+    expect(find.text('An Nguyen'), findsOneWidget);
   });
 
   testWidgets('uses expanded navigation on desktop web', (tester) async {

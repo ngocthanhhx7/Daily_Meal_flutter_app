@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_error_view.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_loading_view.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_dashboard_controller.dart';
@@ -12,18 +13,21 @@ import 'package:daily_meal_flutter_app/features/admin/presentation/widgets/admin
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({
     this.controller,
     this.managementController,
     this.analyticsController,
+    this.initialDestination = 0,
     this.onLogout,
     super.key,
   });
   final AdminDashboardController? controller;
   final AdminManagementController? managementController;
   final AdminAnalyticsController? analyticsController;
+  final int initialDestination;
   final VoidCallback? onLogout;
 
   @override
@@ -32,7 +36,22 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
-  int _destination = 0;
+  late int _destination;
+
+  @override
+  void initState() {
+    super.initState();
+    _destination = widget.initialDestination;
+    if (_destination == 7) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final AdminManagementController controller =
+            widget.managementController ??
+            ref.read(adminManagementControllerProvider);
+        controller.loadUsers().catchError((_) {});
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -593,18 +612,10 @@ class _UsersSection extends StatelessWidget {
             onPage: (p) => controller.loadUsers(page: p).catchError((_) {}),
             itemBuilder: (user) => Card(
               child: ListTile(
-                onTap: () async {
-                  await controller.loadUserDetail(user.id).catchError((_) {});
-                  if (context.mounted &&
-                      controller.selectedUserDetail != null) {
-                    await showDialog<void>(
-                      context: context,
-                      builder: (_) => _UserDetailDialog(
-                        data: controller.selectedUserDetail!,
-                      ),
-                    );
-                  }
-                },
+                onTap: () => context.pushNamed(
+                  AppRoute.adminUserDetail.name,
+                  pathParameters: {'id': user.id},
+                ),
                 leading: CircleAvatar(
                   child: Text(
                     user.name.isEmpty ? '?' : user.name[0].toUpperCase(),
@@ -796,53 +807,6 @@ class _InsightStrip extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-class _UserDetailDialog extends StatelessWidget {
-  const _UserDetailDialog({required this.data});
-  final Map<String, dynamic> data;
-  @override
-  Widget build(BuildContext context) {
-    final user = data['user'] is Map
-        ? (data['user'] as Map).cast<String, dynamic>()
-        : data;
-    final title = user['displayName']?.toString() ?? 'Chi tiết người dùng';
-    final stats = user['stats'] is Map ? user['stats'] as Map : const {};
-    return AlertDialog(
-      title: Text(title),
-      content: SizedBox(
-        width: 520,
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            for (final key in [
-              'email',
-              'phone',
-              'bio',
-              'isPremium',
-              'createdAt',
-            ])
-              if (user[key] != null)
-                ListTile(
-                  title: Text(key),
-                  subtitle: Text(user[key].toString()),
-                ),
-            for (final entry in stats.entries)
-              ListTile(
-                title: Text(entry.key.toString()),
-                trailing: Text(entry.value.toString()),
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Đóng'),
-        ),
-      ],
     );
   }
 }

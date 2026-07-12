@@ -23,7 +23,9 @@ enum AppRoute {
   shareAccount('/profile/share'),
   createPost('/create'),
   editPost('/posts/edit'),
-  adminDashboard('/admin');
+  adminDashboard('/admin'),
+  adminUsers('/admin/users'),
+  adminUserDetail('/admin/users/:id');
 
   const AppRoute(this.path);
   final String path;

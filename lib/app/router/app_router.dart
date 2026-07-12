@@ -19,6 +19,7 @@ import 'package:daily_meal_flutter_app/features/notifications/presentation/notif
 import 'package:daily_meal_flutter_app/features/comments/presentation/comments_screen.dart';
 import 'package:daily_meal_flutter_app/features/premium/presentation/premium_screen.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
+import 'package:daily_meal_flutter_app/features/admin/presentation/admin_user_detail_screen.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/presentation/user_utility_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -74,6 +75,12 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.support => const SupportScreen(),
             AppRoute.shareAccount => const ShareAccountScreen(),
             AppRoute.adminDashboard => const AdminDashboardScreen(),
+            AppRoute.adminUsers => const AdminDashboardScreen(
+              initialDestination: 7,
+            ),
+            AppRoute.adminUserDetail => AdminUserDetailScreen(
+              userId: state.pathParameters['id']!,
+            ),
             AppRoute.createPost => const CreatePostScreen(),
             AppRoute.editPost =>
               state.extra is FeedPost
