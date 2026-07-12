@@ -11,13 +11,28 @@ abstract interface class AdminRepositoryContract {
     String query = '',
     int page = 1,
     String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
   });
   Future<AdminPost> moderatePost(
     String id,
     String status, {
     String reason = '',
   });
-  Future<Map<String, dynamic>> postInsights({String? moderationStatus});
+  Future<Map<String, dynamic>> postInsights({
+    String query = '',
+    String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  });
   Future<AdminPage<AdminReport>> reports({
     String status = 'open',
     int page = 1,
@@ -55,8 +70,23 @@ class AdminRepository implements AdminRepositoryContract {
     String query = '',
     int page = 1,
     String? moderationStatus,
-  }) =>
-      _api.posts(query: query, page: page, moderationStatus: moderationStatus);
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  }) => _api.posts(
+    query: query,
+    page: page,
+    moderationStatus: moderationStatus,
+    range: range,
+    mediaKind: mediaKind,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  );
   @override
   Future<AdminPost> moderatePost(
     String id,
@@ -64,8 +94,25 @@ class AdminRepository implements AdminRepositoryContract {
     String reason = '',
   }) => _api.moderatePost(id, status, reason: reason);
   @override
-  Future<Map<String, dynamic>> postInsights({String? moderationStatus}) =>
-      _api.postInsights(moderationStatus: moderationStatus);
+  Future<Map<String, dynamic>> postInsights({
+    String query = '',
+    String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  }) => _api.postInsights(
+    query: query,
+    moderationStatus: moderationStatus,
+    range: range,
+    mediaKind: mediaKind,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
+    start: start,
+    end: end,
+  );
   @override
   Future<AdminPage<AdminReport>> reports({
     String status = 'open',

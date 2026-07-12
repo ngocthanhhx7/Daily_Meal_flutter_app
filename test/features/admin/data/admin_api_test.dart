@@ -285,8 +285,11 @@ void main() {
     expect(adapter.requests[0].queryParameters, {'range': '30d'});
     expect(adapter.requests[1].path, '/api/admin/users/u1');
     expect(adapter.requests[2].queryParameters, {
-      'range': '30d',
+      'q': '',
+      'range': '7d',
       'moderationStatus': 'review',
+      'sortBy': 'createdAt',
+      'sortOrder': 'desc',
     });
   });
 }

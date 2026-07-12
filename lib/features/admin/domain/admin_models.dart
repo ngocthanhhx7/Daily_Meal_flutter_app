@@ -291,22 +291,38 @@ class AdminPost {
     required this.moderationStatus,
     this.moderationReason = '',
     this.authorName = '',
-    this.interactions = 0,
+    this.authorEmail = '',
+    this.authorAvatarUrl,
+    this.mediaType = 'image',
+    this.imageUrls = const [],
+    this.videoUrl,
+    this.likes = 0,
+    this.comments = 0,
+    this.saves = 0,
     this.createdAt,
   });
   factory AdminPost.fromJson(Map<String, dynamic> json) {
     final stats = _map(json['stats']);
+    final author = _map(json['author']);
+    final video = _map(json['video']);
     return AdminPost(
       id: json['id']?.toString() ?? '',
       caption: json['caption']?.toString() ?? '',
       visibility: json['visibility']?.toString() ?? 'public',
       moderationStatus: json['moderationStatus']?.toString() ?? 'visible',
       moderationReason: json['moderationReason']?.toString() ?? '',
-      authorName: _map(json['author'])['displayName']?.toString() ?? '',
-      interactions:
-          _integer(stats['likes']) +
-          _integer(stats['comments']) +
-          _integer(stats['saves']),
+      authorName: author['displayName']?.toString() ?? '',
+      authorEmail: author['email']?.toString() ?? '',
+      authorAvatarUrl: author['avatarUrl']?.toString(),
+      mediaType: json['mediaType']?.toString() ?? 'image',
+      imageUrls: _maps(json['images'])
+          .map((image) => image['url']?.toString() ?? '')
+          .where((url) => url.isNotEmpty)
+          .toList(growable: false),
+      videoUrl: video['url']?.toString(),
+      likes: _integer(stats['likes']),
+      comments: _integer(stats['comments']),
+      saves: _integer(stats['saves']),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
@@ -315,8 +331,14 @@ class AdminPost {
       visibility,
       moderationStatus,
       moderationReason,
-      authorName;
-  final int interactions;
+      authorName,
+      authorEmail,
+      mediaType;
+  final String? authorAvatarUrl, videoUrl;
+  final List<String> imageUrls;
+  final int likes, comments, saves;
+  int get interactions => likes + comments + saves;
+  int get imageCount => imageUrls.length;
   final DateTime? createdAt;
 }
 

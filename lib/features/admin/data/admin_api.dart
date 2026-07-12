@@ -46,12 +46,24 @@ class AdminApi {
     String query = '',
     int page = 1,
     String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
   }) async => adminPage(
     await _get('/api/admin/posts', {
       'q': query,
       'page': page,
       'limit': 20,
       'moderationStatus': ?moderationStatus,
+      'range': range.wireValue,
+      if (mediaKind != 'all') 'mediaKind': mediaKind,
+      'sortBy': sortBy,
+      'sortOrder': sortOrder,
+      'start': ?start,
+      'end': ?end,
     }),
     'posts',
     AdminPost.fromJson,
@@ -69,10 +81,25 @@ class AdminApi {
     return AdminPost.fromJson(_object(data['post'], 'Admin post'));
   }
 
-  Future<Map<String, dynamic>> postInsights({String? moderationStatus}) => _get(
-    '/api/admin/posts/insights',
-    {'range': '30d', 'moderationStatus': ?moderationStatus},
-  );
+  Future<Map<String, dynamic>> postInsights({
+    String query = '',
+    String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  }) => _get('/api/admin/posts/insights', {
+    'q': query,
+    'range': range.wireValue,
+    'moderationStatus': ?moderationStatus,
+    if (mediaKind != 'all') 'mediaKind': mediaKind,
+    'sortBy': sortBy,
+    'sortOrder': sortOrder,
+    'start': ?start,
+    'end': ?end,
+  });
 
   Future<AdminPage<AdminReport>> reports({
     String status = 'open',

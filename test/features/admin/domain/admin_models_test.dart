@@ -59,4 +59,26 @@ void main() {
     expect(analytics.sourceTraffic.single['events'], 20);
     expect((analytics.tables['topActions'] as List).single['count'], 12);
   });
+
+  test('preserves admin post media, author and separate engagement stats', () {
+    final post = AdminPost.fromJson({
+      'id': 'p1',
+      'caption': 'Bữa sáng',
+      'visibility': 'public',
+      'moderationStatus': 'visible',
+      'mediaType': 'image',
+      'images': [
+        {'url': '/uploads/a.jpg'},
+        {'url': '/uploads/b.jpg'},
+      ],
+      'author': {'displayName': 'An', 'email': 'an@example.com'},
+      'stats': {'likes': 4, 'comments': 3, 'saves': 2},
+    });
+
+    expect(post.imageCount, 2);
+    expect(post.imageUrls.first, '/uploads/a.jpg');
+    expect(post.authorEmail, 'an@example.com');
+    expect((post.likes, post.comments, post.saves), (4, 3, 2));
+    expect(post.interactions, 9);
+  });
 }
