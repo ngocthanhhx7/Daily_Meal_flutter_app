@@ -4,6 +4,128 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+class FeedImageFrame {
+  const FeedImageFrame({
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+    this.rotation = 0,
+  });
+  final double left, top, width, height, rotation;
+}
+
+List<FeedImageFrame> collapsedFeedImageFrames(
+  PostLayout layout,
+  int count,
+  double width,
+  double height,
+) {
+  final limit = count.clamp(1, 4);
+  List<(double, double, double, double, double)> values;
+  if (count == 1) {
+    values = const [(.04, .06, .92, .88, 0)];
+  } else if (layout == PostLayout.grid && limit == 2) {
+    values = const [(.02, .14, .55, .72, -2), (.43, .14, .55, .72, 2)];
+  } else if (layout == PostLayout.grid && limit == 4) {
+    values = const [
+      (.05, .13, .52, .42, -2),
+      (.47, .15, .48, .42, 2),
+      (.12, .55, .44, .34, -1),
+      (.54, .58, .38, .30, 1),
+    ];
+  } else {
+    values = const [
+      (.02, .09, .82, .82, -6),
+      (.12, .04, .82, .82, 3),
+      (.06, .11, .82, .82, 0),
+      (.17, .17, .72, .72, -2),
+    ];
+  }
+  return [
+    for (var i = 0; i < limit; i++)
+      FeedImageFrame(
+        left: values[i].$1 * width,
+        top: values[i].$2 * height,
+        width: values[i].$3 * width,
+        height: values[i].$4 * height,
+        rotation: values[i].$5,
+      ),
+  ];
+}
+
+List<FeedImageFrame> spreadFeedImageFrames(
+  int count,
+  double width,
+  double height,
+) {
+  final limit = count.clamp(1, 4);
+  final gap = (width * .032).clamp(10.0, double.infinity).toDouble();
+  final column = (width - gap) / 2;
+  if (limit == 2) {
+    final h = _bounded(height * .62, column * 1.58);
+    return [
+      FeedImageFrame(
+        left: 0,
+        top: _bounded(height * .32, height - h - 48),
+        width: column,
+        height: h,
+      ),
+      FeedImageFrame(
+        left: column + gap,
+        top: height * .22,
+        width: column,
+        height: h,
+      ),
+    ];
+  }
+  if (limit == 3) {
+    final top = height * .15, heroW = width * .56, rightW = width - heroW - gap;
+    final heroH = _bounded(height * .44, heroW * 1.08),
+        rightH = _bounded(height * .4, rightW * 1.28);
+    final bottomW = _bounded(heroW * .64, width * .38),
+        bottomH = _bounded(bottomW * 1.32, height - (top + heroH + gap) - 24);
+    return [
+      FeedImageFrame(left: 0, top: top, width: heroW, height: heroH),
+      FeedImageFrame(
+        left: heroW + gap,
+        top: top + heroH * .5,
+        width: rightW,
+        height: rightH,
+      ),
+      FeedImageFrame(
+        left: heroW * .35,
+        top: top + heroH + gap,
+        width: bottomW,
+        height: bottomH,
+      ),
+    ];
+  }
+  final leftW = width * .53, rightW = width - leftW - gap, top = height * .2;
+  final leftH = _bounded(height * .42, leftW * 1.08),
+      rightH = _bounded(height * .48, rightW * 1.48);
+  final bottomLeftW = leftW * .72, bottomRightW = rightW * .72;
+  return [
+    FeedImageFrame(left: 0, top: top, width: leftW, height: leftH),
+    FeedImageFrame(left: leftW + gap, top: top, width: rightW, height: rightH),
+    FeedImageFrame(
+      left: leftW * .28,
+      top: top + leftH + gap,
+      width: bottomLeftW,
+      height: _bounded(height * .27, bottomLeftW * 1.12),
+    ),
+    FeedImageFrame(
+      left: leftW + gap,
+      top: top + rightH + gap,
+      width: bottomRightW,
+      height: _bounded(height * .26, bottomRightW * 1.2),
+    ),
+  ];
+}
+
+double _bounded(double value, double maximum) =>
+    value.clamp(0.0, maximum.clamp(0.0, double.infinity)).toDouble();
+
 bool shouldPlayVisibleVideo(double visibleFraction) => visibleFraction >= 0.65;
 
 int feedImageCacheWidth(double logicalWidth, double devicePixelRatio) =>
@@ -29,6 +151,7 @@ class PostMedia extends StatefulWidget {
 
 class _PostMediaState extends State<PostMedia> {
   bool _showHeart = false;
+  bool _spreadOpen = false;
 
   void _doubleTap() {
     if (!widget.post.viewerState.liked) widget.onDoubleTapLike();
@@ -69,11 +192,19 @@ class _PostMediaState extends State<PostMedia> {
                 ),
               ),
             )
-          : _ImageCarousel(images: images, homeStyle: widget.homeStyle);
+          : _ImageCarousel(
+              images: images,
+              layout: widget.post.layout,
+              homeStyle: widget.homeStyle,
+              spreadOpen: _spreadOpen,
+            );
     }
     return GestureDetector(
       key: Key('post-media-${widget.post.id}'),
       behavior: HitTestBehavior.opaque,
+      onTap: widget.homeStyle && widget.post.images.length > 1
+          ? () => setState(() => _spreadOpen = !_spreadOpen)
+          : null,
       onDoubleTap: _doubleTap,
       child: Stack(
         alignment: Alignment.center,
@@ -107,9 +238,16 @@ class _PostMediaState extends State<PostMedia> {
 }
 
 class _ImageCarousel extends StatefulWidget {
-  const _ImageCarousel({required this.images, required this.homeStyle});
+  const _ImageCarousel({
+    required this.images,
+    required this.layout,
+    required this.homeStyle,
+    required this.spreadOpen,
+  });
   final List<Uri> images;
+  final PostLayout layout;
   final bool homeStyle;
+  final bool spreadOpen;
 
   @override
   State<_ImageCarousel> createState() => _ImageCarouselState();
@@ -122,49 +260,48 @@ class _ImageCarouselState extends State<_ImageCarousel> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final canvasHeight = widget.homeStyle
-            ? (constraints.maxWidth * 4 / 3).clamp(390.0, 510.0)
+            ? (constraints.maxWidth * 4 / 3).clamp(390.0, 510.0).toDouble()
             : 390.0;
-        final single = widget.homeStyle && images.length == 1;
-        final cardWidth = single
-            ? constraints.maxWidth
-            : constraints.maxWidth * (widget.homeStyle ? .84 : .72);
-        final cardHeight = single ? canvasHeight : canvasHeight - 60;
-        final cacheWidth = feedImageCacheWidth(
-          cardWidth,
-          MediaQuery.devicePixelRatioOf(context),
-        );
-        final offsets = switch (images.length) {
-          1 => [
-            Offset((constraints.maxWidth - cardWidth) / 2, single ? 0 : 22),
-          ],
-          2 => [
-            const Offset(8, 35),
-            Offset(constraints.maxWidth - cardWidth - 8, 10),
-          ],
-          _ => [
-            const Offset(4, 42),
-            Offset((constraints.maxWidth - cardWidth) / 2, 4),
-            Offset(constraints.maxWidth - cardWidth - 4, 48),
-          ],
-        };
-        final rotations = switch (images.length) {
-          1 => [0.0],
-          2 => [-0.055, 0.045],
-          _ => [-0.075, 0.02, 0.07],
-        };
+        final frames = widget.homeStyle
+            ? (widget.spreadOpen
+                  ? spreadFeedImageFrames(
+                      images.length,
+                      constraints.maxWidth,
+                      canvasHeight,
+                    )
+                  : collapsedFeedImageFrames(
+                      widget.layout,
+                      images.length,
+                      constraints.maxWidth,
+                      canvasHeight,
+                    ))
+            : collapsedFeedImageFrames(
+                widget.layout,
+                images.length,
+                constraints.maxWidth,
+                canvasHeight,
+              );
         return SizedBox(
           height: canvasHeight,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               for (var index = 0; index < images.length; index++)
-                Positioned(
-                  left: offsets[index].dx,
-                  top: offsets[index].dy,
-                  width: cardWidth,
-                  height: cardHeight,
-                  child: Transform.rotate(
-                    angle: rotations[index],
+                AnimatedPositioned(
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 420),
+                  curve: Curves.easeInOutCubic,
+                  left: frames[index].left,
+                  top: frames[index].top,
+                  width: frames[index].width,
+                  height: frames[index].height,
+                  child: AnimatedRotation(
+                    turns: frames[index].rotation / 360,
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 420),
+                    curve: Curves.easeInOutCubic,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(22),
@@ -181,7 +318,10 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                         child: Image.network(
                           images[index].toString(),
                           fit: BoxFit.cover,
-                          cacheWidth: cacheWidth,
+                          cacheWidth: feedImageCacheWidth(
+                            frames[index].width,
+                            MediaQuery.devicePixelRatioOf(context),
+                          ),
                           semanticLabel: 'Ảnh món ăn ${index + 1}',
                           errorBuilder: (context, error, stackTrace) =>
                               const ColoredBox(
