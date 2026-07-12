@@ -81,10 +81,7 @@ class ProfileController extends ChangeNotifier {
   Future<void> load() async {
     _set(_state.copyWith(status: ProfileStatus.loading, clearError: true));
     try {
-      final bundle = await _repository.loadProfile(
-        userId,
-        includeSaved: isOwner,
-      );
+      final bundle = await _repository.loadProfile(userId, includeSaved: true);
       _set(
         _state.copyWith(
           status: ProfileStatus.ready,
@@ -105,7 +102,6 @@ class ProfileController extends ChangeNotifier {
   }
 
   void selectTab(ProfileTab tab) {
-    if (tab == ProfileTab.saved && !isOwner) return;
     _set(_state.copyWith(tab: tab));
   }
 

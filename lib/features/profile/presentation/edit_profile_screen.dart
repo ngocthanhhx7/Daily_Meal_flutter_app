@@ -31,18 +31,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     '#CBB5F5',
     '#74746F',
   ];
-  static const avatars = [
-    'cute_cat',
-    'cute_dog',
-    'cute_rabbit',
-    'cute_bear',
-    'cute_hamster',
-    'cute_panda',
-    'cute_dino',
-    'cute_koala',
-    'cute_penguin',
-    'cute_fox',
-  ];
+  static const avatars = {
+    'cute_cat': 'Mèo Noodle',
+    'cute_dog': 'Cún Chef',
+    'cute_rabbit': 'Thỏ Trà Sữa',
+    'cute_bear': 'Gấu Bánh',
+    'cute_hamster': 'Hamster Dâu',
+    'cute_panda': 'Trúc Sữa',
+    'cute_dino': 'Dino Xanh',
+    'cute_koala': 'Koala Cookie',
+    'cute_penguin': 'Cụt Sushi',
+    'cute_fox': 'Cáo Cà Phê',
+  };
   final _name = TextEditingController();
   final _bio = TextEditingController();
   final _birthday = TextEditingController();
@@ -189,18 +189,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 Row(
                   children: [
-                    IconButton(
-                      onPressed: context.pop,
-                      icon: SvgPicture.asset(
-                        'assets/icons/Dark/Arrow_Left_circle.svg',
-                        width: 20,
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: context.pop,
+                        icon: SvgPicture.asset(
+                          'assets/icons/Dark/Arrow_Left_circle.svg',
+                          width: 18,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'Chỉnh sửa cá nhân',
                         style: TextStyle(
                           fontSize: 25,
+                          height: 31 / 25,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -255,7 +262,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     itemCount: avatars.length,
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (_, i) {
-                      final value = avatars[i];
+                      final entry = avatars.entries.elementAt(i);
+                      final value = entry.key;
                       return InkWell(
                         onTap: () => setState(() {
                           _avatar = value;
@@ -284,7 +292,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 height: 50,
                               ),
                               Text(
-                                value.replaceFirst('cute_', ''),
+                                entry.value,
                                 maxLines: 1,
                                 style: const TextStyle(fontSize: 10),
                               ),
@@ -350,24 +358,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-                SegmentedButton<BirthdayVisibility>(
-                  segments: const [
-                    ButtonSegment(
-                      value: BirthdayVisibility.hidden,
-                      label: Text('Ẩn'),
-                    ),
-                    ButtonSegment(
-                      value: BirthdayVisibility.dayMonth,
-                      label: Text('Ngày/tháng'),
-                    ),
-                    ButtonSegment(
-                      value: BirthdayVisibility.full,
-                      label: Text('Đầy đủ'),
-                    ),
+                Row(
+                  children: [
+                    for (final entry in const {
+                      BirthdayVisibility.hidden: 'Ẩn',
+                      BirthdayVisibility.dayMonth: 'Ngày/tháng',
+                      BirthdayVisibility.full: 'Đầy đủ',
+                    }.entries) ...[
+                      Expanded(
+                        child: _SourceSegment(
+                          label: entry.value,
+                          selected: _visibility == entry.key,
+                          onTap: () => setState(() => _visibility = entry.key),
+                        ),
+                      ),
+                      if (entry.key != BirthdayVisibility.full)
+                        const SizedBox(width: 8),
+                    ],
                   ],
-                  selected: {_visibility},
-                  onSelectionChanged: (v) =>
-                      setState(() => _visibility = v.first),
                 ),
                 const SizedBox(height: 18),
                 const Text(
@@ -391,16 +399,33 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ),
                   ),
                 const SizedBox(height: 18),
-                FilledButton(
-                  onPressed: _busy ? null : _save,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.black,
+                SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: _busy ? null : _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(_busy ? 'Đang lưu...' : 'Lưu hồ sơ'),
                   ),
-                  child: Text(_busy ? 'Đang lưu...' : 'Lưu hồ sơ'),
                 ),
-                TextButton(
-                  onPressed: _busy ? null : context.pop,
-                  child: const Text('Hủy'),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: _busy ? null : context.pop,
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: AppColors.surface,
+                      side: const BorderSide(color: AppColors.line),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Hủy'),
+                  ),
                 ),
               ],
             ),
@@ -464,10 +489,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     runSpacing: 8,
     children: [
       for (final option in options)
-        FilterChip(
-          label: Text(option),
+        _SourcePreferenceChip(
+          label: option,
           selected: selected.contains(option),
-          onSelected: (_) => setState(() {
+          onTap: () => setState(() {
             final next = [...selected];
             next.contains(option) ? next.remove(option) : next.add(option);
             update(next);
@@ -479,4 +504,77 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       Color(int.parse('FF${value.substring(1)}', radix: 16));
   static bool _same(List<String> left, List<String> right) =>
       left.length == right.length && left.every(right.contains);
+}
+
+class _SourceSegment extends StatelessWidget {
+  const _SourceSegment({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? AppColors.black : AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: BorderSide(color: selected ? AppColors.black : AppColors.line),
+    ),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 40,
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: selected ? AppColors.white : AppColors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _SourcePreferenceChip extends StatelessWidget {
+  const _SourcePreferenceChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? AppColors.black : AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: BorderSide(color: selected ? AppColors.black : AppColors.line),
+    ),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 34),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: selected ? AppColors.white : AppColors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

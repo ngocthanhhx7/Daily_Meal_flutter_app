@@ -9,6 +9,7 @@ import 'package:daily_meal_flutter_app/features/post_editor/presentation/create_
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_route_screen.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/search/presentation/search_screen.dart';
+import 'package:daily_meal_flutter_app/features/search/application/search_controller.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/profile_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/edit_profile_screen.dart';
 import 'package:daily_meal_flutter_app/features/profile/presentation/follows_screen.dart';
@@ -43,7 +44,12 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
             AppRoute.home => HomeScreen(
               initialPostId: state.uri.queryParameters['postId'],
             ),
-            AppRoute.search => const SearchScreen(),
+            AppRoute.search => SearchScreen(
+              initialQuery: state.uri.queryParameters['q'] ?? '',
+              initialMode: state.uri.queryParameters['mode'] == 'people'
+                  ? SearchMode.people
+                  : null,
+            ),
             AppRoute.profile => const ProfileScreen(),
             AppRoute.editProfile => const EditProfileScreen(),
             AppRoute.saved => const ProfileScreen(showSaved: true),

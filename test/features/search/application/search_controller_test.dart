@@ -68,6 +68,17 @@ class _Repository implements SearchRepositoryContract {
 }
 
 void main() {
+  test('initializes a URL-addressable people search', () async {
+    final repository = _Repository();
+    final controller = SearchController(repository);
+
+    await controller.initialize(query: 'Bếp Nhà', mode: SearchMode.people);
+
+    expect(repository.query, 'Bếp Nhà');
+    expect(controller.state.query, 'Bếp Nhà');
+    expect(controller.state.mode, SearchMode.people);
+  });
+
   test(
     'searches current query and filters into both result segments',
     () async {

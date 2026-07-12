@@ -79,6 +79,12 @@ class SearchController extends ChangeNotifier {
   bool isFollowBusy(String userId) => _followingBusy.contains(userId);
   bool isPostBusy(String postId) => _postBusy.contains(postId);
 
+  Future<void> initialize({String query = '', SearchMode? mode}) {
+    _debounce?.cancel();
+    _setState(_state.copyWith(query: query, mode: mode ?? _state.mode));
+    return searchNow();
+  }
+
   void updateQuery(String query) {
     _setState(_state.copyWith(query: query));
     _debounce?.cancel();

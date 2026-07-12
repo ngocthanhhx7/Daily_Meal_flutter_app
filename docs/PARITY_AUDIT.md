@@ -82,4 +82,10 @@ media-kind and sorting state to both list and insight endpoints. The responsive
 workspace renders source-style KPI cards, media previews, author/status/stats
 metadata and explicit visible/review/hidden moderation actions without compact
 header overflow.
+
+User-first follow-up: Public Profile now loads and exposes public Saved posts,
+renders birthday visibility, uses source Follow/Message ordering and blocked
+states, and provides a URL-addressable people-search menu action. Edit Profile
+now uses the source avatar labels, compact header geometry, rectangular
+birthday/preference controls and 50px primary/ghost actions.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

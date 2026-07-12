@@ -19,6 +19,7 @@ PublicUser _user({bool following = false}) => PublicUser.fromJson({
   'id': 'user-1',
   'displayName': 'Bếp Nhà',
   'bio': 'Món ngon mỗi ngày',
+  'birthday': {'day': 5, 'month': 5, 'visibility': 'dayMonth'},
   'counts': {'posts': 1, 'followers': 2, 'following': 3},
   'relationship': {'isFollowing': following},
 });
@@ -41,7 +42,18 @@ class _Repository implements ProfileRepositoryContract {
         'updatedAt': '2026-07-11T08:00:00Z',
       }),
     ],
-    savedPosts: const [],
+    savedPosts: includeSaved
+        ? [
+            FeedPost.fromJson({
+              '_id': 'saved-1',
+              'author': {'id': 'user-2', 'displayName': 'Bếp Bạn'},
+              'caption': 'Món đã lưu',
+              'visibility': 'public',
+              'createdAt': '2026-07-11T08:00:00Z',
+              'updatedAt': '2026-07-11T08:00:00Z',
+            }),
+          ]
+        : const [],
   );
 
   @override
@@ -215,12 +227,18 @@ void main() {
 
       expect(find.text('Bếp Nhà'), findsNWidgets(2));
       expect(find.text('Bữa sáng đủ chất'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('profile-secondary-action')));
+      expect(find.text('Sinh nhật 5/5'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('profile-primary-action')));
       await tester.pumpAndSettle();
       expect(find.text('Đang theo dõi'), findsWidgets);
 
+      await tester.tap(find.bySemanticsLabel('Đã lưu'));
+      await tester.pumpAndSettle();
+      expect(find.text('Món đã lưu'), findsOneWidget);
+
       await tester.tap(find.byTooltip('An toàn tài khoản'));
       await tester.pumpAndSettle();
+      expect(find.text('Sao chép tên để tìm kiếm'), findsOneWidget);
       await tester.tap(find.text('Chặn'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Xác nhận'));

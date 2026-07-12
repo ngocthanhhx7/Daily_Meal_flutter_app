@@ -58,6 +58,36 @@ class ViewerInteraction {
   final bool reported;
 }
 
+class PublicBirthday {
+  const PublicBirthday({
+    required this.visibility,
+    this.date,
+    this.day,
+    this.month,
+  });
+  factory PublicBirthday.fromJson(Map<String, dynamic>? json) => PublicBirthday(
+    visibility: json?['visibility']?.toString() ?? 'hidden',
+    date: json?['date']?.toString(),
+    day: json?['day'] is num ? (json!['day'] as num).round() : null,
+    month: json?['month'] is num ? (json!['month'] as num).round() : null,
+  );
+  final String visibility;
+  final String? date;
+  final int? day, month;
+
+  String get displayText {
+    if (visibility == 'hidden') return '';
+    if (visibility == 'dayMonth' && day != null && month != null) {
+      return 'Sinh nhật $day/$month';
+    }
+    final parts = date?.split('-');
+    if (parts != null && parts.length == 3) {
+      return 'Sinh nhật ${parts[2]}/${parts[1]}/${parts[0]}';
+    }
+    return '';
+  }
+}
+
 class PublicUser {
   const PublicUser({
     required this.id,
@@ -73,6 +103,7 @@ class PublicUser {
     this.bio,
     this.streakDays = 0,
     this.themeColor,
+    this.birthday = const PublicBirthday(visibility: 'hidden'),
   });
 
   factory PublicUser.fromJson(Map<String, dynamic> json) {
@@ -92,6 +123,9 @@ class PublicUser {
       isPremium: json['isPremium'] as bool? ?? false,
       streakDays: _integer(json['streakDays']),
       themeColor: json['themeColor'] as String?,
+      birthday: PublicBirthday.fromJson(
+        (json['birthday'] as Map?)?.cast<String, dynamic>(),
+      ),
       counts: PublicUserCounts.fromJson(
         (json['counts'] as Map?)?.cast<String, dynamic>(),
       ),
@@ -114,6 +148,7 @@ class PublicUser {
   final bool isPremium;
   final int streakDays;
   final String? themeColor;
+  final PublicBirthday birthday;
   final PublicUserCounts counts;
   final UserRelationship relationship;
   final ViewerInteraction viewerInteraction;
@@ -129,6 +164,7 @@ class PublicUser {
     isPremium: isPremium,
     streakDays: streakDays,
     themeColor: themeColor,
+    birthday: birthday,
     counts: counts,
     relationship: next,
     viewerInteraction: viewerInteraction,
@@ -145,6 +181,7 @@ class PublicUser {
     isPremium: isPremium,
     streakDays: streakDays,
     themeColor: themeColor,
+    birthday: birthday,
     counts: counts,
     relationship: relationship,
     viewerInteraction: next,

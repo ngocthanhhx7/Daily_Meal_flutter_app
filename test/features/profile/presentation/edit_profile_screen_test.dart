@@ -54,18 +54,21 @@ void main() {
     expect(find.text('Chỉnh sửa cá nhân'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Daily Chef'), findsOneWidget);
     expect(find.text('Chọn Avatar mẫu dễ thương'), findsOneWidget);
+    expect(find.text('Mèo Noodle'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Hiển thị ngày sinh'),
       500,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Hiển thị ngày sinh'), findsOneWidget);
+    expect(find.byType(SegmentedButton<BirthdayVisibility>), findsNothing);
     await tester.scrollUntilVisible(
       find.text('Sở thích tìm kiếm'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Sở thích tìm kiếm'), findsOneWidget);
+    expect(find.byType(FilterChip), findsNothing);
     await tester.scrollUntilVisible(
       find.text('Lưu hồ sơ'),
       500,

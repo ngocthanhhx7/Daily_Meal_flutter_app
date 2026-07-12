@@ -140,12 +140,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onOwnerMenu: controller.isOwner
                 ? () => _openOwnerMenu(context)
                 : null,
+            onSearchUser: controller.isOwner
+                ? null
+                : () => context.pushNamed(
+                    AppRoute.search.name,
+                    queryParameters: {'q': user.displayName, 'mode': 'people'},
+                  ),
           ),
         ),
         SliverToBoxAdapter(
           child: _ProfileTabs(
             selected: state.tab,
-            showSaved: controller.isOwner,
+            showSaved: true,
             onSelected: controller.selectTab,
           ),
         ),
@@ -269,6 +275,7 @@ class _Header extends StatelessWidget {
     this.onMessage,
     this.onShare,
     this.onOwnerMenu,
+    this.onSearchUser,
   });
   final PublicUser user;
   final ProfileController controller;
@@ -278,6 +285,7 @@ class _Header extends StatelessWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onShare;
   final VoidCallback? onOwnerMenu;
+  final VoidCallback? onSearchUser;
 
   @override
   Widget build(BuildContext context) {
@@ -300,6 +308,7 @@ class _Header extends StatelessWidget {
         onMessage: onMessage,
         onShare: onShare,
         onOwnerMenu: onOwnerMenu,
+        onSearchUser: onSearchUser,
         onFollow: () => controller.toggleFollow().catchError((_) {}),
         onSafety: (type) => _confirmSafety(context, type),
       );
@@ -712,6 +721,7 @@ class _SourceProfileHeader extends StatelessWidget {
     this.onMessage,
     this.onShare,
     this.onOwnerMenu,
+    this.onSearchUser,
   });
 
   final PublicUser user;
@@ -729,6 +739,7 @@ class _SourceProfileHeader extends StatelessWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onShare;
   final VoidCallback? onOwnerMenu;
+  final VoidCallback? onSearchUser;
 
   String get _handle {
     final normalized = user.displayName
@@ -788,6 +799,8 @@ class _SourceProfileHeader extends StatelessWidget {
                       icon: const Icon(Icons.more_horiz, size: 26),
                       onSelected: (value) {
                         switch (value) {
+                          case 'search':
+                            onSearchUser?.call();
                           case 'avatar':
                             onAvatar();
                           case 'cover':
@@ -828,6 +841,10 @@ class _SourceProfileHeader extends StatelessWidget {
                               ),
                             ]
                           : [
+                              const PopupMenuItem(
+                                value: 'search',
+                                child: Text('Sao chép tên để tìm kiếm'),
+                              ),
                               PopupMenuItem(
                                 value: 'restrict',
                                 child: Text(
@@ -846,9 +863,10 @@ class _SourceProfileHeader extends StatelessWidget {
                               ),
                               PopupMenuItem(
                                 value: 'report',
+                                enabled: !user.viewerInteraction.reported,
                                 child: Text(
                                   user.viewerInteraction.reported
-                                      ? 'Gỡ báo cáo'
+                                      ? 'Đã báo cáo'
                                       : 'Báo cáo',
                                 ),
                               ),
@@ -971,30 +989,44 @@ class _SourceProfileHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 14, height: 20 / 14),
               ),
+              if (!isOwner && user.birthday.displayText.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(
+                  user.birthday.displayText,
+                  key: const Key('public-profile-birthday'),
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+              ],
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: _ProfileAction(
                       key: const Key('profile-primary-action'),
-                      label: isOwner ? 'Chỉnh sửa trang' : 'Nhắn tin',
-                      onPressed: isOwner ? onEdit : onMessage,
+                      label: isOwner ? 'Chỉnh sửa trang' : _followLabel(user),
+                      color: !isOwner && !user.relationship.isFollowing
+                          ? const Color(0xFF5DA4FF)
+                          : null,
+                      onPressed:
+                          isOwner ||
+                              followBusy ||
+                              user.viewerInteraction.blocked
+                          ? isOwner
+                                ? onEdit
+                                : null
+                          : onFollow,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ProfileAction(
                       key: const Key('profile-secondary-action'),
-                      label: isOwner
-                          ? 'Chia sẻ trang'
-                          : user.relationship.isFollowing
-                          ? 'Đang theo dõi'
-                          : 'Theo dõi',
+                      label: isOwner ? 'Chia sẻ trang' : 'Nhắn tin',
                       onPressed: isOwner
                           ? onShare
-                          : followBusy
+                          : user.viewerInteraction.blocked
                           ? null
-                          : onFollow,
+                          : onMessage,
                     ),
                   ),
                 ],
@@ -1004,6 +1036,14 @@ class _SourceProfileHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static String _followLabel(PublicUser user) {
+    if (user.viewerInteraction.blocked) return 'Đã chặn';
+    if (user.relationship.isFriend) return 'Bạn bè';
+    if (user.relationship.isFollowing) return 'Đang theo dõi';
+    if (user.relationship.followsMe) return 'Theo dõi lại';
+    return 'Theo dõi';
   }
 }
 
@@ -1038,14 +1078,16 @@ class _ProfileAction extends StatelessWidget {
   const _ProfileAction({
     required this.label,
     required this.onPressed,
+    this.color,
     super.key,
   });
   final String label;
   final VoidCallback? onPressed;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) => Material(
-    color: AppColors.white,
+    color: color ?? AppColors.white,
     elevation: 4,
     shadowColor: Colors.black26,
     borderRadius: BorderRadius.circular(10),

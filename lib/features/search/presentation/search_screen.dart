@@ -15,9 +15,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({this.controller, this.mediaResolver, super.key});
+  const SearchScreen({
+    this.controller,
+    this.mediaResolver,
+    this.initialQuery = '',
+    this.initialMode,
+    super.key,
+  });
   final app_search.SearchController? controller;
   final MediaUrlResolver? mediaResolver;
+  final String initialQuery;
+  final app_search.SearchMode? initialMode;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -29,9 +37,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.controller != null &&
-        widget.controller!.state.status == app_search.SearchStatus.idle) {
-      widget.controller!.searchNow().catchError((_) {});
+    _query.text = widget.initialQuery;
+    if (widget.controller != null) {
+      widget.controller!
+          .initialize(query: widget.initialQuery, mode: widget.initialMode)
+          .catchError((_) {});
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref
+            .read(searchControllerProvider)
+            .initialize(query: widget.initialQuery, mode: widget.initialMode)
+            .catchError((_) {});
+      });
     }
   }
 
