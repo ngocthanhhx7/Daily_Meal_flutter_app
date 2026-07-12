@@ -15,6 +15,7 @@ class FeedPostCard extends StatelessWidget {
     this.interactionBusy = false,
     this.isOwner = false,
     this.onEdit,
+    this.showActions = true,
     super.key,
   });
 
@@ -27,6 +28,7 @@ class FeedPostCard extends StatelessWidget {
   final bool interactionBusy;
   final bool isOwner;
   final VoidCallback? onEdit;
+  final bool showActions;
 
   @override
   Widget build(BuildContext context) {
@@ -179,52 +181,55 @@ class FeedPostCard extends StatelessWidget {
               ],
             ),
           ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.black,
-            borderRadius: BorderRadius.circular(22),
+        if (showActions)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.black,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _Action(
+                  key: Key('like-${post.id}'),
+                  icon: post.viewerState.liked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  color: post.viewerState.liked
+                      ? AppColors.red
+                      : AppColors.white,
+                  count: post.stats.likes,
+                  tooltip: 'Thích bài viết',
+                  onPressed: interactionBusy ? null : onLike,
+                ),
+                _Action(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  count: post.stats.comments,
+                  tooltip: 'Bình luận',
+                  color: AppColors.white,
+                  onPressed: onComment,
+                ),
+                _Action(
+                  key: Key('save-${post.id}'),
+                  icon: post.viewerState.saved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  count: post.stats.saves,
+                  tooltip: 'Lưu bài viết',
+                  color: post.viewerState.saved
+                      ? AppColors.yellow
+                      : AppColors.white,
+                  onPressed: interactionBusy ? null : onSave,
+                ),
+                IconButton(
+                  tooltip: 'Công thức',
+                  onPressed: onRecipe,
+                  color: AppColors.white,
+                  icon: const Icon(Icons.restaurant_outlined, size: 18),
+                ),
+              ],
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _Action(
-                key: Key('like-${post.id}'),
-                icon: post.viewerState.liked
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                color: post.viewerState.liked ? AppColors.red : AppColors.white,
-                count: post.stats.likes,
-                tooltip: 'Thích bài viết',
-                onPressed: interactionBusy ? null : onLike,
-              ),
-              _Action(
-                icon: Icons.chat_bubble_outline_rounded,
-                count: post.stats.comments,
-                tooltip: 'Bình luận',
-                color: AppColors.white,
-                onPressed: onComment,
-              ),
-              _Action(
-                key: Key('save-${post.id}'),
-                icon: post.viewerState.saved
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_border_rounded,
-                count: post.stats.saves,
-                tooltip: 'Lưu bài viết',
-                color: post.viewerState.saved
-                    ? AppColors.yellow
-                    : AppColors.white,
-                onPressed: interactionBusy ? null : onSave,
-              ),
-              IconButton(
-                tooltip: 'Công thức',
-                onPressed: onRecipe,
-                color: AppColors.white,
-                icon: const Icon(Icons.restaurant_outlined, size: 18),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }

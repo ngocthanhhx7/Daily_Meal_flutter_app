@@ -1,6 +1,5 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
-import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
 import 'package:daily_meal_flutter_app/core/widgets/async_content.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_controller.dart';
@@ -12,6 +11,7 @@ import 'package:daily_meal_flutter_app/features/comments/presentation/comments_s
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/features/notifications/application/notifications_providers.dart';
@@ -36,30 +36,21 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _scrollController = ScrollController();
+  final _pageController = PageController();
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     if (widget.controller != null &&
         widget.controller!.state.status == FeedStatus.idle) {
       widget.controller!.loadInitial().catchError((_) {});
     }
   }
 
-  FeedController get _controller =>
-      widget.controller ?? ref.read(feedControllerProvider);
-
-  void _onScroll() {
-    if (_scrollController.position.extentAfter < 500) {
-      _controller.loadMore().catchError((_) {});
-    }
-  }
-
   @override
   void dispose() {
-    _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -104,144 +95,215 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       FeedStatus.ready => AsyncContentState<List<FeedPost>>.data(state.posts),
     };
 
-    return AdaptiveScaffold(
-      dailyMealStyle: true,
-      destinations: const [
-        AdaptiveDestination(icon: Icons.home_rounded, label: 'Trang chủ'),
-        AdaptiveDestination(icon: Icons.search_rounded, label: 'Tìm kiếm'),
-        AdaptiveDestination(icon: Icons.add_box_outlined, label: 'Đăng bài'),
-        AdaptiveDestination(icon: Icons.chat_outlined, label: 'Tin nhắn'),
-        AdaptiveDestination(icon: Icons.person_outline, label: 'Hồ sơ'),
-      ],
-      selectedIndex: 0,
-      onDestinationSelected: (index) {
-        if (index == 1) {
-          context.goNamed(AppRoute.search.name);
-        } else if (index == 2) {
-          context.goNamed(AppRoute.createPost.name);
-        } else if (index == 4) {
-          context.goNamed(AppRoute.profile.name);
-        } else if (index == 3) {
-          context.goNamed(AppRoute.inbox.name);
-        } else if (index != 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tính năng đang được hoàn thiện.')),
-          );
-        }
-      },
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: DailyMealBackground(
-        child: Column(
-          children: [
-            Material(
-              color: Colors.transparent,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Bảng tin',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: AppColors.greenDark,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 8, 8),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Bảng tin',
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: AppColors.green,
                               fontSize: 34,
                               height: 42 / 34,
+                              fontWeight: FontWeight.w700,
                             ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: 'Thông báo',
-                        onPressed: () =>
-                            context.pushNamed(AppRoute.notifications.name),
-                        icon: Badge(
-                          isLabelVisible: (notifications?.unreadCount ?? 0) > 0,
-                          label: Text('${notifications?.unreadCount ?? 0}'),
-                          child: const Icon(Icons.notifications_outlined),
+                          ),
                         ),
-                      ),
-                    ],
+                        IconButton(
+                          tooltip: 'Thông báo',
+                          onPressed: () =>
+                              context.pushNamed(AppRoute.notifications.name),
+                          icon: Badge(
+                            isLabelVisible:
+                                (notifications?.unreadCount ?? 0) > 0,
+                            label: Text(
+                              (notifications?.unreadCount ?? 0) > 9
+                                  ? '9+'
+                                  : '${notifications?.unreadCount ?? 0}',
+                            ),
+                            child: SvgPicture.asset(
+                              'assets/icons/White/bell.svg',
+                              width: 28,
+                              height: 28,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Hồ sơ',
+                          onPressed: () =>
+                              context.goNamed(AppRoute.profile.name),
+                          icon: SvgPicture.asset(
+                            'assets/icons/White/user_1.svg',
+                            width: 30,
+                            height: 30,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: AsyncContent<List<FeedPost>>(
-                state: content,
-                onRetry: () => controller.loadInitial().catchError((_) {}),
-                dataBuilder: (context, posts) => RefreshIndicator(
-                  onRefresh: controller.refresh,
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    itemCount: posts.length + (state.isLoadingMore ? 1 : 0),
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      if (index == posts.length) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
+                Expanded(
+                  child: AsyncContent<List<FeedPost>>(
+                    state: content,
+                    onRetry: () => controller.loadInitial().catchError((_) {}),
+                    dataBuilder: (context, posts) => PageView.builder(
+                      key: const Key('home-paged-feed'),
+                      controller: _pageController,
+                      scrollDirection: Axis.vertical,
+                      itemCount: posts.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentIndex = index);
+                        if (index >= posts.length - 2) {
+                          controller.loadMore().catchError((_) {});
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        final post = posts[index];
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(18, 22, 18, 8),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 383),
+                              child: FeedPostCard(
+                                post: post,
+                                resolver: resolver,
+                                showActions: false,
+                                interactionBusy: controller.isInteractionBusy(
+                                  post.id,
+                                ),
+                                isOwner: currentUserId == post.author.id,
+                                onEdit: () => _editPost(controller, post),
+                                onLike: () => controller
+                                    .toggleLike(post.id)
+                                    .catchError((_) {}),
+                                onSave: () => controller
+                                    .toggleSave(post.id)
+                                    .catchError((_) {}),
+                                onComment: () => _comments(post.id),
+                                onRecipe: () => _recipe(post, resolver),
+                              ),
+                            ),
                           ),
                         );
-                      }
-                      final post = posts[index];
-                      return Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 383),
-                          child: FeedPostCard(
-                            post: post,
-                            resolver: resolver,
-                            interactionBusy: controller.isInteractionBusy(
-                              post.id,
-                            ),
-                            isOwner: currentUserId == post.author.id,
-                            onEdit: () => _editPost(controller, post),
-                            onLike: () => controller
-                                .toggleLike(post.id)
-                                .catchError((_) {}),
-                            onSave: () => controller
-                                .toggleSave(post.id)
-                                .catchError((_) {}),
-                            onComment: () => showModalBottomSheet<void>(
-                              context: context,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              builder: (context) => FractionallySizedBox(
-                                heightFactor: 0.9,
-                                child: CommentsSheet(postId: post.id),
-                              ),
-                            ),
-                            onRecipe: () => showModalBottomSheet<void>(
-                              context: context,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              builder: (context) => FractionallySizedBox(
-                                heightFactor: 0.92,
-                                child: RecipeNutritionSheet(
-                                  post: post,
-                                  resolver: resolver,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
-              ),
+                if (state.posts.isNotEmpty)
+                  _HomeActionBar(
+                    post: state
+                        .posts[_currentIndex.clamp(0, state.posts.length - 1)],
+                    busy: controller.isInteractionBusy(
+                      state
+                          .posts[_currentIndex.clamp(0, state.posts.length - 1)]
+                          .id,
+                    ),
+                    onCategory: _showCategory,
+                    onComment: () => _comments(
+                      state
+                          .posts[_currentIndex.clamp(0, state.posts.length - 1)]
+                          .id,
+                    ),
+                    onLike: () => controller
+                        .toggleLike(
+                          state
+                              .posts[_currentIndex.clamp(
+                                0,
+                                state.posts.length - 1,
+                              )]
+                              .id,
+                        )
+                        .catchError((_) {}),
+                    onSave: () => controller
+                        .toggleSave(
+                          state
+                              .posts[_currentIndex.clamp(
+                                0,
+                                state.posts.length - 1,
+                              )]
+                              .id,
+                        )
+                        .catchError((_) {}),
+                    onCreate: () => context.pushNamed(AppRoute.createPost.name),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  void _comments(String postId) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (context) => FractionallySizedBox(
+      heightFactor: .9,
+      child: CommentsSheet(postId: postId),
+    ),
+  );
+
+  void _recipe(FeedPost post, MediaUrlResolver resolver) =>
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => FractionallySizedBox(
+          heightFactor: .92,
+          child: RecipeNutritionSheet(post: post, resolver: resolver),
+        ),
+      );
+
+  void _showCategory() => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            for (final item in const [
+              (Icons.search_rounded, 'Tìm kiếm', AppRoute.search),
+              (Icons.chat_bubble_outline, 'Tin nhắn', AppRoute.inbox),
+              (Icons.person_outline, 'Hồ sơ', AppRoute.profile),
+              (Icons.settings_outlined, 'Cài đặt', AppRoute.settings),
+            ])
+              InkWell(
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.goNamed(item.$3.name);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(item.$1),
+                      const SizedBox(height: 6),
+                      Text(item.$2),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 
   Future<void> _editPost(FeedController controller, FeedPost post) async {
     final result = await context.pushNamed<Object?>(
@@ -255,4 +317,102 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       controller.removePost(result);
     }
   }
+}
+
+class _HomeActionBar extends StatelessWidget {
+  const _HomeActionBar({
+    required this.post,
+    required this.busy,
+    required this.onCategory,
+    required this.onComment,
+    required this.onLike,
+    required this.onSave,
+    required this.onCreate,
+  });
+  final FeedPost post;
+  final bool busy;
+  final VoidCallback onCategory, onComment, onLike, onSave, onCreate;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(34, 8, 34, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _assetButton(
+            'assets/icons/White/Category.svg',
+            'Danh mục',
+            onCategory,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.black,
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: onComment,
+                    icon: const Icon(
+                      Icons.chat_bubble,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                    tooltip: 'Bình luận',
+                  ),
+                  IconButton(
+                    key: Key('like-${post.id}'),
+                    onPressed: busy ? null : onLike,
+                    icon: Icon(
+                      post.viewerState.liked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: post.viewerState.liked
+                          ? AppColors.red
+                          : Colors.white,
+                      size: 28,
+                    ),
+                    tooltip: 'Thích',
+                  ),
+                  IconButton(
+                    key: Key('save-${post.id}'),
+                    onPressed: busy ? null : onSave,
+                    icon: Icon(
+                      post.viewerState.saved
+                          ? Icons.bookmark
+                          : Icons.bookmark_border,
+                      color: post.viewerState.saved
+                          ? AppColors.yellow
+                          : Colors.white,
+                      size: 27,
+                    ),
+                    tooltip: 'Lưu',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _assetButton('assets/icons/White/Camera.svg', 'Đăng bài', onCreate),
+        ],
+      ),
+    ),
+  );
+
+  static Widget _assetButton(
+    String asset,
+    String tooltip,
+    VoidCallback onTap,
+  ) => SizedBox.square(
+    dimension: 52,
+    child: IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      icon: SvgPicture.asset(asset, width: 30, height: 30),
+    ),
+  );
 }

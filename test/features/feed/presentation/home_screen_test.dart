@@ -1,6 +1,5 @@
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/errors/app_failure.dart';
-import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_controller.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_api.dart';
 import 'package:daily_meal_flutter_app/features/feed/data/feed_repository.dart';
@@ -92,21 +91,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(AdaptiveScaffold.compactNavigationKey), findsOneWidget);
+    expect(find.byKey(const Key('home-paged-feed')), findsOneWidget);
+    expect(find.byTooltip('Danh mục'), findsOneWidget);
+    expect(find.byTooltip('Đăng bài'), findsOneWidget);
     expect(find.text('Bếp Nhà'), findsOneWidget);
     expect(find.text('Bữa cơm gia đình'), findsOneWidget);
     expect(find.text('#dailymeal'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('like-post-1')));
     await tester.pumpAndSettle();
-    expect(find.text('2'), findsNWidgets(2));
+    expect(controller.state.posts.single.viewerState.liked, isTrue);
 
     await tester.tap(find.byKey(const Key('save-post-1')));
     await tester.pumpAndSettle();
-    expect(find.text('4'), findsOneWidget);
+    expect(controller.state.posts.single.viewerState.saved, isTrue);
   });
 
-  testWidgets('uses navigation rail on tablet width', (tester) async {
+  testWidgets('keeps the phone-frame paged feed on tablet width', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(900, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -126,7 +129,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(AdaptiveScaffold.railNavigationKey), findsOneWidget);
+    expect(find.byKey(const Key('home-paged-feed')), findsOneWidget);
   });
 
   testWidgets('double tap likes an unliked post without toggling it off', (
