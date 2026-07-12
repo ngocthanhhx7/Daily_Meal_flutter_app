@@ -1,4 +1,5 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/auth/domain/app_user.dart';
 import 'package:daily_meal_flutter_app/features/premium/application/premium_controller.dart';
@@ -19,7 +20,14 @@ class PremiumScreen extends ConsumerWidget {
     final currentUser = user ?? ref.watch(authControllerProvider).state.user;
     final content = _content(context, value, currentUser);
     return Scaffold(
-      appBar: AppBar(title: const Text('Quyền lợi Premium')),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Daily Premium',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+      ),
       body: controller == null
           ? content
           : AnimatedBuilder(
@@ -34,27 +42,26 @@ class PremiumScreen extends ConsumerWidget {
     PremiumController controller,
     AppUser? user,
   ) {
-    return ColoredBox(
-      color: AppColors.canvas,
+    return DailyMealBackground(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 390),
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
               Card(
                 color: AppColors.greenDark,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.workspace_premium_rounded,
-                        size: 48,
-                        color: AppColors.yellow,
+                      Image.asset(
+                        'assets/stickers/openmoji-yum.png',
+                        width: 72,
+                        height: 72,
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         'Daily Premium',
                         style: TextStyle(
                           fontSize: 26,
@@ -62,8 +69,8 @@ class PremiumScreen extends ConsumerWidget {
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 6),
-                      Text(
+                      const SizedBox(height: 6),
+                      const Text(
                         'Mở khóa trải nghiệm sáng tạo và dinh dưỡng nâng cao.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white),

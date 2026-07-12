@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
+import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/auth/services/social_identity_provider.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
@@ -91,20 +93,26 @@ class SettingsScreen extends ConsumerWidget {
     BuildContext context,
     String title,
     List<Widget> children,
-  ) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(8),
-      child: Column(
+  ) => Padding(
+    padding: const EdgeInsets.only(bottom: 18),
+    child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
             child: Text(title, style: Theme.of(context).textTheme.labelLarge),
           ),
-          ...children,
+          for (final child in children)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+                child: child,
+              ),
+            ),
         ],
       ),
-    ),
   );
   static Widget _tile(IconData icon, String title, VoidCallback onTap) =>
       ListTile(
@@ -662,13 +670,22 @@ class _UtilityScaffold extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title)),
-    body: SafeArea(
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+      ),
+    ),
+    body: DailyMealBackground(
+      child: SafeArea(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
+          constraints: const BoxConstraints(maxWidth: 390),
           child: Padding(padding: const EdgeInsets.all(16), child: child),
         ),
+      ),
       ),
     ),
   );
