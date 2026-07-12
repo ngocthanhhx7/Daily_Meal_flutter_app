@@ -136,13 +136,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Bếp Nhà'), findsOneWidget);
+      expect(find.text('Bếp Nhà'), findsNWidgets(2));
       expect(find.text('Bữa sáng đủ chất'), findsOneWidget);
-      await tester.tap(find.text('Theo dõi'));
+      await tester.tap(find.byKey(const Key('profile-secondary-action')));
       await tester.pumpAndSettle();
       expect(find.text('Đang theo dõi'), findsWidgets);
 
-      await tester.tap(find.text('Người theo dõi'));
+      await tester.tap(find.byKey(const Key('profile-followers-count')));
       await tester.pumpAndSettle();
       expect(find.text('Bạn Bếp'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.close));
@@ -188,7 +188,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Chỉnh sửa hồ sơ'));
+      await tester.tap(find.text('Chỉnh sửa trang'));
       await tester.pumpAndSettle();
       await tester.enterText(
         find.widgetWithText(TextField, 'Tên hiển thị'),
@@ -201,8 +201,8 @@ void main() {
       await tester.tap(find.text('Lưu'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Bếp Mới'), findsOneWidget);
-      expect(find.text('Món mới'), findsOneWidget);
+      expect(find.text('Bếp Mới'), findsNWidgets(2));
+      expect(find.textContaining('Món mới'), findsOneWidget);
     },
   );
 
@@ -233,7 +233,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Đổi avatar'));
+    await tester.tap(find.byKey(const Key('profile-avatar-action')));
     await tester.pumpAndSettle();
     expect(repository.uploadedCategory, 'avatar');
   });

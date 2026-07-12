@@ -2,6 +2,7 @@ import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/core/responsive/adaptive_scaffold.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_compact_post_preview.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
@@ -134,28 +135,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         SliverToBoxAdapter(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SegmentedButton<ProfileTab>(
-                segments: [
-                  const ButtonSegment(
-                    value: ProfileTab.posts,
-                    icon: Icon(Icons.grid_view_rounded),
-                    label: Text('Bài viết'),
-                  ),
-                  if (controller.isOwner)
-                    const ButtonSegment(
-                      value: ProfileTab.saved,
-                      icon: Icon(Icons.bookmark_outline),
-                      label: Text('Đã lưu'),
-                    ),
-                ],
-                selected: {state.tab},
-                onSelectionChanged: (value) =>
-                    controller.selectTab(value.first),
-              ),
-            ),
+          child: _ProfileTabs(
+            selected: state.tab,
+            showSaved: controller.isOwner,
+            onSelected: controller.selectTab,
           ),
         ),
         _PostGrid(posts: posts, resolver: resolver),
@@ -202,6 +185,23 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final cover = resolver.resolve(user.coverUrl);
     final avatar = resolver.resolve(user.avatarUrl);
+    if (MediaQuery.sizeOf(context).width.isFinite) {
+      return _SourceProfileHeader(
+        user: user,
+        avatar: avatar,
+        isOwner: controller.isOwner,
+        profileBusy: controller.state.profileBusy,
+        followBusy: controller.state.followBusy,
+        onFollowers: () => _follows(context, true),
+        onFollowing: () => _follows(context, false),
+        onEdit: () => _edit(context),
+        onAvatar: () => _pickImage(ProfileImageKind.avatar),
+        onCover: () => _pickImage(ProfileImageKind.cover),
+        onMessage: onMessage,
+        onFollow: () => controller.toggleFollow().catchError((_) {}),
+        onSafety: (type) => _confirmSafety(context, type),
+      );
+    }
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -516,6 +516,439 @@ class _Header extends StatelessWidget {
   }
 }
 
+class _ProfileTabs extends StatelessWidget {
+  const _ProfileTabs({
+    required this.selected,
+    required this.showSaved,
+    required this.onSelected,
+  });
+  final ProfileTab selected;
+  final bool showSaved;
+  final ValueChanged<ProfileTab> onSelected;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      _ProfileTabButton(
+        label: 'Bài viết',
+        icon: Icons.grid_view_rounded,
+        active: selected == ProfileTab.posts,
+        onPressed: () => onSelected(ProfileTab.posts),
+      ),
+      if (showSaved) ...[
+        const SizedBox(width: 42),
+        _ProfileTabButton(
+          label: 'Đã lưu',
+          icon: Icons.bookmark_outline,
+          active: selected == ProfileTab.saved,
+          onPressed: () => onSelected(ProfileTab.saved),
+        ),
+      ],
+    ],
+  );
+}
+
+class _ProfileTabButton extends StatelessWidget {
+  const _ProfileTabButton({
+    required this.label,
+    required this.icon,
+    required this.active,
+    required this.onPressed,
+  });
+  final String label;
+  final IconData icon;
+  final bool active;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: label,
+    button: true,
+    selected: active,
+    child: InkWell(
+      onTap: onPressed,
+      child: SizedBox(
+        width: 68,
+        height: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 22),
+            if (active)
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  width: 42,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: AppColors.black,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _SourceProfileHeader extends StatelessWidget {
+  const _SourceProfileHeader({
+    required this.user,
+    required this.avatar,
+    required this.isOwner,
+    required this.profileBusy,
+    required this.followBusy,
+    required this.onFollowers,
+    required this.onFollowing,
+    required this.onEdit,
+    required this.onAvatar,
+    required this.onCover,
+    required this.onFollow,
+    required this.onSafety,
+    this.onMessage,
+  });
+
+  final PublicUser user;
+  final Uri? avatar;
+  final bool isOwner;
+  final bool profileBusy;
+  final bool followBusy;
+  final VoidCallback onFollowers;
+  final VoidCallback onFollowing;
+  final VoidCallback onEdit;
+  final VoidCallback onAvatar;
+  final VoidCallback onCover;
+  final VoidCallback onFollow;
+  final ValueChanged<String> onSafety;
+  final VoidCallback? onMessage;
+
+  String get _handle {
+    final normalized = user.displayName
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '.')
+        .replaceAll(RegExp(r'^\.+|\.+$'), '');
+    return '@${normalized.isEmpty ? 'daily.meal' : normalized}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 390),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  IconButton.filled(
+                    tooltip: 'Quay lại',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => Navigator.maybePop(context),
+                    iconSize: 18,
+                    style: IconButton.styleFrom(
+                      fixedSize: const Size.square(24),
+                      backgroundColor: AppColors.black,
+                      foregroundColor: AppColors.white,
+                    ),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      user.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        height: 30 / 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: isOwner ? 'Mở menu hồ sơ' : 'An toàn tài khoản',
+                    icon: const Icon(Icons.more_horiz, size: 26),
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'avatar':
+                          onAvatar();
+                        case 'cover':
+                          onCover();
+                        case 'blocked':
+                          context.pushNamed(AppRoute.blocked.name);
+                        case 'premium':
+                          context.pushNamed(AppRoute.premium.name);
+                        case 'settings':
+                          context.pushNamed(AppRoute.settings.name);
+                        case 'restrict':
+                        case 'block':
+                        case 'report':
+                          onSafety(value);
+                      }
+                    },
+                    itemBuilder: (_) => isOwner
+                        ? const [
+                            PopupMenuItem(
+                              value: 'avatar',
+                              child: Text('Đổi avatar'),
+                            ),
+                            PopupMenuItem(
+                              value: 'cover',
+                              child: Text('Đổi ảnh bìa'),
+                            ),
+                            PopupMenuItem(
+                              value: 'blocked',
+                              child: Text('Đã chặn'),
+                            ),
+                            PopupMenuItem(
+                              value: 'premium',
+                              child: Text('Daily Premium'),
+                            ),
+                            PopupMenuItem(
+                              value: 'settings',
+                              child: Text('Cài đặt'),
+                            ),
+                          ]
+                        : [
+                            PopupMenuItem(
+                              value: 'restrict',
+                              child: Text(
+                                user.viewerInteraction.restricted
+                                    ? 'Bỏ hạn chế'
+                                    : 'Hạn chế',
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'block',
+                              child: Text(
+                                user.viewerInteraction.blocked
+                                    ? 'Bỏ chặn'
+                                    : 'Chặn',
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'report',
+                              child: Text(
+                                user.viewerInteraction.reported
+                                    ? 'Gỡ báo cáo'
+                                    : 'Báo cáo',
+                              ),
+                            ),
+                          ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      GestureDetector(
+                        key: const Key('profile-avatar-action'),
+                        onTap: isOwner && !profileBusy ? onAvatar : null,
+                        child: CircleAvatar(
+                          radius: 38,
+                          backgroundColor: AppColors.green,
+                          backgroundImage: avatar == null
+                              ? null
+                              : NetworkImage(avatar.toString()),
+                          child: avatar == null
+                              ? Text(
+                                  user.displayName.characters.first
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                      if (user.isPremium)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              color: AppColors.yellow,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Text(
+                              'P',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 7),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: _CompactCount(
+                                user.counts.posts,
+                                'Bài viết',
+                              ),
+                            ),
+                            Expanded(
+                              child: KeyedSubtree(
+                                key: const Key('profile-followers-count'),
+                                child: _CompactCount(
+                                  user.counts.followers,
+                                  'Theo dõi',
+                                  onFollowers,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _CompactCount(
+                                user.counts.following,
+                                'Đang Theo Dõi',
+                                onFollowing,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$_handle ',
+                      style: const TextStyle(color: Color(0xFFA342FF)),
+                    ),
+                    TextSpan(
+                      text:
+                          user.bio ??
+                          'Daily Meal creator chia sẻ món ngon mỗi ngày.',
+                    ),
+                  ],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, height: 20 / 14),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ProfileAction(
+                      key: const Key('profile-primary-action'),
+                      label: isOwner ? 'Chỉnh sửa trang' : 'Nhắn tin',
+                      onPressed: isOwner ? onEdit : onMessage,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ProfileAction(
+                      key: const Key('profile-secondary-action'),
+                      label: isOwner
+                          ? 'Chia sẻ trang'
+                          : user.relationship.isFollowing
+                          ? 'Đang theo dõi'
+                          : 'Theo dõi',
+                      onPressed: isOwner || followBusy ? null : onFollow,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactCount extends StatelessWidget {
+  const _CompactCount(this.value, this.label, [this.onTap]);
+  final int value;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$value',
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 10, color: AppColors.muted),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ProfileAction extends StatelessWidget {
+  const _ProfileAction({
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.white,
+    elevation: 4,
+    shadowColor: Colors.black26,
+    borderRadius: BorderRadius.circular(10),
+    child: InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(10),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 38),
+        child: Center(
+          child: Text(
+            label,
+            maxLines: 1,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _Count extends StatelessWidget {
   const _Count(this.value, this.label, [this.onTap]);
   final int value;
@@ -558,43 +991,18 @@ class _PostGrid extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       sliver: SliverGrid.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 280,
-          mainAxisSpacing: 12,
+          maxCrossAxisExtent: 180,
+          mainAxisExtent: 208,
+          mainAxisSpacing: 16,
           crossAxisSpacing: 12,
         ),
         itemCount: posts.length,
         itemBuilder: (_, index) {
           final post = posts[index];
-          final image = post.images.isEmpty
-              ? null
-              : resolver.resolve(post.images.first.url);
-          return Card(
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (image != null)
-                  Image.network(image.toString(), fit: BoxFit.cover),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ColoredBox(
-                    color: Colors.black54,
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          post.caption,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          return DailyCompactPostPreview(
+            post: post,
+            resolver: resolver,
+            showAuthor: false,
           );
         },
       ),
