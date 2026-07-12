@@ -63,10 +63,12 @@ Routing notes:
 - Production Comments surface is verified at `C:\tmp\web-comments-populated-mobile.png`; the list endpoint returns empty while the post summary reports 12 comments. The UI correctly renders the source empty/composer state, and the count/list mismatch is backend data evidence rather than a client fabrication target.
 - Public Profile reports 88 followers and 24 following for the recipe author, while both production list contracts return empty. Follows renders the source empty states honestly; switching tabs now persists `tab=followers|following` in the refresh-safe URL, verified at `C:\tmp\web-follows-tab-url-fixed.png`.
 - Premium Create is covered without mutating subscription/payment state: widget tests exercise 3-image → 1-video selection, controller tests verify the exact video publish/duration contract, and sticker selection/custom sticker coverage remains active.
+- Chat production shell is verified at `C:\tmp\web-chat-production-shell.png`. A hard refresh now restores the participant name from the conversations contract without route `extra`, verified at `C:\tmp\web-chat-refresh-restored.png`.
+- Authenticated mobile Lighthouse snapshot scored Accessibility 93 and Best Practices 100 (`C:\tmp\dailymeal-lighthouse\report.html`). The remaining accessibility failure is Flutter engine's generated zoom-lock viewport; overriding engine viewport behavior remains an explicit UX/accessibility decision rather than an unreviewed patch.
 - Web QA follow-up: the Google Identity Services platform button is visually clipped inside the source-style circular social button. Localhost also reports the expected unapproved-origin GSI error and a production analytics-ingest 400; recheck both on the deployed Web origin.
 - Android debug build passed with production API defines.
 - Latest Web release build passed after the Settings regression fix. The standard JavaScript build is healthy; the Socket.IO dependency still emits the known Wasm dry-run compatibility warning.
-- Full Flutter suite verified at 214 passing tests, including exact 28-route coverage, Web URL reflection, Follows query persistence, Premium Create media contracts, Settings regressions, social SDK lifecycle invariants, and Inbox empty-state parity.
+- Full Flutter suite verified at 215 passing tests, including exact 28-route coverage, Web URL reflection, refresh-safe Chat/Follows routes, Premium Create media contracts, Settings regressions, social SDK lifecycle invariants, and Inbox empty-state parity.
 - No-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
