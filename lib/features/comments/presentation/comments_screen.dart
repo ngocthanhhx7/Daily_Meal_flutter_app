@@ -146,6 +146,7 @@ class CommentsScreen extends ConsumerWidget {
                     child: CommentsSheet(
                       postId: controller == null ? postId : null,
                       controller: controller,
+                      mediaResolver: resolver,
                       embedded: true,
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
+import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/comments/application/comments_controller.dart';
 import 'package:daily_meal_flutter_app/features/comments/application/comments_providers.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
@@ -10,6 +11,7 @@ class CommentsSheet extends ConsumerStatefulWidget {
   const CommentsSheet({
     this.postId,
     this.controller,
+    this.mediaResolver,
     this.embedded = false,
     super.key,
   }) : assert(postId != null || controller != null);
@@ -19,6 +21,7 @@ class CommentsSheet extends ConsumerStatefulWidget {
 
   final String? postId;
   final CommentsController? controller;
+  final MediaUrlResolver? mediaResolver;
   final bool embedded;
 
   @override
@@ -187,29 +190,39 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
         padding: const EdgeInsets.all(16),
         itemCount: state.comments.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) =>
-            _CommentTile(comment: state.comments[index]),
+        itemBuilder: (context, index) => _CommentTile(
+          comment: state.comments[index],
+          resolver: widget.mediaResolver,
+        ),
       ),
     };
   }
 }
 
 class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment});
+  const _CommentTile({required this.comment, required this.resolver});
   final PostComment comment;
+  final MediaUrlResolver? resolver;
 
   @override
   Widget build(BuildContext context) {
     final author = comment.author.displayName;
+    final avatar = resolver?.resolve(comment.author.avatarUrl);
+    final accent = _color(comment.author.themeColor) ?? AppColors.green;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CircleAvatar(
-          backgroundColor: AppColors.green,
-          child: Text(
-            author.characters.first.toUpperCase(),
-            style: const TextStyle(color: Colors.white),
-          ),
+          backgroundColor: accent,
+          backgroundImage: avatar == null
+              ? null
+              : NetworkImage(avatar.toString()),
+          child: avatar == null
+              ? Text(
+                  author.characters.first.toUpperCase(),
+                  style: const TextStyle(color: Colors.white),
+                )
+              : null,
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -223,7 +236,23 @@ class _CommentTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(author, style: Theme.of(context).textTheme.labelLarge),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          author,
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                      ),
+                      Text(
+                        _relativeTime(comment.createdAt),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 3),
                   Text(comment.body),
                 ],
@@ -233,5 +262,21 @@ class _CommentTile extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  static Color? _color(String? value) {
+    if (value == null || !RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(value)) {
+      return null;
+    }
+    return Color(int.parse('FF${value.substring(1)}', radix: 16));
+  }
+
+  static String _relativeTime(DateTime value) {
+    final difference = DateTime.now().toUtc().difference(value.toUtc());
+    if (difference.inMinutes < 1) return 'Vừa xong';
+    if (difference.inHours < 1) return '${difference.inMinutes} phút';
+    if (difference.inDays < 1) return '${difference.inHours} giờ';
+    if (difference.inDays < 30) return '${difference.inDays} ngày';
+    return '${value.day}/${value.month}/${value.year}';
   }
 }
