@@ -49,6 +49,7 @@ dependencies:
   image_picker: ^1.2.3
   mime: ^2.0.0
   socket_io_client: ^3.1.6
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

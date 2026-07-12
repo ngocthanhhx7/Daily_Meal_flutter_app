@@ -10,6 +10,7 @@ enum AppRoute {
   inbox('/messages'),
   chat('/messages/:id'),
   notifications('/notifications'),
+  premium('/premium'),
   createPost('/create'),
   editPost('/posts/edit'),
   adminDashboard('/admin');

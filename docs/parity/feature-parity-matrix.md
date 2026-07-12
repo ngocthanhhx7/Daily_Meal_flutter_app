@@ -50,8 +50,8 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 6 | Notification center | `NotificationsScreen.tsx`; context | notification CRUD/event | `features/notifications` | In progress | In progress | CRUD rollback, realtime dedup and deep-link mapping pass; live event evidence pending |
 | 6 | Android push | Notification context | Expo-only push token endpoint | `core/notifications` | Blocked by backend contract | Not started | backend rejects/non-delivers FCM tokens; requires FCM delivery + Firebase config |
 | 6 | Web Push | PWA web push/context | VAPID/subscription endpoints | `core/notifications/web` | In progress | In progress | service worker, permission, register/unregister tests and Web build pass; live browser delivery pending |
-| 7 | Premium benefits/plans | `PremiumBenefitsScreen.tsx` | plans/trial | `features/premium` | Not started | Not started | plan/trial state tests |
-| 7 | PayOS payment | Premium screen | create/status | `features/premium/payment` | Not started | Not started | return/status terminal states |
+| 7 | Premium benefits/plans | `PremiumBenefitsScreen.tsx` | plans/trial | `features/premium` | Verified | Verified | exact plan/trial contracts, auth update and responsive widget tests |
+| 7 | PayOS payment | Premium screen | create/status | `features/premium/payment` | Verified | Verified | HTTPS checkout abstraction, PENDING/PAID terminal refresh and platform builds |
 | 8 | Admin dashboard/KPI | `AdminScreens.tsx` | dashboard/summary | `features/admin/dashboard` | Not started | Not started | ranges/responsive charts |
 | 8 | Admin AI report | `AdminScreens.tsx` | POST reports/ai | `features/admin/reports` | Not started | Not started | loading/error/result tests |
 | 8 | Admin analytics | Admin charts | 24h/heatmap/summary | `features/admin/analytics` | Not started | Not started | chart mapping/golden tests |

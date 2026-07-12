@@ -311,6 +311,14 @@ class _Header extends StatelessWidget {
                                   icon: const Icon(Icons.block_outlined),
                                   label: const Text('Đã chặn'),
                                 ),
+                                TextButton.icon(
+                                  onPressed: () =>
+                                      context.pushNamed(AppRoute.premium.name),
+                                  icon: const Icon(
+                                    Icons.workspace_premium_outlined,
+                                  ),
+                                  label: const Text('Daily Premium'),
+                                ),
                               ],
                             )
                           else
