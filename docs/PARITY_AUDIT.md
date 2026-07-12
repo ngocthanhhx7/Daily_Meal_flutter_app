@@ -36,7 +36,7 @@ Additional routing gaps:
 | Profile/Public Profile | Partial | Source header/menu/CTA geometry and dedicated public composition |
 | Comments | Low | Full-screen hero, bubbles, time/reply/like metadata and source action bar |
 | Recipe | Partial | Full-screen header/author footer and route identity |
-| Create/Edit Post | Partial | Source capture states, preview deck and edit action sheet |
+| Create/Edit Post | Improved | Finish Create capture-state visual regression and device QA |
 | Notifications/Chat/Settings | Improved | Complete device-level visual regression and refine edge states |
 | Admin Dashboard/KPI/Analytics | Partial-high | Chart hierarchy and responsive density |
 | Admin Posts/Payments/Reports/AI | Partial | Media previews, filters, charts and complete metadata |
@@ -47,9 +47,12 @@ Additional routing gaps:
 - Home before: `C:\tmp\dailymeal-before-priority.png`
 - Home action-bar after: `C:\tmp\dailymeal-home-actionbar-after2.png`
 - Home artwork/overlay after: `C:\tmp\dailymeal-home-artwork-after.png`
+- Latest authenticated Android cold-start/Home: `C:\tmp\dailymeal-user-check.png`
+- Latest Android owner Profile: `C:\tmp\dailymeal-profile-check.png`
 - Android debug build passed with production API defines.
 - Web release build passed with production API defines.
 - Full Flutter suite last verified at 185 passing tests after F014/F015; targeted Home/responsive tests passed after F016/F017.
+- Full Flutter suite verified at 203 passing tests after the source-style Edit Post slice; no-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
 
@@ -112,4 +115,10 @@ Search now uses the source back/home title row, discovery hero, 56px search
 action, branded quick filters and black segmented control. People results use
 the source 50px avatar card, bio/follower fallback and friend/follow-back labels;
 the existing API filters, URL initialization and public-profile routing remain intact.
+
+Edit Post now matches the production interaction model: a source-style stacked
+media preview and caption metadata card lead into action rows for feed focus,
+bottom-sheet caption/tag editing, optional Recipe navigation and confirmed
+deletion. Existing refresh-safe route restoration and update/delete contracts
+remain unchanged.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

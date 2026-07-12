@@ -3,7 +3,6 @@ import 'package:daily_meal_flutter_app/features/feed/data/post_lookup_repository
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/data/post_editor_repository.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_route_screen.dart';
-import 'package:daily_meal_flutter_app/features/post_editor/presentation/edit_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,7 +47,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byKey(EditPostScreen.captionKey), findsOneWidget);
     expect(find.text('Bữa sáng'), findsOneWidget);
+    expect(find.text('Chỉnh sửa nội dung'), findsOneWidget);
   });
 }

@@ -61,10 +61,12 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.byKey(EditPostScreen.captionKey),
+      find.text('Chỉnh sửa nội dung'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.tap(find.text('Chỉnh sửa nội dung'));
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(EditPostScreen.captionKey),
       'New caption',
