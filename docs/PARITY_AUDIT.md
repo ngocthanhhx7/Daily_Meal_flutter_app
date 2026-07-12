@@ -51,6 +51,7 @@ Additional routing gaps:
 - Latest Android owner Profile: `C:\tmp\dailymeal-profile-check.png`
 - Comments production fallback/composer: `C:\tmp\dailymeal-comments-after.png`
 - Create Post Free capture state: `C:\tmp\dailymeal-create-capture.png`
+- Home production-media fallback restored: `C:\tmp\dailymeal-home-media-fallback.png`
 - Android debug build passed with production API defines.
 - Web release build passed with production API defines.
 - Full Flutter suite last verified at 185 passing tests after F014/F015; targeted Home/responsive tests passed after F016/F017.
@@ -161,4 +162,9 @@ bookmark empty state and staggered compact-post grid with Home focus routing.
 Follows now uses the source black segmented control, full explanatory empty
 states and yellow/ghost relationship actions while preserving refresh-safe
 user URLs and follow mutations.
+
+Home no longer exposes a beige broken-image placeholder when legacy production
+media returns 404 or a post has no resolvable image. It now falls back to the
+bundled source `home-food-main.png` artwork, preserving the production card
+composition and avoiding technical error visuals; verified on authenticated AVD.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

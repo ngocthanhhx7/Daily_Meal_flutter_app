@@ -178,18 +178,12 @@ class _PostMediaState extends State<PostMedia> {
           .whereType<Uri>()
           .toList(growable: false);
       media = images.isEmpty
-          ? const AspectRatio(
+          ? AspectRatio(
               aspectRatio: 4 / 3,
-              child: ColoredBox(
-                color: Color(0xFFECE9DF),
-                child: Center(
-                  child: Icon(
-                    Icons.restaurant_menu_rounded,
-                    size: 52,
-                    color: Color(0xFF8BA58A),
-                    semanticLabel: 'Bài viết chưa có ảnh',
-                  ),
-                ),
+              child: Image.asset(
+                'assets/feed/home-food-main.png',
+                fit: BoxFit.cover,
+                semanticLabel: 'Ảnh món ăn mẫu Daily Meal',
               ),
             )
           : _ImageCarousel(
@@ -324,11 +318,9 @@ class _ImageCarouselState extends State<_ImageCarousel> {
                           ),
                           semanticLabel: 'Ảnh món ăn ${index + 1}',
                           errorBuilder: (context, error, stackTrace) =>
-                              const ColoredBox(
-                                color: Color(0xFFECE9DF),
-                                child: Center(
-                                  child: Icon(Icons.broken_image_outlined),
-                                ),
+                              Image.asset(
+                                'assets/feed/home-food-main.png',
+                                fit: BoxFit.cover,
                               ),
                         ),
                       ),
