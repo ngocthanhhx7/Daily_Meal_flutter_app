@@ -46,14 +46,14 @@ void main() {
       ),
     );
 
-    expect(find.text('Bạn quan tâm điều gì?'), findsOneWidget);
+    expect(find.text('Chào bạn!!'), findsOneWidget);
     await tester.tap(find.text('Thích ăn uống'));
     await tester.tap(find.widgetWithText(FilledButton, 'Tiếp tục'));
     await tester.pump();
 
-    expect(find.text('Phong cách ăn uống của bạn?'), findsOneWidget);
+    expect(find.text('Phong cách ăn'), findsOneWidget);
     await tester.tap(find.text('Chế độ keto'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Hoàn tất'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Vào Daily Meal'));
     await tester.pumpAndSettle();
 
     expect(auth.state.user!.preferences.completedOnboarding, isTrue);
