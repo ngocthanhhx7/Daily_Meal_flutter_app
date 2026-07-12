@@ -80,6 +80,17 @@ flutter build appbundle --release @defines
 Artifacts are created under `build/web`, `build/app/outputs/flutter-apk`, and
 `build/app/outputs/bundle`.
 
+### Android App Links
+
+The Android manifest accepts verified HTTPS links for
+`https://dailymeal.site/users/*` and `https://dailymeal.site/posts/*`, matching
+the profile/post URLs shared by the app. After creating the release keystore,
+publish `https://dailymeal.site/.well-known/assetlinks.json` with package name
+`com.dailymeal.daily_meal_app` and the SHA-256 fingerprint of the Play App
+Signing certificate (plus the upload/debug certificate only for environments
+that need them). Until that file is deployed, explicit/package-targeted intents
+work but Android cannot auto-verify the public domain association.
+
 ## Architecture
 
 The app uses contract-first vertical slices:
