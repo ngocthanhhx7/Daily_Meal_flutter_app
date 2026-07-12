@@ -94,4 +94,10 @@ known production deployment. `AppConfig.fromEnvironment()` ships the approved
 production API/social public identifiers while preserving build-time
 overrides and strict `fromMap` validation. A no-define debug APK cold-started
 to Login on AVD with no splash hang or Flutter configuration exception.
+
+Messaging now matches the source mobile composition: Inbox back/title copy,
+48px avatars and compact rows; Chat 188px gradient hero, participant avatar,
+timestamped white/sage bubbles, source composer and empty state. Notifications
+now uses the source header, count/bulk toolbar, typed colors, relative time,
+unread dot, swipe delete and explicit row delete while preserving deep links.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

@@ -31,33 +31,22 @@ class NotificationsScreen extends ConsumerWidget {
             builder: (_, _) => _body(context, ref, value),
           );
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Thông báo',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          if (value.unreadCount > 0)
-            TextButton(
-              onPressed: () => value.markAllRead().catchError((_) {}),
-              child: const Text('Đọc tất cả'),
-            ),
-          if (value.notifications.isNotEmpty)
-            IconButton(
-              tooltip: 'Xóa tất cả',
-              onPressed: () => _deleteAll(context, value),
-              icon: const Icon(Icons.delete_sweep_outlined),
-            ),
-        ],
-      ),
       body: DailyMealBackground(
-        child: Column(
-          children: [
-            if (push != null) _WebPushBanner(controller: push),
-            Expanded(child: body),
-          ],
+        child: SafeArea(
+          child: Column(
+            children: [
+              const _NotificationHeader(),
+              if (push != null) _WebPushBanner(controller: push),
+              if (value.notifications.isNotEmpty)
+                _NotificationToolbar(
+                  count: value.notifications.length,
+                  unreadCount: value.unreadCount,
+                  onReadAll: () => value.markAllRead().catchError((_) {}),
+                  onDeleteAll: () => _deleteAll(context, value),
+                ),
+              Expanded(child: body),
+            ],
+          ),
         ),
       ),
     );
@@ -106,16 +95,45 @@ class NotificationsScreen extends ConsumerWidget {
             onDismissed: (_) => controller.delete(item.id).catchError((_) {}),
             child: Material(
               color: item.read ? AppColors.surface : AppColors.canvasStrong,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(10),
               child: ListTile(
                 shape: RoundedRectangleBorder(
                   side: const BorderSide(color: AppColors.line),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                leading: CircleAvatar(child: Icon(_icon(item.type))),
+                leading: CircleAvatar(
+                  backgroundColor: _color(item.type).withValues(alpha: .10),
+                  child: Icon(_icon(item.type), color: _color(item.type)),
+                ),
                 title: Text(item.sender?.displayName ?? 'Daily Meal'),
-                subtitle: Text(item.body),
-                trailing: item.read ? null : const Icon(Icons.circle, size: 10),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.body),
+                    const SizedBox(height: 3),
+                    Text(
+                      _relativeTime(item.createdAt),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!item.read)
+                      const Icon(Icons.circle, size: 9, color: AppColors.green),
+                    IconButton(
+                      key: Key('delete-notification-${item.id}'),
+                      tooltip: 'Xóa thông báo',
+                      onPressed: () =>
+                          controller.delete(item.id).catchError((_) {}),
+                      icon: const Icon(Icons.close, size: 16),
+                    ),
+                  ],
+                ),
                 onTap: () => _open(context, ref, controller, item),
               ),
             ),
@@ -131,6 +149,23 @@ class NotificationsScreen extends ConsumerWidget {
     NotificationType.follow => Icons.person_add_alt_1_rounded,
     NotificationType.message => Icons.mail_rounded,
   };
+
+  Color _color(NotificationType type) => switch (type) {
+    NotificationType.like => AppColors.red,
+    NotificationType.comment => AppColors.greenDark,
+    NotificationType.follow => AppColors.green,
+    NotificationType.message => AppColors.yellow,
+  };
+
+  String _relativeTime(DateTime value) {
+    final difference = DateTime.now().difference(value.toLocal());
+    if (difference.inMinutes < 1) return 'Vừa xong';
+    if (difference.inHours < 1) return '${difference.inMinutes} phút trước';
+    if (difference.inDays < 1) return '${difference.inHours} giờ trước';
+    if (difference.inDays < 7) return '${difference.inDays} ngày trước';
+    final local = value.toLocal();
+    return '${local.day}/${local.month}/${local.year}';
+  }
 
   Future<void> _open(
     BuildContext context,
@@ -191,6 +226,92 @@ class NotificationsScreen extends ConsumerWidget {
     );
     if (confirmed == true) await controller.deleteAll().catchError((_) {});
   }
+}
+
+class _NotificationHeader extends StatelessWidget {
+  const _NotificationHeader();
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+    child: Row(
+      children: [
+        SizedBox.square(
+          dimension: 36,
+          child: IconButton(
+            tooltip: 'Quay lại',
+            padding: EdgeInsets.zero,
+            onPressed: () => Navigator.maybePop(context),
+            icon: const Icon(Icons.chevron_left, size: 22),
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Expanded(
+          child: Text(
+            'Thông báo',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _NotificationToolbar extends StatelessWidget {
+  const _NotificationToolbar({
+    required this.count,
+    required this.unreadCount,
+    required this.onReadAll,
+    required this.onDeleteAll,
+  });
+  final int count, unreadCount;
+  final VoidCallback onReadAll, onDeleteAll;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+    child: Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 8,
+      children: [
+        Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(text: 'Bạn có '),
+              TextSpan(
+                text: '$count',
+                style: const TextStyle(
+                  color: AppColors.greenDark,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const TextSpan(text: ' thông báo'),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton.icon(
+              onPressed: unreadCount > 0 ? onReadAll : null,
+              icon: Icon(
+                unreadCount > 0 ? Icons.done_all_outlined : Icons.check_circle,
+                size: 16,
+              ),
+              label: Text(unreadCount > 0 ? 'Đọc tất cả' : 'Đã đọc hết'),
+            ),
+            TextButton.icon(
+              onPressed: onDeleteAll,
+              icon: const Icon(Icons.delete_outline, size: 16),
+              label: const Text('Xóa tất cả'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.red),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 class _WebPushBanner extends StatelessWidget {

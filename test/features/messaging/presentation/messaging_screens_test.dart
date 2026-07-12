@@ -124,12 +124,17 @@ void main() {
             otherUser: other,
             controller: controller,
             currentUserId: 'me',
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Chào bạn'), findsOneWidget);
+    expect(find.byKey(const Key('source-chat-header')), findsOneWidget);
+    expect(find.textContaining(RegExp(r'^\d{2}:\d{2}$')), findsWidgets);
     await tester.enterText(find.byType(TextField), '  Hẹn gặp lại  ');
     await tester.tap(find.byKey(const Key('send-message')));
     await tester.pumpAndSettle();

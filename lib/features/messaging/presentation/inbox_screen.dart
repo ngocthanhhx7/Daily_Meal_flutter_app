@@ -69,14 +69,44 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Tin nhắn',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-                ),
+              child: Row(
+                children: [
+                  Material(
+                    color: AppColors.surface,
+                    shape: const CircleBorder(
+                      side: BorderSide(color: AppColors.line),
+                    ),
+                    child: InkWell(
+                      onTap: () => Navigator.maybePop(context),
+                      customBorder: const CircleBorder(),
+                      child: const SizedBox.square(
+                        dimension: 38,
+                        child: Icon(Icons.chevron_left, size: 22),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tin nhắn',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Các cuộc trò chuyện trong Daily Meal.',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -119,17 +149,19 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
           final avatar = resolver.resolve(conversation.otherUser.avatarUrl);
           return Material(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(8),
             child: ListTile(
               shape: RoundedRectangleBorder(
                 side: const BorderSide(color: AppColors.line),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(8),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14,
                 vertical: 6,
               ),
               leading: CircleAvatar(
+                radius: 24,
+                backgroundColor: AppColors.green,
                 backgroundImage: avatar == null
                     ? null
                     : NetworkImage(avatar.toString()),
