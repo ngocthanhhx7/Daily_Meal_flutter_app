@@ -20,10 +20,10 @@ React Native registers 29 active routes in `client/src/navigation/AppNavigator.t
 
 Additional routing gaps:
 
-- Edit Post uses `/posts/edit` plus an in-memory `FeedPost`; Web refresh cannot restore it.
+- Edit Post uses `/posts/:id/edit?authorId=` and restores through the author-posts contract after Web refresh.
 - Notification taps return to Home but do not focus the referenced post.
 - Android does not yet expose the `dailymeal://` VIEW/BROWSABLE scheme.
-- The production backend has no verified `GET /api/posts/:id`; refresh-safe Comments, Recipe, Edit Post and notification focus require a supported retrieval strategy rather than a path that only works with `extra`.
+- The production backend has no verified `GET /api/posts/:id`; Recipe and Edit Post therefore restore through `GET /api/users/:authorId/posts`. Notification focus still needs an author-aware destination or a backend single-post contract.
 
 ## UI priority matrix
 
