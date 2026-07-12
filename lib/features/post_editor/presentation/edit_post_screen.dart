@@ -1,6 +1,7 @@
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
 import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/post_media.dart';
@@ -134,79 +135,88 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     }
     return Scaffold(
       backgroundColor: AppColors.canvas,
-      appBar: AppBar(title: const Text('Chỉnh sửa bài viết')),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: PostMedia(
-                    post: widget.post,
-                    resolver: resolver,
-                    onDoubleTapLike: () {},
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          key: EditPostScreen.captionKey,
-                          controller: _caption,
-                          maxLength: 2000,
-                          maxLines: 6,
-                          decoration: const InputDecoration(
-                            labelText: 'Chú thích',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          key: EditPostScreen.tagsKey,
-                          controller: _tags,
-                          decoration: const InputDecoration(
-                            labelText: 'Thẻ',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        if (_error case final message?) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            message,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 18),
-                        FilledButton.icon(
-                          key: EditPostScreen.saveKey,
-                          onPressed: _busy ? null : _save,
-                          icon: const Icon(Icons.save_outlined),
-                          label: const Text('Lưu thay đổi'),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          key: EditPostScreen.deleteKey,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.red,
-                          ),
-                          onPressed: _busy ? null : _confirmDelete,
-                          icon: const Icon(Icons.delete_outline),
-                          label: const Text('Xóa bài viết'),
-                        ),
-                      ],
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Bài viết',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: DailyMealBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 390),
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: PostMedia(
+                      post: widget.post,
+                      resolver: resolver,
+                      onDoubleTapLike: () {},
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextField(
+                            key: EditPostScreen.captionKey,
+                            controller: _caption,
+                            maxLength: 2000,
+                            maxLines: 6,
+                            decoration: const InputDecoration(
+                              labelText: 'Chú thích',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            key: EditPostScreen.tagsKey,
+                            controller: _tags,
+                            decoration: const InputDecoration(
+                              labelText: 'Thẻ',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          if (_error case final message?) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              message,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 18),
+                          FilledButton.icon(
+                            key: EditPostScreen.saveKey,
+                            onPressed: _busy ? null : _save,
+                            icon: const Icon(Icons.save_outlined),
+                            label: const Text('Lưu thay đổi'),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            key: EditPostScreen.deleteKey,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.red,
+                            ),
+                            onPressed: _busy ? null : _confirmDelete,
+                            icon: const Icon(Icons.delete_outline),
+                            label: const Text('Xóa bài viết'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

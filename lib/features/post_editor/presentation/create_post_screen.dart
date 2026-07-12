@@ -1,6 +1,7 @@
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/core/errors/user_error_message.dart';
+import 'package:daily_meal_flutter_app/core/widgets/daily_meal_background.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/application/post_editor_controller.dart';
 import 'package:daily_meal_flutter_app/features/post_editor/application/post_editor_providers.dart';
@@ -156,197 +157,167 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     return Scaffold(
       backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        title: const Text('Tạo bài viết'),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Thêm bài viết',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
         leading: BackButton(
           onPressed: () => widget.onPublished != null
               ? Navigator.maybePop(context)
               : context.goNamed(AppRoute.home.name),
         ),
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _StepHeader(step: state.step),
-                const SizedBox(height: 16),
-                if (state.media.isEmpty)
-                  _CaptureCard(
-                    isPremium: controller.isPremium,
-                    onGallery: _pickImages,
-                    onCamera: _capture,
-                    onVideo: _pickVideo,
-                  )
-                else ...[
-                  _MediaPreview(
-                    state: state,
-                    onRemove: controller.removeMedia,
-                    onPlacementChanged: controller.updateStickerPlacement,
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextField(
-                            key: CreatePostScreen.captionKey,
-                            controller: _caption,
-                            maxLength: 2000,
-                            maxLines: 5,
-                            decoration: const InputDecoration(
-                              labelText: 'Chú thích',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            key: CreatePostScreen.tagsKey,
-                            controller: _tags,
-                            decoration: const InputDecoration(
-                              labelText: 'Thẻ — tối đa 20',
-                              hintText: '#healthy dinner',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          DropdownButtonFormField<PostVisibility>(
-                            initialValue: state.visibility,
-                            decoration: const InputDecoration(
-                              labelText: 'Quyền riêng tư',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: PostVisibility.public,
-                                child: Text('Công khai'),
+      body: DailyMealBackground(
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 390),
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  if (state.media.isEmpty)
+                    _CaptureCard(
+                      isPremium: controller.isPremium,
+                      onGallery: _pickImages,
+                      onCamera: _capture,
+                      onVideo: _pickVideo,
+                    )
+                  else ...[
+                    _MediaPreview(
+                      state: state,
+                      onRemove: controller.removeMedia,
+                      onPlacementChanged: controller.updateStickerPlacement,
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TextField(
+                              key: CreatePostScreen.captionKey,
+                              controller: _caption,
+                              maxLength: 2000,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                labelText: 'Chú thích',
+                                border: OutlineInputBorder(),
                               ),
-                              DropdownMenuItem(
-                                value: PostVisibility.friends,
-                                child: Text('Bạn bè'),
-                              ),
-                              DropdownMenuItem(
-                                value: PostVisibility.private,
-                                child: Text('Riêng tư'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value != null) {
-                                controller.updateVisibility(value);
-                              }
-                            },
-                          ),
-                          if (state.media.length > 1) ...[
+                            ),
                             const SizedBox(height: 12),
-                            SegmentedButton<PostLayout>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: PostLayout.stack,
-                                  label: Text('Xếp chồng'),
+                            TextField(
+                              key: CreatePostScreen.tagsKey,
+                              controller: _tags,
+                              decoration: const InputDecoration(
+                                labelText: 'Thẻ — tối đa 20',
+                                hintText: '#healthy dinner',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<PostVisibility>(
+                              initialValue: state.visibility,
+                              decoration: const InputDecoration(
+                                labelText: 'Quyền riêng tư',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: PostVisibility.public,
+                                  child: Text('Công khai'),
                                 ),
-                                ButtonSegment(
-                                  value: PostLayout.grid,
-                                  label: Text('Lưới'),
+                                DropdownMenuItem(
+                                  value: PostVisibility.friends,
+                                  child: Text('Bạn bè'),
                                 ),
-                                ButtonSegment(
-                                  value: PostLayout.cascade,
-                                  label: Text('So le'),
+                                DropdownMenuItem(
+                                  value: PostVisibility.private,
+                                  child: Text('Riêng tư'),
                                 ),
                               ],
-                              selected: {state.layout},
-                              onSelectionChanged: (selection) =>
-                                  controller.updateLayout(selection.first),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.updateVisibility(value);
+                                }
+                              },
                             ),
+                            if (state.media.length > 1) ...[
+                              const SizedBox(height: 12),
+                              SegmentedButton<PostLayout>(
+                                segments: const [
+                                  ButtonSegment(
+                                    value: PostLayout.stack,
+                                    label: Text('Xếp chồng'),
+                                  ),
+                                  ButtonSegment(
+                                    value: PostLayout.grid,
+                                    label: Text('Lưới'),
+                                  ),
+                                  ButtonSegment(
+                                    value: PostLayout.cascade,
+                                    label: Text('So le'),
+                                  ),
+                                ],
+                                selected: {state.layout},
+                                onSelectionChanged: (selection) =>
+                                    controller.updateLayout(selection.first),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _AnalysisCard(
-                    hints: _hints,
-                    state: state,
-                    onAnalyze: _analyze,
-                  ),
-                  const SizedBox(height: 16),
-                  _RecipeCard(
-                    title: _recipeTitle,
-                    ingredients: _ingredients,
-                    steps: _steps,
-                  ),
-                  const SizedBox(height: 16),
-                  _StickerCard(
-                    state: state,
-                    controller: controller,
-                    onCustomSticker: _customSticker,
-                  ),
-                  const SizedBox(height: 20),
-                  FilledButton.icon(
-                    key: CreatePostScreen.publishKey,
-                    onPressed: state.isBusy ? null : _publish,
-                    icon: state.isBusy
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.publish_rounded),
-                    label: const Text('Đăng bài'),
-                  ),
-                ],
-                if (_localError ?? state.errorMessage case final error?) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    error,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+                    const SizedBox(height: 16),
+                    _AnalysisCard(
+                      hints: _hints,
+                      state: state,
+                      onAnalyze: _analyze,
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _RecipeCard(
+                      title: _recipeTitle,
+                      ingredients: _ingredients,
+                      steps: _steps,
+                    ),
+                    const SizedBox(height: 16),
+                    _StickerCard(
+                      state: state,
+                      controller: controller,
+                      onCustomSticker: _customSticker,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      key: CreatePostScreen.publishKey,
+                      onPressed: state.isBusy ? null : _publish,
+                      icon: state.isBusy
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.publish_rounded),
+                      label: const Text('Đăng bài'),
+                    ),
+                  ],
+                  if (_localError ?? state.errorMessage case final error?) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      error,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-}
-
-class _StepHeader extends StatelessWidget {
-  const _StepHeader({required this.step});
-  final PostEditorStep step;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      for (final value in PostEditorStep.values) ...[
-        Expanded(
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 15,
-                backgroundColor: value.index <= step.index
-                    ? AppColors.greenDark
-                    : AppColors.line,
-                child: Text(
-                  '${value.index + 1}',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(switch (value) {
-                PostEditorStep.capture => 'Chọn media',
-                PostEditorStep.edit => 'Nội dung',
-                PostEditorStep.sticker => 'Nhãn dán',
-              }),
-            ],
-          ),
-        ),
-      ],
-    ],
-  );
 }
 
 class _CaptureCard extends StatelessWidget {
@@ -362,43 +333,77 @@ class _CaptureCard extends StatelessWidget {
   final VoidCallback onVideo;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Icon(Icons.add_photo_alternate_outlined, size: 64),
-          const SizedBox(height: 12),
-          Text(
-            isPremium ? 'Chọn tối đa 3 ảnh hoặc 1 video' : 'Chọn 1 ảnh',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
+  Widget build(BuildContext context) => Column(
+    children: [
+      DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.canvasStrong,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, .16),
+              offset: Offset(0, 8),
+              blurRadius: 18,
+            ),
+          ],
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 500,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              FilledButton.tonalIcon(
-                onPressed: onGallery,
-                icon: const Icon(Icons.photo_library_outlined),
-                label: const Text('Chọn ảnh'),
+              const Icon(
+                Icons.camera_alt_rounded,
+                size: 52,
+                color: AppColors.white,
               ),
-              FilledButton.tonalIcon(
-                onPressed: onCamera,
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: const Text('Chụp ảnh'),
-              ),
-              FilledButton.tonalIcon(
-                onPressed: isPremium ? onVideo : null,
-                icon: const Icon(Icons.videocam_outlined),
-                label: const Text('Chọn video'),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 18,
+                child: Text(
+                  isPremium
+                      ? 'Tài khoản Premium: tối đa 3 ảnh hoặc 1 video'
+                      : 'Chọn 1 ảnh để bắt đầu',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
               ),
             ],
           ),
+        ),
+      ),
+      const SizedBox(height: 22),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton.filledTonal(
+            tooltip: 'Chọn ảnh',
+            onPressed: onGallery,
+            icon: const Icon(Icons.photo_library_outlined),
+          ),
+          const SizedBox(width: 18),
+          IconButton.filled(
+            tooltip: 'Chụp ảnh',
+            onPressed: onCamera,
+            style: IconButton.styleFrom(
+              fixedSize: const Size.square(68),
+              backgroundColor: AppColors.white,
+              foregroundColor: AppColors.black,
+              side: const BorderSide(color: AppColors.line, width: 4),
+            ),
+            icon: const Icon(Icons.camera_alt_outlined, size: 30),
+          ),
+          const SizedBox(width: 18),
+          IconButton.filledTonal(
+            tooltip: 'Chọn video',
+            onPressed: isPremium ? onVideo : null,
+            icon: const Icon(Icons.videocam_outlined),
+          ),
         ],
       ),
-    ),
+    ],
   );
 }
 
@@ -413,103 +418,114 @@ class _MediaPreview extends StatelessWidget {
   final ValueChanged<StickerPlacement> onPlacementChanged;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (state.media.first.mediaType == DraftMediaType.video)
-            const AspectRatio(
-              aspectRatio: 16 / 9,
-              child: ColoredBox(
-                color: Colors.black12,
-                child: Center(child: Icon(Icons.videocam_rounded, size: 56)),
-              ),
-            )
-          else
-            LayoutBuilder(
-              builder: (context, constraints) => AspectRatio(
-                aspectRatio: 4 / 3,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image.memory(
-                        state.media.first.bytes,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const ColoredBox(
-                              color: AppColors.canvasStrong,
-                              child: Center(child: Icon(Icons.image_outlined)),
-                            ),
-                      ),
-                    ),
-                    if (state.selectedStickerId != null)
-                      Positioned(
-                        left:
-                            state.stickerPlacement.x * constraints.maxWidth -
-                            30,
-                        top:
-                            state.stickerPlacement.y *
-                                (constraints.maxWidth * 0.75) -
-                            30,
-                        child: GestureDetector(
-                          onPanUpdate: (details) {
-                            final height = constraints.maxWidth * 0.75;
-                            onPlacementChanged(
-                              StickerPlacement(
-                                x:
-                                    (state.stickerPlacement.x +
-                                            details.delta.dx /
-                                                constraints.maxWidth)
-                                        .clamp(0, 1),
-                                y:
-                                    (state.stickerPlacement.y +
-                                            details.delta.dy / height)
-                                        .clamp(0, 1),
-                                scale: state.stickerPlacement.scale,
-                                rotation: state.stickerPlacement.rotation,
-                              ),
-                            );
-                          },
-                          child: Transform.rotate(
-                            angle:
-                                state.stickerPlacement.rotation *
-                                3.1415926 /
-                                180,
-                            child: Transform.scale(
-                              scale: state.stickerPlacement.scale,
-                              child: const Chip(label: Text('Sticker')),
-                            ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (state.media.first.mediaType == DraftMediaType.video)
+        const AspectRatio(
+          aspectRatio: 16 / 9,
+          child: ColoredBox(
+            color: Colors.black12,
+            child: Center(child: Icon(Icons.videocam_rounded, size: 56)),
+          ),
+        )
+      else
+        LayoutBuilder(
+          builder: (context, constraints) => AspectRatio(
+            aspectRatio: 3 / 4,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.memory(
+                    state.media.first.bytes,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const ColoredBox(
+                          color: AppColors.canvasStrong,
+                          child: Center(child: Icon(Icons.image_outlined)),
+                        ),
+                  ),
+                ),
+                if (state.selectedStickerId != null)
+                  Positioned(
+                    left: state.stickerPlacement.x * constraints.maxWidth - 30,
+                    top:
+                        state.stickerPlacement.y *
+                            (constraints.maxWidth * 4 / 3) -
+                        30,
+                    child: GestureDetector(
+                      onPanUpdate: (details) {
+                        final height = constraints.maxWidth * 4 / 3;
+                        onPlacementChanged(
+                          StickerPlacement(
+                            x:
+                                (state.stickerPlacement.x +
+                                        details.delta.dx / constraints.maxWidth)
+                                    .clamp(0, 1),
+                            y:
+                                (state.stickerPlacement.y +
+                                        details.delta.dy / height)
+                                    .clamp(0, 1),
+                            scale: state.stickerPlacement.scale,
+                            rotation: state.stickerPlacement.rotation,
                           ),
+                        );
+                      },
+                      child: Transform.rotate(
+                        angle:
+                            state.stickerPlacement.rotation * 3.1415926 / 180,
+                        child: Transform.scale(
+                          scale: state.stickerPlacement.scale,
+                          child: const Chip(label: Text('Sticker')),
                         ),
                       ),
-                  ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      const SizedBox(height: 12),
+      SizedBox(
+        height: 68,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: state.media.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemBuilder: (context, index) => Stack(
+            children: [
+              ClipRRect(
+                key: Key('selected-media-$index'),
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox.square(
+                  dimension: 64,
+                  child: state.media[index].mediaType == DraftMediaType.video
+                      ? const ColoredBox(
+                          color: AppColors.black,
+                          child: Icon(Icons.videocam, color: AppColors.white),
+                        )
+                      : Image.memory(
+                          state.media[index].bytes,
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
-            ),
-          const SizedBox(height: 10),
-          for (var index = 0; index < state.media.length; index++)
-            ListTile(
-              dense: true,
-              leading: Icon(
-                state.media[index].mediaType == DraftMediaType.video
-                    ? Icons.movie_outlined
-                    : Icons.image_outlined,
+              Positioned(
+                right: -5,
+                top: -5,
+                child: IconButton.filled(
+                  tooltip: 'Xóa media',
+                  onPressed: () => onRemove(index),
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 14,
+                  icon: const Icon(Icons.close),
+                ),
               ),
-              title: Text(state.media[index].fileName),
-              subtitle: Text(
-                '${(state.media[index].bytes.length / 1024).ceil()} KB',
-              ),
-              trailing: IconButton(
-                tooltip: 'Xóa media',
-                onPressed: () => onRemove(index),
-                icon: const Icon(Icons.delete_outline),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
-    ),
+    ],
   );
 }
 

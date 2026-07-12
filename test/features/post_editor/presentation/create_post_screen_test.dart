@@ -97,6 +97,10 @@ class _Repository implements PostEditorRepositoryContract {
 
 void main() {
   testWidgets('selects media, analyzes and publishes a post', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final repository = _Repository();
     final controller = PostEditorController(repository, isPremium: true);
     FeedPost? published;
@@ -113,9 +117,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Chọn ảnh'));
+    final galleryButton = find.byTooltip('Chọn ảnh');
+    await tester.scrollUntilVisible(
+      galleryButton,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(galleryButton);
     await tester.pumpAndSettle();
-    expect(find.text('meal.jpg'), findsOneWidget);
+    expect(find.byKey(const Key('selected-media-0')), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(CreatePostScreen.captionKey),
@@ -143,6 +153,8 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+    await tester.pumpAndSettle();
     await tester.tap(publishButton);
     await tester.pumpAndSettle();
     expect(published?.id, 'post-1');
