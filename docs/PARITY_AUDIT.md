@@ -1,6 +1,6 @@
 # Daily Meal Flutter parity audit
 
-Updated: 2026-07-12. Authorities, in order: production React Native source, production site, approved Figma, Flutter implementation.
+Updated: 2026-07-13. Authorities, in order: production React Native source, production site, approved Figma, Flutter implementation.
 
 ## Route coverage
 
@@ -10,7 +10,7 @@ React Native registers 29 active routes in `client/src/navigation/AppNavigator.t
 |---|---|---|---|
 | Login, AdminLogin, Onboarding, Home, Search, Create, Profile, PublicProfile | Equivalent named routes | Present | P0 |
 | Inbox, Chat, EditProfile, Settings, ChangePassword, Notifications | Equivalent named routes | Present | P0/P1 |
-| Saved, PostSummary, Blocked, Support, ShareAccount, PremiumBenefits, Progress | Equivalent feature route, sometimes shared surface | Present with composition differences | P1/P2 |
+| Saved, PostSummary, Blocked, Support, ShareAccount, PremiumBenefits, Progress | Equivalent feature routes | Present; utility shell and core states source-aligned | P1/P2 |
 | AdminDashboard | `/admin` | Present | P0 |
 | Follows | `/users/:id/follows?tab=` / `FollowsScreen` | Present and refresh-safe | P1 |
 | Comments | `/posts/:id/comments` / `CommentsScreen` | Present; hero gracefully falls back after refresh | P0 |
@@ -37,7 +37,7 @@ Additional routing gaps:
 | Comments | Low | Full-screen hero, bubbles, time/reply/like metadata and source action bar |
 | Recipe | Partial | Full-screen header/author footer and route identity |
 | Create/Edit Post | Partial | Source capture states, preview deck and edit action sheet |
-| Notifications/Chat/Settings | Partial | Replace Material ListTile/AppBar/Chip composition with source widgets/assets |
+| Notifications/Chat/Settings | Improved | Complete device-level visual regression and refine edge states |
 | Admin Dashboard/KPI/Analytics | Partial-high | Chart hierarchy and responsive density |
 | Admin Posts/Payments/Reports/AI | Partial | Media previews, filters, charts and complete metadata |
 | Admin Users/User Detail | Low | Analytics-rich list plus full responsive detail workspace |
@@ -100,4 +100,11 @@ Messaging now matches the source mobile composition: Inbox back/title copy,
 timestamped white/sage bubbles, source composer and empty state. Notifications
 now uses the source header, count/bulk toolbar, typed colors, relative time,
 unread dot, swipe delete and explicit row delete while preserving deep links.
+
+Premium now follows the source benefits header/banner, three benefit cards and
+yellow active-plan treatment while preserving the working PayOS lifecycle.
+Settings and user utilities now share source-style compact headers, bordered
+rows/cards, yellow logout/unblock actions, FAQ and family-share copy, explicit
+empty/error states, and confirmation before unblocking. The intentionally
+unavailable family API remains clearly disclosed instead of simulating success.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

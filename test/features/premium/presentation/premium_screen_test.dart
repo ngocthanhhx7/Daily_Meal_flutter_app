@@ -83,6 +83,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.text('Quyền lợi Premium'), findsOneWidget);
+    expect(find.byIcon(Icons.diamond_rounded), findsOneWidget);
+    expect(find.text('Nhóm gia đình chia sẻ'), findsOneWidget);
+    expect(find.textContaining('Dùng thử Premium'), findsNothing);
     await tester.scrollUntilVisible(
       find.text('Gói 3 tháng'),
       300,

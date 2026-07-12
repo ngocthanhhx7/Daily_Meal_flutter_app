@@ -45,6 +45,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const MaterialApp(home: SupportScreen()));
+    await tester.scrollUntilVisible(
+      find.text('Gửi phản hồi'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Gửi phản hồi'));
     await tester.pump();
     expect(find.textContaining('Vui lòng nhập đầy đủ'), findsOneWidget);

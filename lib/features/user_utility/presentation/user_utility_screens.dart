@@ -10,7 +10,6 @@ import 'package:daily_meal_flutter_app/features/user_utility/application/user_ut
 import 'package:daily_meal_flutter_app/features/user_utility/application/user_utility_providers.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/domain/post_summary.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -31,11 +30,6 @@ class SettingsScreen extends ConsumerWidget {
             Icons.workspace_premium_outlined,
             'Daily Premium',
             () => context.pushNamed(AppRoute.premium.name),
-          ),
-          _tile(
-            Icons.password_outlined,
-            'Đổi mật khẩu',
-            () => context.pushNamed(AppRoute.changePassword.name),
           ),
           const _GoogleLinkTile(),
         ]),
@@ -66,7 +60,7 @@ class SettingsScreen extends ConsumerWidget {
             () => context.pushNamed(AppRoute.blocked.name),
           ),
         ]),
-        _section(context, 'Trợ giúp', [
+        _section(context, '', [
           _tile(
             Icons.help_outline,
             'Hỗ trợ',
@@ -77,13 +71,32 @@ class SettingsScreen extends ConsumerWidget {
             'Chia sẻ tài khoản',
             () => context.pushNamed(AppRoute.shareAccount.name),
           ),
+          _tile(
+            Icons.workspace_premium_outlined,
+            'Quyền lợi',
+            () => context.pushNamed(AppRoute.premium.name),
+          ),
         ]),
         Padding(
-          padding: const EdgeInsets.all(8),
-          child: FilledButton.tonalIcon(
-            onPressed: () => _confirmLogout(context, ref),
-            icon: const Icon(Icons.logout),
-            label: const Text('Đăng xuất'),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Material(
+            color: AppColors.yellow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.yellow),
+            ),
+            child: ListTile(
+              minTileHeight: 48,
+              onTap: () => _confirmLogout(context, ref),
+              title: const Text(
+                'Đăng xuất',
+                style: TextStyle(
+                  color: AppColors.red,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -98,16 +111,38 @@ class SettingsScreen extends ConsumerWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
-          child: Text(title, style: Theme.of(context).textTheme.labelLarge),
-        ),
+        if (title.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppColors.muted,
+                fontSize: 13,
+              ),
+            ),
+          ),
         for (final child in children)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Material(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color:
+                      title == 'Tài khoản của bạn' &&
+                          children.indexOf(child) == 1
+                      ? AppColors.yellow
+                      : AppColors.line,
+                  width:
+                      title == 'Tài khoản của bạn' &&
+                          children.indexOf(child) == 1
+                      ? 2
+                      : 1,
+                ),
+              ),
               child: child,
             ),
           ),
@@ -477,39 +512,36 @@ class _SupportScreenState extends State<SupportScreen> {
     title: 'Hỗ trợ',
     child: ListView(
       children: [
-        const ExpansionTile(
-          title: Text('Làm thế nào để dùng Daily Meal trên điện thoại?'),
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Cài app Android, đăng nhập và cấp quyền ảnh/camera khi bạn muốn đăng món ăn.',
-              ),
-            ),
-          ],
+        const _SectionLabel('Câu hỏi thường gặp (FAQs)'),
+        const _FaqCard(
+          question: '1. Làm thế nào để thêm Locket Widget trên iOS?',
+          answer:
+              'Nhấn giữ màn hình chính của iPhone → Chọn dấu "+" ở góc trái → Tìm "Daily Meal" và chọn Thêm tiện ích (Add Widget).',
         ),
-        const ExpansionTile(
-          title: Text('Làm sao để chia sẻ tài khoản?'),
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'API nhóm gia đình đang được chuẩn bị và chưa mở trên production.',
-              ),
-            ),
-          ],
+        const SizedBox(height: 12),
+        const _FaqCard(
+          question: '2. Làm sao để chia sẻ tài khoản?',
+          answer:
+              'Bạn hãy nâng cấp gói Daily Premium để kích hoạt mã chia sẻ cho gia đình và bạn bè dùng chung quyền lợi!',
         ),
         const SizedBox(height: 16),
+        const _SectionLabel('Gửi phản hồi cho chúng tôi'),
         TextField(
           controller: subject,
-          decoration: const InputDecoration(labelText: 'Tiêu đề'),
+          decoration: const InputDecoration(
+            labelText: 'Tiêu đề',
+            hintText: 'VD: Lỗi kết nối tài khoản',
+          ),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: message,
           minLines: 4,
           maxLines: 8,
-          decoration: const InputDecoration(labelText: 'Nội dung'),
+          decoration: const InputDecoration(
+            labelText: 'Nội dung',
+            hintText: 'Mô tả chi tiết vấn đề hoặc ý kiến của bạn...',
+          ),
         ),
         const SizedBox(height: 12),
         FilledButton(
@@ -529,10 +561,23 @@ class _SupportScreenState extends State<SupportScreen> {
   );
 }
 
-class ShareAccountScreen extends ConsumerWidget {
+class ShareAccountScreen extends ConsumerStatefulWidget {
   const ShareAccountScreen({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShareAccountScreen> createState() => _ShareAccountScreenState();
+}
+
+class _ShareAccountScreenState extends ConsumerState<ShareAccountScreen> {
+  final inviteCode = TextEditingController();
+
+  @override
+  void dispose() {
+    inviteCode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final premium =
         ref.watch(authControllerProvider).state.user?.isPremium == true;
     final status = premium
@@ -542,44 +587,84 @@ class ShareAccountScreen extends ConsumerWidget {
       title: 'Chia sẻ tài khoản',
       child: ListView(
         children: [
-          const Card(
-            child: Padding(
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.green.withValues(alpha: .08),
+              border: Border.all(color: AppColors.green),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Padding(
               padding: EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(Icons.groups_2_outlined, size: 44),
+                  Icon(
+                    Icons.groups_2_outlined,
+                    size: 32,
+                    color: AppColors.greenDark,
+                  ),
                   Text(
                     'Nhóm Gia Đình Daily Meal',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Chia sẻ quyền lợi Premium với tối đa 5 thành viên khi backend mở API nhóm gia đình.',
+                    'Tính năng này cho phép bạn chia sẻ tài khoản Premium với tối đa 5 thành viên trong gia đình để cùng nhau chia sẻ công thức và lưu trữ khoảnh khắc!',
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: 18),
+          const _SectionLabel('Mã chia sẻ của bạn'),
           ListTile(
-            title: const Text('Mã chia sẻ của bạn'),
-            subtitle: Text(status),
-            trailing: const Icon(Icons.copy_outlined),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: AppColors.line, width: 1.5),
+            ),
+            tileColor: AppColors.canvasStrong,
+            title: Text(status),
             onTap: () {
-              Clipboard.setData(ClipboardData(text: status));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text(
-                    'API mã gia đình chưa được mở trên production.',
+                    premium
+                        ? 'API mã gia đình chưa được mở trên production.'
+                        : 'Vui lòng nâng cấp tài khoản Premium để sử dụng tính năng này!',
                   ),
                 ),
               );
             },
           ),
-          if (!premium)
-            FilledButton(
-              onPressed: () => context.pushNamed(AppRoute.premium.name),
-              child: const Text('Nâng cấp Daily Premium'),
+          const SizedBox(height: 8),
+          Text(
+            premium
+                ? 'Tính năng tạo mã chia sẻ cho tài khoản Premium đang được chuẩn bị.'
+                : 'Nâng cấp lên Daily Premium để tạo mã chia sẻ tài khoản với người thân.',
+            style: const TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          const _SectionLabel('Nhập mã chia sẻ được tặng'),
+          TextField(
+            controller: inviteCode,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              labelText: 'Mã gia đình',
+              hintText: 'VD: DMEAL-XXXXXX',
             ),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  inviteCode.text.trim().isEmpty
+                      ? 'Vui lòng nhập mã chia sẻ để tham gia.'
+                      : 'Mã chia sẻ gia đình chưa kết nối với server trong bản này, nên Daily Meal chưa thể tham gia nhóm hoặc kích hoạt Premium từ mã.',
+                ),
+              ),
+            ),
+            child: const Text('Tham gia nhóm'),
+          ),
         ],
       ),
     );
@@ -670,23 +755,95 @@ class _UtilityScaffold extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      title: Text(
-        title,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-      ),
-    ),
     body: DailyMealBackground(
       child: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 390),
-            child: Padding(padding: const EdgeInsets.all(16), child: child),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 44,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => context.pop(),
+                          icon: const Icon(Icons.chevron_left, size: 24),
+                        ),
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 25,
+                              height: 1.24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(child: child),
+                ],
+              ),
+            ),
           ),
         ),
       ),
+    ),
+  );
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: const TextStyle(color: AppColors.muted, fontSize: 13),
+      ),
+    ),
+  );
+}
+
+class _FaqCard extends StatelessWidget {
+  const _FaqCard({required this.question, required this.answer});
+  final String question, answer;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          answer,
+          style: const TextStyle(
+            fontSize: 13,
+            height: 18 / 13,
+            color: AppColors.muted,
+          ),
+        ),
+      ],
     ),
   );
 }
