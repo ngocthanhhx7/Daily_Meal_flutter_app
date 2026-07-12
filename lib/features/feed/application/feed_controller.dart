@@ -59,6 +59,10 @@ class FeedController extends ChangeNotifier {
   }) {
     if (realtime != null) {
       _statsSubscription = realtime.postStatsUpdates.listen(_applyStatsUpdate);
+      _reconnectSubscription = realtime.reconnects.listen((_) {
+        final recovery = _state.posts.isEmpty ? loadInitial() : refresh();
+        unawaited(recovery.catchError((_) {}));
+      });
       unawaited(realtime.connect());
     }
   }
@@ -66,6 +70,7 @@ class FeedController extends ChangeNotifier {
   final FeedRepositoryContract _repository;
   final int pageSize;
   StreamSubscription<PostStatsUpdate>? _statsSubscription;
+  StreamSubscription<void>? _reconnectSubscription;
   FeedState _state = const FeedState.idle();
   final Set<String> _busyInteractions = {};
 
@@ -258,6 +263,7 @@ class FeedController extends ChangeNotifier {
   @override
   void dispose() {
     _statsSubscription?.cancel();
+    _reconnectSubscription?.cancel();
     super.dispose();
   }
 }

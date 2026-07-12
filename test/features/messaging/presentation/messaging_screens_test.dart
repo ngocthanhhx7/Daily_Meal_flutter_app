@@ -51,6 +51,8 @@ class _Realtime implements RealtimeClient {
   final conversationStream = StreamController<Conversation>.broadcast();
   final messageStream = StreamController<ChatMessage>.broadcast();
   @override
+  Stream<void> get reconnects => const Stream.empty();
+  @override
   Stream<Conversation> get conversationUpdates => conversationStream.stream;
   @override
   Stream<ChatMessage> get createdMessages => messageStream.stream;

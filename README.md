@@ -36,8 +36,23 @@ flutter run -d android @defines
 ```
 
 Optional Web Push uses `WEB_PUSH_PUBLIC_KEY`. Obtain the current public VAPID
-key from `GET /api/push/web/public-key`; never place a private VAPID key in the
-client.
+key from `GET /api/users/web-push/vapid-public-key`; never place a private VAPID
+key in the client.
+
+Android Facebook login also requires the Meta Client Token from **Meta App
+Dashboard → Settings → Advanced**. Put it in ignored
+`android/facebook.properties`:
+
+```properties
+appId=3483710358450589
+clientToken=YOUR_META_CLIENT_TOKEN
+```
+
+For CI, use `FACEBOOK_APP_ID` and `FACEBOOK_CLIENT_TOKEN` environment
+variables, or Gradle properties `facebookAppId` and `facebookClientToken`.
+Debug builds use a visibly invalid placeholder when the token is absent so the
+rest of the Flutter plugin registry and emulator smoke tests remain usable.
+Release builds fail fast until a real Client Token is supplied.
 
 ## Release builds
 
@@ -51,8 +66,9 @@ keyAlias=upload
 storeFile=C:/secure/daily-meal-upload.jks
 ```
 
-`android/key.properties` and `*.jks` are ignored by Git. Back up the upload key
-securely; losing it can prevent future Play Store updates.
+`android/key.properties`, `android/facebook.properties` and `*.jks` are ignored
+by Git. Back up the upload key securely; losing it can prevent future Play
+Store updates.
 
 ```powershell
 flutter build web --release @defines

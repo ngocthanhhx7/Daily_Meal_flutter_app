@@ -25,17 +25,23 @@ ChatMessage message(String id, {String conversationId = 'c1'}) => ChatMessage(
 
 class _Repository implements MessagingRepositoryContract {
   bool failSend = false;
+  var conversationLoads = 0;
+  var messageLoads = 0;
   @override
-  Future<List<Conversation>> conversations() async => [
-    conversation('old', DateTime.utc(2026)),
-  ];
+  Future<List<Conversation>> conversations() async {
+    conversationLoads++;
+    return [conversation('old', DateTime.utc(2026))];
+  }
+
   @override
   Future<Conversation> createConversation(String recipientId) async =>
       conversation('c1', DateTime.utc(2026));
   @override
-  Future<List<ChatMessage>> messages(String conversationId) async => [
-    message('m1'),
-  ];
+  Future<List<ChatMessage>> messages(String conversationId) async {
+    messageLoads++;
+    return [message('m1')];
+  }
+
   @override
   Future<ChatMessage> send(String conversationId, String body) async {
     if (failSend) throw StateError('network');
@@ -48,8 +54,12 @@ class _Realtime implements RealtimeClient {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   final conversations = StreamController<Conversation>.broadcast();
   final messages = StreamController<ChatMessage>.broadcast();
+  final recoveries = StreamController<void>.broadcast();
   String? joined;
   String? left;
+  var joinCalls = 0;
+  @override
+  Stream<void> get reconnects => recoveries.stream;
   @override
   Stream<Conversation> get conversationUpdates => conversations.stream;
   @override
@@ -61,13 +71,18 @@ class _Realtime implements RealtimeClient {
   @override
   Future<void> connect() async {}
   @override
-  void joinConversation(String conversationId) => joined = conversationId;
+  void joinConversation(String conversationId) {
+    joined = conversationId;
+    joinCalls++;
+  }
+
   @override
   void leaveConversation(String conversationId) => left = conversationId;
   @override
   void dispose() {
     conversations.close();
     messages.close();
+    recoveries.close();
   }
 }
 
@@ -79,6 +94,21 @@ void main() {
     realtime.conversations.add(conversation('new', DateTime.utc(2027)));
     await Future<void>.delayed(Duration.zero);
     expect(controller.conversations.map((item) => item.id), ['new', 'old']);
+    controller.dispose();
+    realtime.dispose();
+  });
+
+  test('inbox reloads its REST source after reconnect', () async {
+    final repository = _Repository();
+    final realtime = _Realtime();
+    final controller = InboxController(repository, realtime);
+    await controller.initialize();
+
+    realtime.recoveries.add(null);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.conversationLoads, 2);
     controller.dispose();
     realtime.dispose();
   });
@@ -104,4 +134,24 @@ void main() {
       realtime.dispose();
     },
   );
+
+  test('chat rejoins its room and reloads messages after reconnect', () async {
+    final repository = _Repository();
+    final realtime = _Realtime();
+    final controller = ChatController(
+      repository,
+      realtime,
+      conversationId: 'c1',
+    );
+    await controller.initialize();
+
+    realtime.recoveries.add(null);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(realtime.joinCalls, 2);
+    expect(repository.messageLoads, 2);
+    controller.dispose();
+    realtime.dispose();
+  });
 }

@@ -22,10 +22,13 @@ FeedPost post(String id, {bool liked = false, bool saved = false}) =>
 class _Repository implements FeedRepositoryContract {
   final pages = <int, FeedPage>{};
   bool failLike = false;
+  var loadCalls = 0;
 
   @override
-  Future<FeedPage> loadPage({required int page, required int limit}) async =>
-      pages[page]!;
+  Future<FeedPage> loadPage({required int page, required int limit}) async {
+    loadCalls++;
+    return pages[page]!;
+  }
 
   @override
   Future<FeedMutation> toggleLike(String postId) async {
@@ -45,16 +48,22 @@ class _Repository implements FeedRepositoryContract {
 
 class _Realtime implements RealtimeClient {
   final updates = StreamController<PostStatsUpdate>.broadcast();
+  final recoveries = StreamController<void>.broadcast();
   var connectCalls = 0;
 
   @override
   Stream<PostStatsUpdate> get postStatsUpdates => updates.stream;
+  @override
+  Stream<void> get reconnects => recoveries.stream;
 
   @override
   Future<void> connect() async => connectCalls++;
 
   @override
-  void dispose() => updates.close();
+  void dispose() {
+    updates.close();
+    recoveries.close();
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -197,6 +206,27 @@ void main() {
     );
     await Future<void>.delayed(Duration.zero);
     expect(controller.state.posts.single.stats.likes, 9);
+    realtime.dispose();
+  });
+
+  test('refreshes feed from REST after reconnect', () async {
+    final repository = _Repository()
+      ..pages[1] = FeedPage(
+        posts: [post('1')],
+        page: 1,
+        limit: 20,
+        hasMore: false,
+      );
+    final realtime = _Realtime();
+    final controller = FeedController(repository, realtime: realtime);
+    await controller.loadInitial();
+
+    realtime.recoveries.add(null);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.loadCalls, 2);
+    controller.dispose();
     realtime.dispose();
   });
 }

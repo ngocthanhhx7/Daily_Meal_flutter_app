@@ -17,8 +17,13 @@ AppNotification notification(String id, {bool read = false}) => AppNotification(
 
 class _Repository implements NotificationsRepositoryContract {
   bool fail = false;
+  var loadCalls = 0;
   @override
-  Future<List<AppNotification>> load() async => [notification('n1')];
+  Future<List<AppNotification>> load() async {
+    loadCalls++;
+    return [notification('n1')];
+  }
+
   Future<void> action() async {
     if (fail) throw StateError('network');
   }
@@ -43,6 +48,9 @@ class _Realtime implements RealtimeClient {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   final stream = StreamController<Map<String, dynamic>>.broadcast();
+  final recoveries = StreamController<void>.broadcast();
+  @override
+  Stream<void> get reconnects => recoveries.stream;
   @override
   Stream<Map<String, dynamic>> get createdNotifications => stream.stream;
   @override
@@ -58,7 +66,10 @@ class _Realtime implements RealtimeClient {
   @override
   void leaveConversation(String conversationId) {}
   @override
-  void dispose() => stream.close();
+  void dispose() {
+    stream.close();
+    recoveries.close();
+  }
 }
 
 void main() {
@@ -92,6 +103,21 @@ void main() {
     expect(controller.notifications, isEmpty);
     await expectLater(pending, throwsStateError);
     expect(controller.notifications.single.id, 'n1');
+    controller.dispose();
+    realtime.dispose();
+  });
+
+  test('reloads notifications after reconnect', () async {
+    final repository = _Repository();
+    final realtime = _Realtime();
+    final controller = NotificationsController(repository, realtime);
+    await controller.initialize();
+
+    realtime.recoveries.add(null);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.loadCalls, 2);
     controller.dispose();
     realtime.dispose();
   });

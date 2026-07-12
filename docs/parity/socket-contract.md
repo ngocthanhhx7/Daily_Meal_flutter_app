@@ -45,6 +45,9 @@ Invalid/unauthorized room requests emit `room:error` with `{ room, message }` (`
 - Register named handlers and remove the same handlers during disposal.
 - Deduplicate messages/comments/notifications by server ID before inserting.
 - Treat REST as recovery/source of truth after reconnect; refetch active inbox/conversation/notification state.
+- Flutter emits a recovery signal only from the second successful socket
+  connection onward. Active Feed, Inbox and Notifications refetch REST;
+  Comments and Chat rejoin their scoped room before refetching REST.
 - Do not optimistically echo realtime events twice when REST creation already returned the created DTO.
 
 ## Verification Cases

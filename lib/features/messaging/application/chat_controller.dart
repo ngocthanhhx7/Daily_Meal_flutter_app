@@ -20,13 +20,22 @@ class ChatController extends ChangeNotifier {
   bool sending = false;
   String? errorMessage;
   StreamSubscription<ChatMessage>? _subscription;
+  StreamSubscription<void>? _reconnectSubscription;
 
   Future<void> initialize() async {
     _subscription ??= _realtime.createdMessages
         .where((message) => message.conversationId == conversationId)
         .listen(_append);
+    _reconnectSubscription ??= _realtime.reconnects.listen((_) {
+      _realtime.joinConversation(conversationId);
+      unawaited(_loadMessages().catchError((_) {}));
+    });
     await _realtime.connect();
     _realtime.joinConversation(conversationId);
+    await _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
     loading = true;
     notifyListeners();
     try {
@@ -78,6 +87,7 @@ class ChatController extends ChangeNotifier {
   void dispose() {
     _realtime.leaveConversation(conversationId);
     _subscription?.cancel();
+    _reconnectSubscription?.cancel();
     super.dispose();
   }
 }

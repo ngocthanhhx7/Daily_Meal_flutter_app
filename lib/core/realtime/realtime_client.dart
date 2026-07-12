@@ -23,7 +23,48 @@ Map<String, dynamic> buildRealtimeSocketOptions(String token) {
   return options;
 }
 
+abstract interface class RealtimeSocket {
+  void on(String event, void Function(Object?) handler);
+  void onConnect(void Function() handler);
+  void onConnectError(void Function(Object?) handler);
+  void connect();
+  void emit(String event, Object? data);
+  void dispose();
+}
+
+class IoRealtimeSocket implements RealtimeSocket {
+  IoRealtimeSocket(String origin, Map<String, dynamic> options)
+    : _socket = io.io(origin, options);
+
+  final io.Socket _socket;
+
+  @override
+  void on(String event, void Function(Object?) handler) =>
+      _socket.on(event, handler);
+
+  @override
+  void onConnect(void Function() handler) =>
+      _socket.onConnect((_) => handler());
+
+  @override
+  void onConnectError(void Function(Object?) handler) =>
+      _socket.onConnectError(handler);
+
+  @override
+  void connect() => _socket.connect();
+
+  @override
+  void emit(String event, Object? data) => _socket.emit(event, data);
+
+  @override
+  void dispose() => _socket.dispose();
+}
+
+typedef RealtimeSocketFactory =
+    RealtimeSocket Function(String origin, Map<String, dynamic> options);
+
 abstract interface class RealtimeClient {
+  Stream<void> get reconnects;
   Stream<PostStatsUpdate> get postStatsUpdates;
   Stream<Conversation> get conversationUpdates;
   Stream<ChatMessage> get createdMessages;
@@ -61,17 +102,25 @@ class PostStatsUpdate {
 }
 
 class SocketIoRealtimeClient implements RealtimeClient {
-  SocketIoRealtimeClient({required this.baseUrl, required this.sessions});
+  SocketIoRealtimeClient({
+    required this.baseUrl,
+    required this.sessions,
+    RealtimeSocketFactory? socketFactory,
+  }) : _socketFactory = socketFactory ?? IoRealtimeSocket.new;
   final Uri baseUrl;
   final SessionStore sessions;
-  io.Socket? _socket;
+  final RealtimeSocketFactory _socketFactory;
+  RealtimeSocket? _socket;
   final _conversations = StreamController<Conversation>.broadcast();
+  final _reconnects = StreamController<void>.broadcast();
   final _postStats = StreamController<PostStatsUpdate>.broadcast();
   final _messages = StreamController<ChatMessage>.broadcast();
   final _notifications = StreamController<Map<String, dynamic>>.broadcast();
   final _comments = StreamController<PostComment>.broadcast();
   final _errors = StreamController<String>.broadcast();
 
+  @override
+  Stream<void> get reconnects => _reconnects.stream;
   @override
   Stream<PostStatsUpdate> get postStatsUpdates => _postStats.stream;
   @override
@@ -91,11 +140,16 @@ class SocketIoRealtimeClient implements RealtimeClient {
     if (_socket != null) return;
     final session = await sessions.read(SessionKind.user);
     if (session == null) return;
-    final socket = io.io(
+    final socket = _socketFactory(
       baseUrl.origin,
       buildRealtimeSocketOptions(session.token),
     );
     _socket = socket;
+    var connectedOnce = false;
+    socket.onConnect(() {
+      if (connectedOnce) _reconnects.add(null);
+      connectedOnce = true;
+    });
     socket.on(
       'post:stats-updated',
       (data) => _decode(data, PostStatsUpdate.fromJson, _postStats),
@@ -115,7 +169,11 @@ class SocketIoRealtimeClient implements RealtimeClient {
       'comment:created',
       (data) => _decode(data, PostComment.fromJson, _comments),
     );
-    socket.on('auth:error', (data) => _errors.add(_message(data)));
+    socket.on('auth:error', (data) {
+      _errors.add(_message(data));
+      socket.dispose();
+      if (identical(_socket, socket)) _socket = null;
+    });
     socket.on('room:error', (data) => _errors.add(_message(data)));
     socket.onConnectError((data) => _errors.add(data.toString()));
     socket.connect();
@@ -153,6 +211,7 @@ class SocketIoRealtimeClient implements RealtimeClient {
   void dispose() {
     _socket?.dispose();
     _socket = null;
+    _reconnects.close();
     _postStats.close();
     _conversations.close();
     _messages.close();

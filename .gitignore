@@ -28,6 +28,7 @@ migrate_working_dir/
 **/ios/Flutter/.last_build_id
 .dart_tool/
 android/key.properties
+android/facebook.properties
 *.jks
 *.keystore
 .flutter-plugins-dependencies

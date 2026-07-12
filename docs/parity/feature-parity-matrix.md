@@ -21,7 +21,7 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 2 | Phone/OTP | `LoginScreen.tsx`; login validation | phone endpoints | `features/auth` | Verified | Verified | validation, request/verify and first-time setup tests |
 | 2 | Forgot password | `LoginScreen.tsx` | forgot OTP endpoints | `features/auth` | Verified | Verified | request/verify state journey and API contract tests |
 | 2 | Google auth/link | `googleSignIn.ts`; auth context | Google endpoints | `features/auth` | In progress | In progress | SDK/token exchange tests and builds pass; live OAuth console/device evidence remains |
-| 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | In progress | In progress | Web SDK/token exchange implemented; Android Meta Client Token and live-login evidence remain |
+| 2 | Facebook auth | `LoginScreen.tsx` | POST `/api/auth/facebook` | `features/auth` | In progress | In progress | Android manifest/plugin registration and Web token exchange verified; real Meta Client Token, key hashes and live login remain |
 | 2 | Admin login/guards | `AdminScreens.tsx`; navigator | POST `/api/admin/login` | `features/auth`, `features/admin` | Verified | Verified | dedicated route, session separation, guard and widget tests |
 | 2 | Onboarding | `OnboardingScreen.tsx`; preferences constants | PATCH preferences | `features/onboarding` | Verified | Verified | exact options/PATCH contract/controller/widget route tests |
 | 3 | Home feed | `HomeScreen.tsx` | GET feed; `post:stats-updated` | `features/feed` | Verified | Verified | page/refresh/append/dedup plus typed live stats update and lifecycle tests, responsive widgets and builds |
@@ -45,9 +45,9 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | 5 | Saved/settings/password | Saved/Settings/ChangePassword | saved, password | `features/user_utility`; profile saved tab | Verified | Verified | exact password contract/validation, saved route, settings/logout/Google link |
 | 5 | Support/share account | Support/ShareAccount | no production backend contract | `features/user_utility` | Verified | Verified | preserves explicit not-yet-sent/invite state without fabricating delivery |
 | 5 | Progress/streak | `ProgressScreen.tsx`; progress helper | user posts | `features/user_utility` | Verified | Verified | owner post source, likes/comments/post totals and responsive grid |
-| 6 | Inbox | `InboxScreen.tsx` | conversations; updated event | `features/messaging/inbox` | In progress | In progress | REST, ordering/dedup and responsive tests pass; live reconnect evidence pending |
-| 6 | Chat | `ChatScreen.tsx` | messages; message event | `features/messaging/chat` | In progress | In progress | send/receive dedup, room lifecycle and widget journey pass; live socket evidence pending |
-| 6 | Notification center | `NotificationsScreen.tsx`; context | notification CRUD/event | `features/notifications` | In progress | In progress | CRUD rollback, realtime dedup and deep-link mapping pass; live event evidence pending |
+| 6 | Inbox | `InboxScreen.tsx` | conversations; updated event | `features/messaging/inbox` | In progress | In progress | REST, ordering/dedup, responsive UI and reconnect REST recovery tests pass; live two-session delivery pending |
+| 6 | Chat | `ChatScreen.tsx` | messages; message event | `features/messaging/chat` | In progress | In progress | send/receive dedup, room lifecycle, reconnect rejoin/reload and widget journey pass; live delivery pending |
+| 6 | Notification center | `NotificationsScreen.tsx`; context | notification CRUD/event | `features/notifications` | In progress | In progress | CRUD rollback, realtime dedup, deep links and reconnect reload pass; live delivery pending |
 | 6 | Android push | Notification context | Expo-only push token endpoint | `core/notifications` | Blocked by backend contract | Not started | backend rejects/non-delivers FCM tokens; requires FCM delivery + Firebase config |
 | 6 | Web Push | PWA web push/context | VAPID/subscription endpoints | `core/notifications/web` | In progress | In progress | service worker, permission, register/unregister tests and Web build pass; live browser delivery pending |
 | 7 | Premium benefits/plans | `PremiumBenefitsScreen.tsx` | plans/trial | `features/premium` | Verified | Verified | exact plan/trial contracts, auth update and responsive widget tests |
@@ -65,7 +65,7 @@ Phase 0 initializes every product row as `Not started`. A row may become `Verifi
 | Capability | Android | Web | Evidence required |
 |---|---|---|---|
 | App icon/splash/assets/fonts | Verified | Verified | Daily Meal logo icons/splash/PWA metadata, Work Sans assets and build artifacts |
-| Accessibility and 48dp targets | In progress | In progress | semantic media/actions and padded Material targets tested; full manual screen-reader walkthrough pending |
+| Accessibility and 48dp targets | In progress | In progress | semantic media/actions, padded targets and Android AVD accessibility hierarchy verified; full TalkBack/screen-reader walkthrough pending |
 | Keyboard/focus/hover | Not applicable | Verified | Material focus/hover states, native Google control, 390px/768px browser walkthrough and email-to-password Tab-order widget evidence |
 | Reduced motion | Verified | Verified | `MediaQuery.disableAnimations` removes custom heart durations; widget test |
 | Offline/error/retry | Verified | Verified | Dio failures map to safe user messages at the HTTP boundary; Home offline-to-retry recovery and queue-retention tests pass |

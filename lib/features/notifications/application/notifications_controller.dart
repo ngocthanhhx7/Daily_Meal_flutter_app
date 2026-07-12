@@ -14,6 +14,7 @@ class NotificationsController extends ChangeNotifier {
   bool loading = false;
   String? errorMessage;
   StreamSubscription<Map<String, dynamic>>? _subscription;
+  StreamSubscription<void>? _reconnectSubscription;
   int get unreadCount => notifications.where((item) => !item.read).length;
 
   Future<void> initialize() async {
@@ -22,6 +23,9 @@ class NotificationsController extends ChangeNotifier {
         _upsert(AppNotification.fromJson(json));
       } catch (_) {}
     });
+    _reconnectSubscription ??= _realtime.reconnects.listen(
+      (_) => unawaited(load().catchError((_) {})),
+    );
     unawaited(_realtime.connect());
     await load();
   }
@@ -93,6 +97,7 @@ class NotificationsController extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    _reconnectSubscription?.cancel();
     super.dispose();
   }
 }

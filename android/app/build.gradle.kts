@@ -22,6 +22,26 @@ if (keystorePropertiesFile.exists()) {
     FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
 }
 
+val facebookPropertiesFile = rootProject.file("facebook.properties")
+val facebookProperties = Properties()
+if (facebookPropertiesFile.exists()) {
+    FileInputStream(facebookPropertiesFile).use(facebookProperties::load)
+}
+val facebookAppId = providers.gradleProperty("facebookAppId")
+    .orElse(providers.environmentVariable("FACEBOOK_APP_ID"))
+    .orNull
+    ?: facebookProperties.getProperty("appId")
+    ?: "3483710358450589"
+val facebookClientToken = providers.gradleProperty("facebookClientToken")
+    .orElse(providers.environmentVariable("FACEBOOK_CLIENT_TOKEN"))
+    .orNull
+    ?: facebookProperties.getProperty("clientToken")
+if (releaseRequested && facebookClientToken.isNullOrBlank()) {
+    throw GradleException(
+        "Facebook Android Client Token is missing. Create android/facebook.properties; see README.md."
+    )
+}
+
 android {
     namespace = "com.dailymeal.daily_meal_app"
     compileSdk = flutter.compileSdkVersion
@@ -44,6 +64,14 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        resValue("string", "app_name", "Daily Meal")
+        resValue("string", "facebook_app_id", facebookAppId)
+        resValue("string", "fb_login_protocol_scheme", "fb$facebookAppId")
+        resValue(
+            "string",
+            "facebook_client_token",
+            facebookClientToken ?: "FACEBOOK_CLIENT_TOKEN_NOT_CONFIGURED"
+        )
     }
 
     signingConfigs {

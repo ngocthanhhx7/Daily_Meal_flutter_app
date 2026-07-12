@@ -15,11 +15,13 @@ PostComment comment(String id, String body) => PostComment(
 
 class _Repository implements CommentsRepositoryContract {
   bool failCreate = false;
+  var loadCalls = 0;
 
   @override
-  Future<List<PostComment>> load(String postId) async => [
-    comment('1', 'First'),
-  ];
+  Future<List<PostComment>> load(String postId) async {
+    loadCalls++;
+    return [comment('1', 'First')];
+  }
 
   @override
   Future<PostComment> create(String postId, String body) async {
@@ -30,17 +32,29 @@ class _Repository implements CommentsRepositoryContract {
 
 class _Realtime implements RealtimeClient {
   final comments = StreamController<PostComment>.broadcast();
+  final recoveries = StreamController<void>.broadcast();
   String? joined, left;
+  var joinCalls = 0;
+  @override
+  Stream<void> get reconnects => recoveries.stream;
   @override
   Stream<PostComment> get createdComments => comments.stream;
   @override
   Future<void> connect() async {}
   @override
-  void joinPost(String postId) => joined = postId;
+  void joinPost(String postId) {
+    joined = postId;
+    joinCalls++;
+  }
+
   @override
   void leavePost(String postId) => left = postId;
   @override
-  void dispose() => comments.close();
+  void dispose() {
+    comments.close();
+    recoveries.close();
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -96,4 +110,20 @@ void main() {
       realtime.dispose();
     },
   );
+
+  test('rejoins the post room and reloads comments after reconnect', () async {
+    final repository = _Repository();
+    final realtime = _Realtime();
+    final controller = CommentsController('post-1', repository, realtime);
+    await controller.load();
+
+    realtime.recoveries.add(null);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(realtime.joinCalls, 2);
+    expect(repository.loadCalls, 2);
+    controller.dispose();
+    realtime.dispose();
+  });
 }

@@ -21,6 +21,12 @@ Date: 2026-07-12
   mutation rollback and unread counts.
 - Option-map tests assert the reconnect limits are actually passed to the
   Socket.IO package rather than relying on its infinite-attempt default.
+- Socket adapter tests prove initial connect is not mistaken for recovery,
+  repeated connect emits one recovery signal, and `auth:error` disposes the
+  active socket as a terminal failure.
+- Feed, Inbox and Notifications reload REST after recovery; Comments and Chat
+  rejoin their rooms before reloading. Controller tests assert each behavior
+  and disposal cancels feature subscriptions.
 - Widget tests cover compact Inbox and Chat send journeys.
 - Analyzer and both platform builds are run at the checkpoint.
 
@@ -30,7 +36,7 @@ Live two-session production Socket.IO delivery/reconnect and physical/browser
 push permission/subscription evidence remain pending; these capabilities are
 therefore kept `In progress` in the parity matrix.
 
-Fresh gates after the reconnect policy change: 168 tests passed, analyzer
+Fresh gates after reconnect recovery and terminal-auth handling: 175 tests passed, analyzer
 reported no issues, and production-defined Web release plus Android debug APK
 builds both succeeded. The optional Wasm dry-run warning remains confined to
 the upstream `socket_io_common` JS-interop adapter.

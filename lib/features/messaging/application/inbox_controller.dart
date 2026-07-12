@@ -14,9 +14,13 @@ class InboxController extends ChangeNotifier {
   bool loading = false;
   String? errorMessage;
   StreamSubscription<Conversation>? _subscription;
+  StreamSubscription<void>? _reconnectSubscription;
 
   Future<void> initialize() async {
     _subscription ??= _realtime.conversationUpdates.listen(_upsert);
+    _reconnectSubscription ??= _realtime.reconnects.listen(
+      (_) => unawaited(load().catchError((_) {})),
+    );
     unawaited(_realtime.connect());
     await load();
   }
@@ -50,6 +54,7 @@ class InboxController extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    _reconnectSubscription?.cancel();
     super.dispose();
   }
 }

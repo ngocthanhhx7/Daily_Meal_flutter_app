@@ -45,6 +45,7 @@ class CommentsController extends ChangeNotifier {
   final CommentsRepositoryContract _repository;
   final RealtimeClient? _realtime;
   StreamSubscription<PostComment>? _subscription;
+  StreamSubscription<void>? _reconnectSubscription;
   CommentsState _state = const CommentsState.idle();
 
   CommentsState get state => _state;
@@ -58,6 +59,10 @@ class CommentsController extends ChangeNotifier {
             (comment) => comment.postId == null || comment.postId == postId,
           )
           .listen(receive);
+      _reconnectSubscription = _realtime.reconnects.listen((_) {
+        _realtime.joinPost(postId);
+        unawaited(load().catchError((_) {}));
+      });
     }
     _setState(
       _state.copyWith(status: CommentsStatus.loading, clearError: true),
@@ -119,6 +124,7 @@ class CommentsController extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    _reconnectSubscription?.cancel();
     _realtime?.leavePost(postId);
     super.dispose();
   }
