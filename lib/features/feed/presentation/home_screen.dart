@@ -105,6 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     };
 
     return AdaptiveScaffold(
+      dailyMealStyle: true,
       destinations: const [
         AdaptiveDestination(icon: Icons.home_rounded, label: 'Trang chủ'),
         AdaptiveDestination(icon: Icons.search_rounded, label: 'Tìm kiếm'),

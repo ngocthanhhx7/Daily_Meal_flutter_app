@@ -55,6 +55,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _body(app_search.SearchController controller) => AdaptiveScaffold(
+    dailyMealStyle: true,
     destinations: const [
       AdaptiveDestination(icon: Icons.home_rounded, label: 'Trang chủ'),
       AdaptiveDestination(icon: Icons.search_rounded, label: 'Tìm kiếm'),

@@ -49,6 +49,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
   }
 
   Widget _screen(InboxController controller) => AdaptiveScaffold(
+    dailyMealStyle: true,
     destinations: const [
       AdaptiveDestination(icon: Icons.home_rounded, label: 'Trang chủ'),
       AdaptiveDestination(icon: Icons.search_rounded, label: 'Tìm kiếm'),
