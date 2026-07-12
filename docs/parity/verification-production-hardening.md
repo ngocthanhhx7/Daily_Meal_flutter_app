@@ -33,3 +33,11 @@
 - Branded Web release and Android debug APK builds: passed.
 - Optional Wasm dry run retains the upstream `socket_io_common` warning; the
   supported JavaScript Web release succeeds.
+
+## Android release safety
+
+- Production manifest declares Internet access and rejects cleartext traffic.
+- Application ID/namespace is `com.dailymeal.daily_meal_app`.
+- Release Gradle tasks refuse to fall back to the debug signing key and require
+  the untracked `android/key.properties` upload-key configuration documented in
+  the README.

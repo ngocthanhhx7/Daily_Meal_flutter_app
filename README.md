@@ -41,6 +41,19 @@ client.
 
 ## Release builds
 
+Android release builds intentionally refuse to use the debug key. Create a
+private keystore outside version control, then add `android/key.properties`:
+
+```properties
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=C:/secure/daily-meal-upload.jks
+```
+
+`android/key.properties` and `*.jks` are ignored by Git. Back up the upload key
+securely; losing it can prevent future Play Store updates.
+
 ```powershell
 flutter build web --release @defines
 flutter build apk --release @defines
