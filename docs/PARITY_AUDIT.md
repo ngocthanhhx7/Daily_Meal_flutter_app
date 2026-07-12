@@ -66,12 +66,13 @@ Routing notes:
 - Chat production shell is verified at `C:\tmp\web-chat-production-shell.png`. A hard refresh now restores the participant name from the conversations contract without route `extra`, verified at `C:\tmp\web-chat-refresh-restored.png`.
 - Creating a conversation from Public Profile produced a populated Inbox row without sending a message, verified at `C:\tmp\web-inbox-populated-mobile.png`; the row restores the Chat deep link and participant shell.
 - Latest APK was installed on `emulator-5554`; cold-route Inbox populated state is verified at `C:\tmp\android-inbox-populated-latest.png` and direct `dailymeal:///messages/<id>` participant restoration at `C:\tmp\android-chat-deeplink-restored.png`, with no Flutter assertion, overflow, or fatal log entry.
+- Android now registers verified HTTPS App Links for shared `/users/*` and `/posts/*` URLs. A package-targeted `https://dailymeal.site/users/<id>` intent opened the correct profile on AVD, verified at `C:\tmp\android-https-app-link-profile.png`. Public auto-verification still requires release SHA-256 fingerprints in the domain's `.well-known/assetlinks.json`.
 - Analytics bootstrap contract is production-verified: optional `screen` is omitted instead of serialized as `null`, changing `/api/ingest/events` from HTTP 400 to HTTP 202 while keeping screen-scoped events unchanged.
 - Authenticated mobile Lighthouse snapshot scored Accessibility 93 and Best Practices 100 (`C:\tmp\dailymeal-lighthouse\report.html`). The remaining accessibility failure is Flutter engine's generated zoom-lock viewport; overriding engine viewport behavior remains an explicit UX/accessibility decision rather than an unreviewed patch.
 - Web QA follow-up: the Google Identity Services platform button is visually clipped inside the source-style circular social button. Localhost also reports the expected unapproved-origin GSI error and a production analytics-ingest 400; recheck both on the deployed Web origin.
 - Android debug build passed with production API defines.
 - Latest Web release build passed after the Settings regression fix. The standard JavaScript build is healthy; the Socket.IO dependency still emits the known Wasm dry-run compatibility warning.
-- Full Flutter suite verified at 216 passing tests, including exact 28-route coverage, Web URL reflection, refresh-safe Chat/Follows routes, production analytics envelope validation, Premium Create media contracts, Settings regressions, social SDK lifecycle invariants, and Inbox states.
+- Full Flutter suite verified at 217 passing tests, including exact 28-route coverage, Android App Link manifest contract, Web URL reflection, refresh-safe Chat/Follows routes, production analytics envelope validation, Premium Create media contracts, Settings regressions, social SDK lifecycle invariants, and Inbox states.
 - No-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
@@ -81,6 +82,11 @@ Routing notes:
 3. Exercise Premium Create video/multi-image/sticker states on Android and Web.
 4. Close remaining user accessibility, keyboard and media edge states.
 5. Resume the deferred Admin visual/parity audit only after user evidence is complete.
+
+External release prerequisites: provide the ignored Android upload keystore and
+Meta Facebook client token, then publish Digital Asset Links using the Play App
+Signing SHA-256 fingerprint. Release Gradle tasks intentionally fail fast while
+these secrets are absent.
 
 Notification post taps now preserve `postId` in the Home URL and search a
 bounded number of feed pages before focusing the referenced post. Missing or
