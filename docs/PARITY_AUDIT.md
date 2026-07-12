@@ -55,6 +55,7 @@ Routing notes:
 - Settings crash regression fixed and cold-start verified on Android: `C:\tmp\matrix-settings-fixed.png`; device log contained no Flutter assertion, overflow, or fatal exception.
 - Web login responsive evidence: `C:\tmp\web-login-mobile-retry.png`, `C:\tmp\web-login-tablet.png`, and `C:\tmp\web-login-desktop.png`. The 375 px, 768 px, and 1280 px viewports render without overflow.
 - Authenticated Web mobile matrix covers Home, Search, Profile, Edit Profile, Saved, Inbox, Notifications, Premium, Settings, Post Summary, Progress, Support, Share Account, and Create under `C:\tmp\web-matrix-*-mobile.png`.
+- Authenticated tablet evidence covers the complex Home, Search, Edit Profile, Settings, Post Summary, and Create layouts under `C:\tmp\web-matrix-*-tablet.png`; Search correctly switches to navigation rail while mobile-first screens remain centered and bounded.
 - Repeated Google SDK initialization no longer leaks `Bad state: init() has already been called` in Settings; verified at `C:\tmp\web-settings-sdk-fixed-mobile-final.png`. SDK initialization is coalesced application-wide and remains retryable after failure.
 - Inbox empty state now matches the React Native `EmptyState` composition and copy; verified at `C:\tmp\web-inbox-empty-fixed-mobile-final.png`.
 - Web QA follow-up: the Google Identity Services platform button is visually clipped inside the source-style circular social button. Localhost also reports the expected unapproved-origin GSI error and a production analytics-ingest 400; recheck both on the deployed Web origin.
