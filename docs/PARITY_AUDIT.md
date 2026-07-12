@@ -88,4 +88,10 @@ renders birthday visibility, uses source Follow/Message ordering and blocked
 states, and provides a URL-addressable people-search menu action. Edit Profile
 now uses the source avatar labels, compact header geometry, rectangular
 birthday/preference controls and 50px primary/ghost actions.
+
+Android bootstrap no longer depends on external `--dart-define` flags for the
+known production deployment. `AppConfig.fromEnvironment()` ships the approved
+production API/social public identifiers while preserving build-time
+overrides and strict `fromMap` validation. A no-define debug APK cold-started
+to Login on AVD with no splash hang or Flutter configuration exception.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

@@ -1,6 +1,11 @@
 import 'package:daily_meal_flutter_app/app/config/config_exception.dart';
 
 class AppConfig {
+  static const productionApiBaseUrl = 'https://api.dailymeal.site';
+  static const productionFacebookAppId = '3483710358450589';
+  static const productionGoogleWebClientId =
+      '20654020356-nsqam5ladrg7j5v6agefq8pucnrcqtn8.apps.googleusercontent.com';
+
   const AppConfig({
     required this.apiBaseUrl,
     required this.facebookAppId,
@@ -9,9 +14,18 @@ class AppConfig {
 
   factory AppConfig.fromEnvironment() {
     return AppConfig.fromMap(const {
-      'API_BASE_URL': String.fromEnvironment('API_BASE_URL'),
-      'FACEBOOK_APP_ID': String.fromEnvironment('FACEBOOK_APP_ID'),
-      'GOOGLE_WEB_CLIENT_ID': String.fromEnvironment('GOOGLE_WEB_CLIENT_ID'),
+      'API_BASE_URL': String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: productionApiBaseUrl,
+      ),
+      'FACEBOOK_APP_ID': String.fromEnvironment(
+        'FACEBOOK_APP_ID',
+        defaultValue: productionFacebookAppId,
+      ),
+      'GOOGLE_WEB_CLIENT_ID': String.fromEnvironment(
+        'GOOGLE_WEB_CLIENT_ID',
+        defaultValue: productionGoogleWebClientId,
+      ),
     });
   }
 

@@ -3,6 +3,17 @@ import 'package:daily_meal_flutter_app/app/config/config_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('ships safe production defaults for builds without dart defines', () {
+    final config = AppConfig.fromEnvironment();
+
+    expect(config.apiBaseUrl.toString(), 'https://api.dailymeal.site');
+    expect(config.facebookAppId, '3483710358450589');
+    expect(
+      config.googleWebClientId,
+      '20654020356-nsqam5ladrg7j5v6agefq8pucnrcqtn8.apps.googleusercontent.com',
+    );
+  });
+
   const validValues = {
     'API_BASE_URL': 'https://api.dailymeal.site/',
     'FACEBOOK_APP_ID': '3483710358450589',
