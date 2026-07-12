@@ -58,10 +58,11 @@ Routing notes:
 - Authenticated tablet evidence covers the complex Home, Search, Edit Profile, Settings, Post Summary, and Create layouts under `C:\tmp\web-matrix-*-tablet.png`; Search correctly switches to navigation rail while mobile-first screens remain centered and bounded.
 - Repeated Google SDK initialization no longer leaks `Bad state: init() has already been called` in Settings; verified at `C:\tmp\web-settings-sdk-fixed-mobile-final.png`. SDK initialization is coalesced application-wide and remains retryable after failure.
 - Inbox empty state now matches the React Native `EmptyState` composition and copy; verified at `C:\tmp\web-inbox-empty-fixed-mobile-final.png`.
+- Imperative Web navigation now reflects the pushed route in the browser URL. Search → Public Profile was verified at `C:\tmp\web-public-profile-url-reflection.png`, changing `#/search` to the matching `#/users/<id>` deep link.
 - Web QA follow-up: the Google Identity Services platform button is visually clipped inside the source-style circular social button. Localhost also reports the expected unapproved-origin GSI error and a production analytics-ingest 400; recheck both on the deployed Web origin.
 - Android debug build passed with production API defines.
 - Latest Web release build passed after the Settings regression fix. The standard JavaScript build is healthy; the Socket.IO dependency still emits the known Wasm dry-run compatibility warning.
-- Full Flutter suite verified at 210 passing tests, including exact 28-route coverage, Settings regressions, social SDK lifecycle invariants, and Inbox empty-state parity.
+- Full Flutter suite verified at 211 passing tests, including exact 28-route coverage, Web URL reflection, Settings regressions, social SDK lifecycle invariants, and Inbox empty-state parity.
 - No-define debug APK built, installed and resumed `MainActivity` on `emulator-5554` without Flutter/configuration crashes.
 
 ## Next execution order
