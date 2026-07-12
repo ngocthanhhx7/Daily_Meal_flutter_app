@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:daily_meal_flutter_app/core/realtime/realtime_client.dart';
 import 'package:daily_meal_flutter_app/features/comments/data/comments_repository.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
 import 'package:flutter/foundation.dart';
@@ -35,15 +38,26 @@ class CommentsState {
 }
 
 class CommentsController extends ChangeNotifier {
-  CommentsController(this.postId, this._repository);
+  CommentsController(this.postId, this._repository, [this._realtime]);
 
   final String postId;
   final CommentsRepositoryContract _repository;
+  final RealtimeClient? _realtime;
+  StreamSubscription<PostComment>? _subscription;
   CommentsState _state = const CommentsState.idle();
 
   CommentsState get state => _state;
 
   Future<void> load() async {
+    if (_realtime != null && _subscription == null) {
+      await _realtime.connect();
+      _realtime.joinPost(postId);
+      _subscription = _realtime.createdComments
+          .where(
+            (comment) => comment.postId == null || comment.postId == postId,
+          )
+          .listen(receive);
+    }
     _setState(
       _state.copyWith(status: CommentsStatus.loading, clearError: true),
     );
@@ -96,5 +110,12 @@ class CommentsController extends ChangeNotifier {
   void _setState(CommentsState next) {
     _state = next;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _realtime?.leavePost(postId);
+    super.dispose();
   }
 }

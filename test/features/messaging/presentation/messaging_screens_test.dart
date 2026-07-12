@@ -46,6 +46,8 @@ class _Repository implements MessagingRepositoryContract {
 }
 
 class _Realtime implements RealtimeClient {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   final conversationStream = StreamController<Conversation>.broadcast();
   final messageStream = StreamController<ChatMessage>.broadcast();
   @override

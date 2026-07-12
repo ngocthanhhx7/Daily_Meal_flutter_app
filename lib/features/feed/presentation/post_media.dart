@@ -2,6 +2,9 @@ import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+
+bool shouldPlayVisibleVideo(double visibleFraction) => visibleFraction >= 0.65;
 
 class PostMedia extends StatefulWidget {
   const PostMedia({
@@ -163,58 +166,98 @@ class FeedVideoPlayer extends StatefulWidget {
   State<FeedVideoPlayer> createState() => _FeedVideoPlayerState();
 }
 
-class _FeedVideoPlayerState extends State<FeedVideoPlayer> {
+class _FeedVideoPlayerState extends State<FeedVideoPlayer>
+    with WidgetsBindingObserver {
   late final VideoPlayerController _controller;
+  bool _visible = false;
+  bool _muted = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = VideoPlayerController.networkUrl(widget.uri)
       ..initialize().then((_) {
-        if (mounted) setState(() {});
+        if (!mounted) return;
+        _controller
+          ..setLooping(true)
+          ..setVolume(0);
+        if (_visible) _controller.play();
+        setState(() {});
       });
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      _controller.pause();
+    } else if (_visible && _controller.value.isInitialized) {
+      _controller.play();
+    }
+  }
+
+  void _onVisibilityChanged(VisibilityInfo info) {
+    final visible = shouldPlayVisibleVideo(info.visibleFraction);
+    if (_visible == visible) return;
+    _visible = visible;
+    if (!_controller.value.isInitialized) return;
+    visible ? _controller.play() : _controller.pause();
+  }
+
+  void _toggleMute() {
+    if (!_controller.value.isInitialized) return;
+    setState(() => _muted = !_muted);
+    _controller.setVolume(_muted ? 0 : 1);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: _controller.value.isInitialized
-          ? _controller.value.aspectRatio
-          : 4 / 3,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (_controller.value.isInitialized)
-            VideoPlayer(_controller)
-          else
-            const ColoredBox(
-              color: Colors.black12,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          Center(
-            child: IconButton.filledTonal(
-              tooltip: _controller.value.isPlaying ? 'Tạm dừng' : 'Phát video',
-              onPressed: _controller.value.isInitialized
-                  ? () => setState(() {
-                      _controller.value.isPlaying
-                          ? _controller.pause()
-                          : _controller.play();
-                    })
-                  : null,
-              icon: Icon(
-                _controller.value.isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-              ),
+    return VisibilityDetector(
+      key: Key('video-visibility-${widget.uri}'),
+      onVisibilityChanged: _onVisibilityChanged,
+      child: Semantics(
+        button: true,
+        label: _muted ? 'Video đang tắt tiếng' : 'Video đang bật tiếng',
+        child: GestureDetector(
+          onTap: _toggleMute,
+          child: AspectRatio(
+            aspectRatio: _controller.value.isInitialized
+                ? _controller.value.aspectRatio
+                : 4 / 3,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (_controller.value.isInitialized)
+                  VideoPlayer(_controller)
+                else
+                  const ColoredBox(
+                    color: Colors.black12,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                Positioned(
+                  right: 10,
+                  bottom: 10,
+                  child: Chip(
+                    avatar: Icon(
+                      _muted
+                          ? Icons.volume_off_rounded
+                          : Icons.volume_up_rounded,
+                      size: 18,
+                    ),
+                    label: const Text('Video'),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

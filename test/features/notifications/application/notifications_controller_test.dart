@@ -40,6 +40,8 @@ class _Repository implements NotificationsRepositoryContract {
 }
 
 class _Realtime implements RealtimeClient {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   final stream = StreamController<Map<String, dynamic>>.broadcast();
   @override
   Stream<Map<String, dynamic>> get createdNotifications => stream.stream;

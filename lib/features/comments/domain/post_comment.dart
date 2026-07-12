@@ -29,6 +29,7 @@ class PostComment {
     required this.author,
     required this.createdAt,
     this.updatedAt,
+    this.postId,
   });
 
   factory PostComment.fromJson(Map<String, dynamic> json) {
@@ -47,6 +48,7 @@ class PostComment {
       ),
       createdAt: createdAt,
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
+      postId: (json['post'] ?? json['postId'])?.toString(),
     );
   }
 
@@ -55,4 +57,5 @@ class PostComment {
   final CommentAuthor author;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final String? postId;
 }
