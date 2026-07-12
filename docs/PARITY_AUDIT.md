@@ -135,4 +135,10 @@ header changes from `Thêm bài viết` to `Chỉnh bài viết`, selected media
 in the capture preview until `Tiếp tục`, Free accounts expose camera-only input,
 and Premium retains album/video actions. Existing multi-media, AI nutrition,
 recipe, sticker and publish contracts remain intact.
+
+The Create edit step now also uses the production AI hint panel and full-width
+calorie action, source public/friends visibility segments, bordered content
+surface and opt-in recipe switch. The non-source private dropdown and always-
+expanded recipe editor have been removed from the user-facing flow while the
+backend draft contract remains unchanged.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

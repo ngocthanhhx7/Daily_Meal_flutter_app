@@ -128,6 +128,8 @@ void main() {
     expect(find.byKey(const Key('selected-media-0')), findsOneWidget);
     await tester.tap(find.text('Tiếp tục'));
     await tester.pumpAndSettle();
+    expect(find.text('Chỉnh bài viết'), findsOneWidget);
+    expect(find.text('Riêng tư'), findsNothing);
 
     await tester.scrollUntilVisible(
       find.byKey(CreatePostScreen.captionKey),

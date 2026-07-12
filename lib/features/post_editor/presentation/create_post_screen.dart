@@ -41,6 +41,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _steps = TextEditingController();
   String? _localError;
   bool _editing = false;
+  bool _includeRecipe = false;
 
   PostEditorController get _controller =>
       widget.controller ?? ref.read(postEditorControllerProvider);
@@ -225,7 +226,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       onPlacementChanged: controller.updateStickerPlacement,
                     ),
                     const SizedBox(height: 16),
-                    Card(
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        border: Border.all(color: AppColors.line),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(18),
                         child: Column(
@@ -252,31 +258,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            DropdownButtonFormField<PostVisibility>(
-                              initialValue: state.visibility,
-                              decoration: const InputDecoration(
-                                labelText: 'Quyền riêng tư',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: PostVisibility.public,
-                                  child: Text('Công khai'),
-                                ),
-                                DropdownMenuItem(
-                                  value: PostVisibility.friends,
-                                  child: Text('Bạn bè'),
-                                ),
-                                DropdownMenuItem(
-                                  value: PostVisibility.private,
-                                  child: Text('Riêng tư'),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.updateVisibility(value);
-                                }
-                              },
+                            _VisibilitySelector(
+                              value: state.visibility,
+                              onChanged: controller.updateVisibility,
                             ),
                             if (state.media.length > 1) ...[
                               const SizedBox(height: 12),
@@ -312,6 +296,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     ),
                     const SizedBox(height: 16),
                     _RecipeCard(
+                      enabled: _includeRecipe,
+                      onEnabledChanged: (value) =>
+                          setState(() => _includeRecipe = value),
                       title: _recipeTitle,
                       ingredients: _ingredients,
                       steps: _steps,
@@ -649,80 +636,222 @@ class _AnalysisCard extends StatelessWidget {
   final VoidCallback onAnalyze;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Dinh dưỡng AI', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 10),
-          TextField(
-            controller: hints,
-            maxLength: 2000,
-            decoration: const InputDecoration(
-              labelText: 'Gợi ý nguyên liệu (không bắt buộc)',
-              border: OutlineInputBorder(),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.green.withValues(alpha: .12),
+          border: Border.all(color: AppColors.green.withValues(alpha: .45)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.auto_awesome_outlined, color: AppColors.greenDark),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Thông tin thêm cho AI',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'Thành phần và định lượng giúp AI tính calo sát hơn.',
+                        style: TextStyle(fontSize: 12, color: AppColors.muted),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          FilledButton.tonalIcon(
-            key: CreatePostScreen.analyzeKey,
-            onPressed: state.isBusy ? null : onAnalyze,
-            icon: const Icon(Icons.auto_awesome_outlined),
-            label: const Text('Phân tích AI'),
-          ),
-          for (final detail in state.nutritionDetails)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                'Ảnh ${detail.imageIndex + 1}: '
-                '${detail.total.calories.round()} kcal • '
-                'Protein ${detail.total.protein.round()}g',
+            const SizedBox(height: 12),
+            TextField(
+              controller: hints,
+              maxLength: 2000,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                labelText: 'Thành phần và định lượng',
+                hintText:
+                    'Ví dụ: Cơm trắng 120g\nThịt heo 100g\nNước cam 200ml',
               ),
             ),
-        ],
+          ],
+        ),
       ),
-    ),
+      const SizedBox(height: 10),
+      FilledButton.icon(
+        key: CreatePostScreen.analyzeKey,
+        onPressed: state.isBusy ? null : onAnalyze,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.greenDark,
+          foregroundColor: AppColors.white,
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: const CircleAvatar(
+          radius: 14,
+          backgroundColor: AppColors.surface,
+          child: Icon(Icons.auto_awesome, size: 16, color: AppColors.greenDark),
+        ),
+        label: const Text('Nhấn vào đây để đo calo từng món ăn'),
+      ),
+      for (final detail in state.nutritionDetails)
+        Container(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.line),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            'Ảnh ${detail.imageIndex + 1}: '
+            '${detail.total.calories.round()} kcal • '
+            'Protein ${detail.total.protein.round()}g',
+          ),
+        ),
+    ],
   );
 }
 
 class _RecipeCard extends StatelessWidget {
   const _RecipeCard({
+    required this.enabled,
+    required this.onEnabledChanged,
     required this.title,
     required this.ingredients,
     required this.steps,
   });
+  final bool enabled;
+  final ValueChanged<bool> onEnabledChanged;
   final TextEditingController title;
   final TextEditingController ingredients;
   final TextEditingController steps;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: ExpansionTile(
-      title: const Text('Công thức cho ảnh 1'),
-      childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      border: Border.all(color: AppColors.line),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
       children: [
-        TextField(
-          controller: title,
-          maxLength: 120,
-          decoration: const InputDecoration(labelText: 'Tên món'),
+        Row(
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Công thức của bạn',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    'Thêm nguyên liệu và cách làm khi bạn muốn chia sẻ công thức.',
+                    style: TextStyle(fontSize: 12, color: AppColors.muted),
+                  ),
+                ],
+              ),
+            ),
+            Switch(value: enabled, onChanged: onEnabledChanged),
+          ],
         ),
-        TextField(
-          controller: ingredients,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            labelText: 'Nguyên liệu — mỗi dòng một mục',
+        if (enabled) ...[
+          const SizedBox(height: 12),
+          TextField(
+            controller: title,
+            maxLength: 120,
+            decoration: const InputDecoration(labelText: 'Tên món'),
           ),
-        ),
-        TextField(
-          controller: steps,
-          maxLines: 5,
-          decoration: const InputDecoration(
-            labelText: 'Các bước — mỗi dòng một bước',
+          TextField(
+            controller: ingredients,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Nguyên liệu — mỗi dòng một mục',
+            ),
           ),
-        ),
+          TextField(
+            controller: steps,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Các bước — mỗi dòng một bước',
+            ),
+          ),
+        ],
       ],
     ),
+  );
+}
+
+class _VisibilitySelector extends StatelessWidget {
+  const _VisibilitySelector({required this.value, required this.onChanged});
+  final PostVisibility value;
+  final ValueChanged<PostVisibility> onChanged;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('Quyền xem', style: TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          for (final item in const [
+            (PostVisibility.public, 'Công khai', Icons.public),
+            (PostVisibility.friends, 'Bạn bè', Icons.people_outline),
+          ]) ...[
+            Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  height: 42,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: value == item.$1
+                        ? AppColors.black
+                        : AppColors.canvasStrong,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        item.$3,
+                        size: 16,
+                        color: value == item.$1
+                            ? AppColors.white
+                            : AppColors.ink,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        item.$2,
+                        style: TextStyle(
+                          color: value == item.$1
+                              ? AppColors.white
+                              : AppColors.ink,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (item.$1 == PostVisibility.public) const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    ],
   );
 }
 
