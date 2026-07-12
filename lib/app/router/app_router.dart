@@ -15,6 +15,7 @@ import 'package:daily_meal_flutter_app/features/messaging/presentation/inbox_scr
 import 'package:daily_meal_flutter_app/features/messaging/presentation/chat_screen.dart';
 import 'package:daily_meal_flutter_app/features/messaging/domain/messaging_models.dart';
 import 'package:daily_meal_flutter_app/features/notifications/presentation/notifications_screen.dart';
+import 'package:daily_meal_flutter_app/features/comments/presentation/comments_screen.dart';
 import 'package:daily_meal_flutter_app/features/premium/presentation/premium_screen.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
 import 'package:daily_meal_flutter_app/features/user_utility/presentation/user_utility_screens.dart';
@@ -53,6 +54,10 @@ GoRouter createAppRouter(ValueNotifier<SessionRouteState> sessionState) {
                   : null,
             ),
             AppRoute.notifications => const NotificationsScreen(),
+            AppRoute.comments => CommentsScreen(
+              postId: state.pathParameters['id']!,
+              post: state.extra is FeedPost ? state.extra! as FeedPost : null,
+            ),
             AppRoute.premium => const PremiumScreen(),
             AppRoute.settings => const SettingsScreen(),
             AppRoute.changePassword => const ChangePasswordScreen(),

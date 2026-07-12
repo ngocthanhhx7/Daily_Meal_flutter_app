@@ -12,6 +12,7 @@ enum AppRoute {
   inbox('/messages'),
   chat('/messages/:id'),
   notifications('/notifications'),
+  comments('/posts/:id/comments'),
   premium('/premium'),
   settings('/settings'),
   changePassword('/settings/password'),

@@ -2,6 +2,8 @@ import 'package:daily_meal_flutter_app/features/comments/application/comments_co
 import 'package:daily_meal_flutter_app/features/comments/data/comments_repository.dart';
 import 'package:daily_meal_flutter_app/features/comments/domain/post_comment.dart';
 import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
+import 'package:daily_meal_flutter_app/features/comments/presentation/comments_screen.dart';
+import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,5 +53,29 @@ void main() {
           ?.text,
       isEmpty,
     );
+  });
+
+  testWidgets('renders the source full-screen comments composition', (
+    tester,
+  ) async {
+    final controller = CommentsController('post-1', _Repository());
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: CommentsScreen(
+            postId: 'post-1',
+            controller: controller,
+            mediaResolver: MediaUrlResolver(
+              Uri.parse('https://api.dailymeal.site'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bình luận'), findsOneWidget);
+    expect(find.byType(CommentsSheet), findsOneWidget);
+    expect(find.text('Món này đẹp quá'), findsOneWidget);
   });
 }

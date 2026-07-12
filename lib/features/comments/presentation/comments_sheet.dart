@@ -7,14 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CommentsSheet extends ConsumerStatefulWidget {
-  const CommentsSheet({this.postId, this.controller, super.key})
-    : assert(postId != null || controller != null);
+  const CommentsSheet({
+    this.postId,
+    this.controller,
+    this.embedded = false,
+    super.key,
+  }) : assert(postId != null || controller != null);
 
   static const inputKey = Key('comment-input');
   static const sendKey = Key('comment-send');
 
   final String? postId;
   final CommentsController? controller;
+  final bool embedded;
 
   @override
   ConsumerState<CommentsSheet> createState() => _CommentsSheetState();
@@ -87,25 +92,26 @@ class _CommentsSheetState extends ConsumerState<CommentsSheet> {
       child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
-              child: Row(
-                children: [
-                  Text(
-                    'Bình luận',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const Spacer(),
-                  if (Navigator.canPop(context))
-                    IconButton(
-                      tooltip: 'Đóng',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded),
+            if (!widget.embedded)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+                child: Row(
+                  children: [
+                    Text(
+                      'Bình luận',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                ],
+                    const Spacer(),
+                    if (Navigator.canPop(context))
+                      IconButton(
+                        tooltip: 'Đóng',
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const Divider(height: 1),
+            if (!widget.embedded) const Divider(height: 1),
             Expanded(child: _commentsBody(state, controller)),
             if (state.errorMessage case final error?)
               Padding(

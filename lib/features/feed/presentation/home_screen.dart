@@ -7,7 +7,6 @@ import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.
 import 'package:daily_meal_flutter_app/features/feed/domain/feed_post.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/post_card.dart';
 import 'package:daily_meal_flutter_app/features/feed/presentation/recipe_nutrition_sheet.dart';
-import 'package:daily_meal_flutter_app/features/comments/presentation/comments_sheet.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -191,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onSave: () => controller
                                     .toggleSave(post.id)
                                     .catchError((_) {}),
-                                onComment: () => _comments(post.id),
+                                onComment: () => _comments(post),
                                 onRecipe: () => _recipe(post, resolver),
                               ),
                             ),
@@ -212,9 +211,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     onCategory: _showCategory,
                     onComment: () => _comments(
-                      state
-                          .posts[_currentIndex.clamp(0, state.posts.length - 1)]
-                          .id,
+                      state.posts[_currentIndex.clamp(
+                        0,
+                        state.posts.length - 1,
+                      )],
                     ),
                     onLike: () => controller
                         .toggleLike(
@@ -246,14 +246,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _comments(String postId) => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    builder: (context) => FractionallySizedBox(
-      heightFactor: .9,
-      child: CommentsSheet(postId: postId),
-    ),
+  void _comments(FeedPost post) => context.pushNamed(
+    AppRoute.comments.name,
+    pathParameters: {'id': post.id},
+    extra: post,
   );
 
   void _recipe(FeedPost post, MediaUrlResolver resolver) =>
