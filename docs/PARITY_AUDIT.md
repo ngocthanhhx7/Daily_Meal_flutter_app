@@ -76,4 +76,10 @@ Like -> Recipe and Comment -> Comments.
 Admin AI reports now decode and render the full production response contract:
 typed section objectives, metric assessment/meaning, insights, conclusions,
 section actions, anomalies, risks, priority actions, range and metric snapshot.
+
+Admin Posts now forwards independent search, moderation, range/custom-date,
+media-kind and sorting state to both list and insight endpoints. The responsive
+workspace renders source-style KPI cards, media previews, author/status/stats
+metadata and explicit visible/review/hidden moderation actions without compact
+header overflow.
 6. Run screen-by-screen Android/Web visual regression and accessibility/performance gates.

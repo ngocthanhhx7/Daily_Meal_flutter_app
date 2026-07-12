@@ -11,8 +11,14 @@ class AdminManagementController extends ChangeNotifier {
   final Set<String> _mutatingIds = <String>{};
   bool get mutating => _mutatingIds.isNotEmpty;
   bool isMutating(String id) => _mutatingIds.contains(id);
-  String query = '', reportStatus = 'open';
+  String userQuery = '', postQuery = '', paymentQuery = '';
+  String reportStatus = 'open';
   String? moderationStatus, errorMessage;
+  AdminRange postRange = AdminRange.sevenDays;
+  String postMediaKind = 'all',
+      postSortBy = 'createdAt',
+      postSortOrder = 'desc';
+  String? postStart, postEnd;
   AdminPage<AdminUser>? userPage;
   AdminPage<AdminPost>? postPage;
   AdminPage<AdminReport>? reportPage;
@@ -20,8 +26,8 @@ class AdminManagementController extends ChangeNotifier {
   Map<String, dynamic>? userInsights, selectedUserDetail, postInsights;
 
   Future<void> loadUsers({int page = 1, String? search}) => _run(() async {
-    if (search != null) query = search.trim();
-    userPage = await _repository.users(query: query, page: page);
+    if (search != null) userQuery = search.trim();
+    userPage = await _repository.users(query: userQuery, page: page);
     userInsights ??= await _repository.userInsights(AdminRange.thirtyDays);
   });
   Future<void> loadPosts({
@@ -29,20 +35,51 @@ class AdminManagementController extends ChangeNotifier {
     String? search,
     String? status,
     bool clearStatus = false,
+    AdminRange? range,
+    String? mediaKind,
+    String? sortBy,
+    String? sortOrder,
+    String? start,
+    String? end,
+    bool clearDates = false,
   }) => _run(() async {
-    if (search != null) query = search.trim();
+    if (search != null) postQuery = search.trim();
     if (clearStatus) {
       moderationStatus = null;
     } else if (status != null) {
       moderationStatus = status;
     }
+    if (range != null) postRange = range;
+    if (mediaKind != null) postMediaKind = mediaKind;
+    if (sortBy != null) postSortBy = sortBy;
+    if (sortOrder != null) postSortOrder = sortOrder;
+    if (clearDates) {
+      postStart = null;
+      postEnd = null;
+    } else {
+      if (start != null) postStart = start;
+      if (end != null) postEnd = end;
+    }
     postPage = await _repository.posts(
-      query: query,
+      query: postQuery,
       page: page,
       moderationStatus: moderationStatus,
+      range: postRange,
+      mediaKind: postMediaKind,
+      sortBy: postSortBy,
+      sortOrder: postSortOrder,
+      start: postStart,
+      end: postEnd,
     );
     postInsights = await _repository.postInsights(
+      query: postQuery,
       moderationStatus: moderationStatus,
+      range: postRange,
+      mediaKind: postMediaKind,
+      sortBy: postSortBy,
+      sortOrder: postSortOrder,
+      start: postStart,
+      end: postEnd,
     );
   });
   Future<void> loadReports({int page = 1, String? status}) => _run(() async {
@@ -50,8 +87,8 @@ class AdminManagementController extends ChangeNotifier {
     reportPage = await _repository.reports(status: reportStatus, page: page);
   });
   Future<void> loadPayments({int page = 1, String? search}) => _run(() async {
-    if (search != null) query = search.trim();
-    paymentPage = await _repository.payments(query: query, page: page);
+    if (search != null) paymentQuery = search.trim();
+    paymentPage = await _repository.payments(query: paymentQuery, page: page);
   });
 
   Future<void> setPremium(AdminUser user, bool value, {String note = ''}) =>

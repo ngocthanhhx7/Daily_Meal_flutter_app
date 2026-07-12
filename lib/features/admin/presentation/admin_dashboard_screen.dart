@@ -4,6 +4,7 @@ import 'package:daily_meal_flutter_app/app/theme/app_colors.dart';
 import 'package:daily_meal_flutter_app/app/router/app_route.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_error_view.dart';
 import 'package:daily_meal_flutter_app/core/widgets/app_loading_view.dart';
+import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_dashboard_controller.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_providers.dart';
 import 'package:daily_meal_flutter_app/features/admin/application/admin_management_controller.dart';
@@ -11,6 +12,7 @@ import 'package:daily_meal_flutter_app/features/admin/application/admin_analytic
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/widgets/admin_scaffold.dart';
 import 'package:daily_meal_flutter_app/features/auth/application/auth_providers.dart';
+import 'package:daily_meal_flutter_app/features/feed/application/feed_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +24,7 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
     this.analyticsController,
     this.initialDestination = 0,
     this.onLogout,
+    this.mediaResolver,
     super.key,
   });
   final AdminDashboardController? controller;
@@ -29,6 +32,7 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   final AdminAnalyticsController? analyticsController;
   final int initialDestination;
   final VoidCallback? onLogout;
+  final MediaUrlResolver? mediaResolver;
 
   @override
   ConsumerState<AdminDashboardScreen> createState() =>
@@ -42,13 +46,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   void initState() {
     super.initState();
     _destination = widget.initialDestination;
-    if (_destination == 7) {
+    if (_destination >= 3 && _destination <= 7) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final AdminManagementController controller =
             widget.managementController ??
             ref.read(adminManagementControllerProvider);
-        controller.loadUsers().catchError((_) {});
+        final future = switch (_destination) {
+          3 => controller.loadPosts(),
+          4 => controller.loadReports(),
+          5 => controller.loadPayments(),
+          7 => controller.loadUsers(),
+          _ => Future<void>.value(),
+        };
+        future.catchError((_) {});
       });
     }
   }
@@ -133,7 +144,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             destination: _destination,
           ),
           2 => _KpiSection(controller: controller),
-          3 => _PostsSection(controller: management),
+          3 => _PostsSection(
+            controller: management,
+            resolver:
+                widget.mediaResolver ?? ref.watch(mediaUrlResolverProvider),
+          ),
           4 => _ReportsSection(controller: management),
           5 => _PaymentsSection(controller: management),
           _ => _UsersSection(controller: management),
@@ -557,18 +572,31 @@ class _SectionFrame extends StatelessWidget {
     children: [
       Padding(
         padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            ?filter,
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final heading = Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            );
+            if (filter == null) {
+              return Align(alignment: Alignment.centerLeft, child: heading);
+            }
+            if (constraints.maxWidth < 720) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [heading, const SizedBox(height: 12), filter!],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: heading),
+                const SizedBox(width: 16),
+                filter!,
+              ],
+            );
+          },
         ),
       ),
       if (onSearch != null)
@@ -647,64 +675,476 @@ class _UsersSection extends StatelessWidget {
   );
 }
 
-class _PostsSection extends StatelessWidget {
-  const _PostsSection({required this.controller});
+class _AdminPostFilters extends StatelessWidget {
+  const _AdminPostFilters({required this.controller});
   final AdminManagementController controller;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    key: const Key('admin-post-filters'),
+    spacing: 10,
+    runSpacing: 8,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: [
+      DropdownButton<String>(
+        value: controller.moderationStatus ?? 'all',
+        items: const [
+          DropdownMenuItem(value: 'all', child: Text('Tất cả trạng thái')),
+          DropdownMenuItem(value: 'visible', child: Text('Hiển thị')),
+          DropdownMenuItem(value: 'review', child: Text('Cần duyệt')),
+          DropdownMenuItem(value: 'hidden', child: Text('Đã ẩn')),
+        ],
+        onChanged: (value) => controller
+            .loadPosts(
+              status: value == 'all' ? null : value,
+              clearStatus: value == 'all',
+            )
+            .catchError((_) {}),
+      ),
+      DropdownButton<String>(
+        key: const Key('admin-post-media-filter'),
+        value: controller.postMediaKind,
+        items: const [
+          DropdownMenuItem(value: 'all', child: Text('Tất cả media')),
+          DropdownMenuItem(value: 'single_image', child: Text('Một ảnh')),
+          DropdownMenuItem(value: 'multi_image', child: Text('Nhiều ảnh')),
+          DropdownMenuItem(value: 'video', child: Text('Video')),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            controller.loadPosts(mediaKind: value).catchError((_) {});
+          }
+        },
+      ),
+      DropdownButton<AdminRange>(
+        key: const Key('admin-post-range-filter'),
+        value: controller.postRange,
+        items: [
+          for (final range in AdminRange.values)
+            DropdownMenuItem(value: range, child: Text(range.label)),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            controller.loadPosts(range: value).catchError((_) {});
+          }
+        },
+      ),
+      DropdownButton<String>(
+        key: const Key('admin-post-sort-filter'),
+        value: controller.postSortBy,
+        items: const [
+          DropdownMenuItem(value: 'createdAt', child: Text('Mới nhất')),
+          DropdownMenuItem(value: 'interactions', child: Text('Tương tác')),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            controller.loadPosts(sortBy: value).catchError((_) {});
+          }
+        },
+      ),
+      IconButton(
+        tooltip: controller.postSortOrder == 'desc' ? 'Giảm dần' : 'Tăng dần',
+        onPressed: () => controller
+            .loadPosts(
+              sortOrder: controller.postSortOrder == 'desc' ? 'asc' : 'desc',
+            )
+            .catchError((_) {}),
+        icon: Icon(
+          controller.postSortOrder == 'desc'
+              ? Icons.arrow_downward
+              : Icons.arrow_upward,
+        ),
+      ),
+      OutlinedButton.icon(
+        key: const Key('admin-post-custom-date'),
+        onPressed: () async {
+          final now = DateTime.now();
+          final picked = await showDateRangePicker(
+            context: context,
+            firstDate: DateTime(now.year - 3),
+            lastDate: now,
+            initialDateRange: DateTimeRange(
+              start: now.subtract(const Duration(days: 7)),
+              end: now,
+            ),
+          );
+          if (picked == null || !context.mounted) return;
+          final end = DateTime(
+            picked.end.year,
+            picked.end.month,
+            picked.end.day,
+            23,
+            59,
+            59,
+            999,
+          );
+          controller
+              .loadPosts(
+                start: picked.start.toUtc().toIso8601String(),
+                end: end.toUtc().toIso8601String(),
+              )
+              .catchError((_) {});
+        },
+        icon: const Icon(Icons.date_range_outlined),
+        label: Text(
+          controller.postStart == null ? 'Tùy chỉnh ngày' : 'Đã chọn ngày',
+        ),
+      ),
+      if (controller.postStart != null)
+        IconButton(
+          tooltip: 'Xóa khoảng ngày',
+          onPressed: () =>
+              controller.loadPosts(clearDates: true).catchError((_) {}),
+          icon: const Icon(Icons.close),
+        ),
+    ],
+  );
+}
+
+class _PostsSection extends StatelessWidget {
+  const _PostsSection({required this.controller, required this.resolver});
+  final AdminManagementController controller;
+  final MediaUrlResolver resolver;
   @override
   Widget build(BuildContext context) => _SectionFrame(
     title: 'Kiểm duyệt bài viết',
     controller: controller,
     onSearch: (q) => controller.loadPosts(search: q).catchError((_) {}),
-    filter: DropdownButton<String>(
-      value: controller.moderationStatus ?? 'all',
-      items: const [
-        DropdownMenuItem(value: 'all', child: Text('Tất cả')),
-        DropdownMenuItem(value: 'visible', child: Text('Hiển thị')),
-        DropdownMenuItem(value: 'review', child: Text('Cần duyệt')),
-        DropdownMenuItem(value: 'hidden', child: Text('Đã ẩn')),
-      ],
-      onChanged: (value) => controller
-          .loadPosts(
-            status: value == 'all' ? null : value,
-            clearStatus: value == 'all',
-          )
-          .catchError((_) {}),
-    ),
+    filter: _AdminPostFilters(controller: controller),
     child: Column(
       children: [
-        _InsightStrip(data: controller.postInsights),
+        _PostInsightCards(data: controller.postInsights),
         Expanded(
           child: _PagedList(
             page: controller.postPage,
             empty: 'Không có bài viết',
             onPage: (p) => controller.loadPosts(page: p).catchError((_) {}),
-            itemBuilder: (post) => Card(
-              child: ListTile(
-                title: Text(
-                  post.caption.isEmpty ? '(Không có nội dung)' : post.caption,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  '${post.authorName} • ${post.visibility} • ${post.interactions} tương tác',
-                ),
-                trailing: PopupMenuButton<String>(
-                  enabled: !controller.isMutating(post.id),
-                  initialValue: post.moderationStatus,
-                  onSelected: (value) =>
-                      controller.moderate(post, value).catchError((_) {}),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'visible', child: Text('Hiển thị')),
-                    PopupMenuItem(value: 'review', child: Text('Cần duyệt')),
-                    PopupMenuItem(value: 'hidden', child: Text('Ẩn bài')),
-                  ],
-                ),
-              ),
+            itemBuilder: (post) => _AdminPostCard(
+              post: post,
+              resolver: resolver,
+              busy: controller.isMutating(post.id),
+              onModerate: (value) =>
+                  controller.moderate(post, value).catchError((_) {}),
             ),
           ),
         ),
       ],
     ),
+  );
+}
+
+class _PostInsightCards extends StatelessWidget {
+  const _PostInsightCards({required this.data});
+  final Map<String, dynamic>? data;
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = data?['summary'] is Map
+        ? (data!['summary'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+    final topPosts = data?['topPosts'] is List
+        ? (data!['topPosts'] as List).whereType<Map>().toList()
+        : const <Map>[];
+    final top = topPosts.isEmpty ? null : topPosts.first;
+    final topStats = top?['stats'] is Map
+        ? (top!['stats'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+    final topInteractions = ['likes', 'comments', 'saves'].fold<int>(
+      0,
+      (sum, key) =>
+          sum + (topStats[key] is num ? (topStats[key] as num).round() : 0),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth >= 900
+              ? (constraints.maxWidth - 24) / 3
+              : (constraints.maxWidth - 12) / 2;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _AdminMetricCard(
+                width: width,
+                label: 'Bài đăng trong khoảng',
+                value: '${summary['totalPosts'] ?? 0}',
+                note: 'Theo bộ lọc hiện tại',
+              ),
+              _AdminMetricCard(
+                width: width,
+                label: 'Tương tác trong khoảng',
+                value: '${summary['totalInteractions'] ?? 0}',
+                note: 'Like + bình luận + lưu',
+              ),
+              _AdminMetricCard(
+                width: width,
+                label: 'Bài nhiều tương tác nhất',
+                value: '$topInteractions',
+                note: top?['caption']?.toString() ?? 'Chưa có dữ liệu',
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AdminMetricCard extends StatelessWidget {
+  const _AdminMetricCard({
+    required this.width,
+    required this.label,
+    required this.value,
+    required this.note,
+  });
+  final double width;
+  final String label, value, note;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: AppColors.muted)),
+            const SizedBox(height: 5),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            Text(note, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _AdminPostCard extends StatelessWidget {
+  const _AdminPostCard({
+    required this.post,
+    required this.resolver,
+    required this.busy,
+    required this.onModerate,
+  });
+  final AdminPost post;
+  final MediaUrlResolver resolver;
+  final bool busy;
+  final ValueChanged<String> onModerate;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    key: Key('admin-post-${post.id}'),
+    clipBehavior: Clip.antiAlias,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+        final media = _AdminPostMedia(post: post, resolver: resolver);
+        final details = _details(context);
+        return compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [media, details],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(width: 240, child: media),
+                  Expanded(child: details),
+                ],
+              );
+      },
+    ),
+  );
+
+  Widget _details(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            _AdminAvatar(
+              url: resolver.resolve(post.authorAvatarUrl),
+              name: post.authorName,
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.authorName.isEmpty
+                        ? 'Daily Meal user'
+                        : post.authorName,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if (post.authorEmail.isNotEmpty)
+                    Text(
+                      post.authorEmail,
+                      style: const TextStyle(
+                        color: AppColors.muted,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            _AdminStatusPill(post.moderationStatus),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          post.caption.isEmpty ? '(Không có nội dung)' : post.caption,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 9),
+        Wrap(
+          spacing: 10,
+          runSpacing: 6,
+          children: [
+            Text(post.visibility),
+            Text('${post.likes} lượt thích'),
+            Text('${post.comments} bình luận'),
+            Text('${post.saves} lượt lưu'),
+            if (post.createdAt != null)
+              Text(
+                post.createdAt!.toLocal().toIso8601String().split('T').first,
+              ),
+          ],
+        ),
+        if (post.moderationReason.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Lý do: ${post.moderationReason}',
+            style: const TextStyle(color: AppColors.red),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              onPressed: busy ? null : () => onModerate('visible'),
+              icon: const Icon(Icons.visibility_outlined, size: 18),
+              label: const Text('Hiển thị'),
+            ),
+            OutlinedButton.icon(
+              onPressed: busy ? null : () => onModerate('review'),
+              icon: const Icon(Icons.rate_review_outlined, size: 18),
+              label: const Text('Cần duyệt'),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: busy ? null : () => onModerate('hidden'),
+              icon: const Icon(Icons.visibility_off_outlined, size: 18),
+              label: const Text('Ẩn bài'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _AdminPostMedia extends StatelessWidget {
+  const _AdminPostMedia({required this.post, required this.resolver});
+  final AdminPost post;
+  final MediaUrlResolver resolver;
+
+  @override
+  Widget build(BuildContext context) {
+    final images = post.imageUrls
+        .map(resolver.resolve)
+        .whereType<Uri>()
+        .take(3)
+        .toList(growable: false);
+    return AspectRatio(
+      aspectRatio: 16 / 10,
+      child: ColoredBox(
+        color: AppColors.canvasStrong,
+        child: post.mediaType == 'video'
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (images.isNotEmpty) _AdminNetworkImage(images.first),
+                  const Center(
+                    child: CircleAvatar(
+                      radius: 25,
+                      child: Icon(Icons.play_arrow_rounded, size: 34),
+                    ),
+                  ),
+                ],
+              )
+            : images.isEmpty
+            ? const Center(
+                child: Icon(Icons.image_not_supported_outlined, size: 38),
+              )
+            : Row(
+                children: [
+                  Expanded(flex: 2, child: _AdminNetworkImage(images.first)),
+                  if (images.length > 1)
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(child: _AdminNetworkImage(images[1])),
+                          if (images.length > 2)
+                            Expanded(child: _AdminNetworkImage(images[2])),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _AdminNetworkImage extends StatelessWidget {
+  const _AdminNetworkImage(this.uri);
+  final Uri uri;
+  @override
+  Widget build(BuildContext context) => Image.network(
+    uri.toString(),
+    fit: BoxFit.cover,
+    errorBuilder: (_, _, _) => const ColoredBox(
+      color: AppColors.canvasStrong,
+      child: Center(child: Icon(Icons.broken_image_outlined)),
+    ),
+  );
+}
+
+class _AdminAvatar extends StatelessWidget {
+  const _AdminAvatar({required this.url, required this.name});
+  final Uri? url;
+  final String name;
+  @override
+  Widget build(BuildContext context) => CircleAvatar(
+    radius: 18,
+    backgroundImage: url == null ? null : NetworkImage(url.toString()),
+    child: url == null
+        ? Text(name.isEmpty ? '?' : name[0].toUpperCase())
+        : null,
+  );
+}
+
+class _AdminStatusPill extends StatelessWidget {
+  const _AdminStatusPill(this.status);
+  final String status;
+  @override
+  Widget build(BuildContext context) => Chip(
+    visualDensity: VisualDensity.compact,
+    label: Text(switch (status) {
+      'hidden' => 'Đã ẩn',
+      'review' => 'Cần duyệt',
+      _ => 'Hiển thị',
+    }),
   );
 }
 

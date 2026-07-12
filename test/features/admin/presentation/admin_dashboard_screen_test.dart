@@ -5,10 +5,62 @@ import 'package:daily_meal_flutter_app/features/admin/data/admin_repository.dart
 import 'package:daily_meal_flutter_app/features/admin/domain/admin_models.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/admin_dashboard_screen.dart';
 import 'package:daily_meal_flutter_app/features/admin/presentation/widgets/admin_scaffold.dart';
+import 'package:daily_meal_flutter_app/core/network/media_url_resolver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Repository implements AdminRepositoryContract {
+  @override
+  Future<AdminPage<AdminPost>> posts({
+    String query = '',
+    int page = 1,
+    String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  }) async => const AdminPage(
+    items: [
+      AdminPost(
+        id: 'p1',
+        caption: 'Salad gà giàu protein',
+        visibility: 'public',
+        moderationStatus: 'review',
+        authorName: 'Bếp Nhà',
+        authorEmail: 'chef@example.com',
+        imageUrls: ['https://example.com/meal.jpg'],
+        likes: 12,
+        comments: 3,
+        saves: 4,
+      ),
+    ],
+    page: 1,
+    pages: 1,
+    total: 1,
+  );
+
+  @override
+  Future<Map<String, dynamic>> postInsights({
+    String query = '',
+    String? moderationStatus,
+    AdminRange range = AdminRange.sevenDays,
+    String mediaKind = 'all',
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? start,
+    String? end,
+  }) async => {
+    'summary': {'totalPosts': 1, 'totalInteractions': 19},
+    'topPosts': [
+      {
+        'caption': 'Salad gà giàu protein',
+        'stats': {'likes': 12, 'comments': 3, 'saves': 4},
+      },
+    ],
+  };
   @override
   Future<AdminDashboard> dashboard(AdminRange range) async => AdminDashboard(
     range: range.wireValue,
@@ -128,13 +180,18 @@ Future<void> pump(
   final controller = AdminDashboardController(_Repository());
   await controller.load();
   await tester.pumpWidget(
-    MaterialApp(
-      home: AdminDashboardScreen(
-        initialDestination: initialDestination,
-        controller: controller,
-        managementController: AdminManagementController(_Repository()),
-        analyticsController: AdminAnalyticsController(_Repository()),
-        onLogout: () {},
+    ProviderScope(
+      child: MaterialApp(
+        home: AdminDashboardScreen(
+          initialDestination: initialDestination,
+          controller: controller,
+          managementController: AdminManagementController(_Repository()),
+          analyticsController: AdminAnalyticsController(_Repository()),
+          onLogout: () {},
+          mediaResolver: MediaUrlResolver(
+            Uri.parse('https://api.dailymeal.site'),
+          ),
+        ),
       ),
     ),
   );
@@ -142,6 +199,24 @@ Future<void> pump(
 }
 
 void main() {
+  testWidgets('renders responsive post media cards and complete filters', (
+    tester,
+  ) async {
+    await pump(tester, const Size(390, 844), initialDestination: 3);
+    expect(find.byKey(const Key('admin-post-filters')), findsOneWidget);
+    expect(find.byKey(const Key('admin-post-media-filter')), findsOneWidget);
+    expect(find.byKey(const Key('admin-post-range-filter')), findsOneWidget);
+    expect(find.byKey(const Key('admin-post-sort-filter')), findsOneWidget);
+    expect(find.byKey(const Key('admin-post-custom-date')), findsOneWidget);
+    expect(find.byKey(const Key('admin-post-p1')), findsOneWidget);
+    expect(find.text('Salad gà giàu protein'), findsWidgets);
+    expect(find.text('Bếp Nhà'), findsOneWidget);
+    expect(find.text('12 lượt thích'), findsOneWidget);
+    expect(find.text('Tương tác trong khoảng'), findsOneWidget);
+    expect(find.text('19'), findsWidgets);
+    expect(find.text('Ẩn bài'), findsOneWidget);
+  });
+
   testWidgets('uses compact navigation and shows KPI cards', (tester) async {
     await pump(tester, const Size(390, 844));
     expect(find.byKey(AdminScaffold.compactNavigationKey), findsOneWidget);
