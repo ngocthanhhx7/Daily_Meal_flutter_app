@@ -37,7 +37,12 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401 && onUnauthorized != null) {
+          final authorization = error.requestOptions.headers['Authorization'];
+          final wasAuthenticated =
+              authorization is String && authorization.trim().isNotEmpty;
+          if (error.response?.statusCode == 401 &&
+              wasAuthenticated &&
+              onUnauthorized != null) {
             await onUnauthorized();
           }
           final failure = const ApiExceptionMapper().map(error);

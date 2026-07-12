@@ -36,6 +36,12 @@ class ApiExceptionMapper {
         technicalMessage: exception.message,
         code: code,
       ),
+      401 when _isAuthenticationAttempt(exception.requestOptions) =>
+        AppFailure.validation(
+          message: message ?? 'Email hoặc mật khẩu không đúng.',
+          technicalMessage: exception.message,
+          code: code,
+        ),
       401 => AppFailure.unauthorized(technicalMessage: exception.message),
       403 => AppFailure.forbidden(technicalMessage: exception.message),
       404 => AppFailure.notFound(technicalMessage: exception.message),
@@ -49,5 +55,19 @@ class ApiExceptionMapper {
       ),
       _ => AppFailure.unknown(technicalMessage: exception.message),
     };
+  }
+
+  bool _isAuthenticationAttempt(RequestOptions request) {
+    final authorization = request.headers['Authorization'];
+    if (authorization is String && authorization.trim().isNotEmpty) {
+      return false;
+    }
+    return const {
+      '/api/auth/login',
+      '/api/auth/phone/login',
+      '/api/auth/google',
+      '/api/auth/facebook',
+      '/api/admin/login',
+    }.contains(request.path);
   }
 }

@@ -17,6 +17,7 @@ class _TokenProvider implements AuthTokenProvider {
 class _RecordingAdapter implements HttpClientAdapter {
   RequestOptions? request;
   int statusCode = 200;
+  String responseBody = '{}';
 
   @override
   Future<ResponseBody> fetch(
@@ -26,7 +27,7 @@ class _RecordingAdapter implements HttpClientAdapter {
   ) async {
     request = options;
     return ResponseBody.fromString(
-      '{}',
+      responseBody,
       statusCode,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -110,6 +111,44 @@ void main() {
       ),
     );
     expect(unauthorizedCalls, 1);
+  });
+
+  test('does not expire a session for an unauthenticated login 401', () async {
+    final adapter = _RecordingAdapter()
+      ..statusCode = 401
+      ..responseBody = '{"message":"Email hoặc mật khẩu không đúng"}';
+    var unauthorizedCalls = 0;
+    final client = ApiClient.create(
+      baseUrl: Uri.parse('https://api.dailymeal.site'),
+      tokenProvider: _TokenProvider(null),
+      adapter: adapter,
+      onUnauthorized: () async => unauthorizedCalls++,
+    );
+
+    await expectLater(
+      client.dio.post<void>(
+        '/api/auth/login',
+        data: {'email': 'meal@example.com', 'password': 'wrong'},
+      ),
+      throwsA(
+        isA<DioException>().having(
+          (exception) => exception.error,
+          'mapped error',
+          isA<AppFailure>()
+              .having(
+                (failure) => failure.kind,
+                'kind',
+                AppFailureKind.validation,
+              )
+              .having(
+                (failure) => failure.userMessage,
+                'message',
+                'Email hoặc mật khẩu không đúng',
+              ),
+        ),
+      ),
+    );
+    expect(unauthorizedCalls, 0);
   });
 
   test(
