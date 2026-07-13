@@ -58,10 +58,6 @@ trực tuyến.
 > vì bản preview không chứa Meta Client Token phát hành chính thức. Không dùng
 > bản này cho mục đích cần độ ổn định hoặc bảo mật của bản production.
 
-## Dành cho nhà phát triển
-
-Daily Meal là Flutter client cho Android và Web, kết nối với API production tại
-`https://api.dailymeal.site`.
 
 ### Yêu cầu môi trường
 
@@ -74,35 +70,6 @@ flutter pub get
 flutter analyze --no-pub
 flutter test
 ```
-
-### Chạy ứng dụng
-
-Các cấu hình public được truyền qua `dart-define`:
-
-```powershell
-$defines = @(
-  '--dart-define=API_BASE_URL=https://api.dailymeal.site',
-  '--dart-define=FACEBOOK_APP_ID=3483710358450589',
-  '--dart-define=GOOGLE_WEB_CLIENT_ID=20654020356-nsqam5ladrg7j5v6agefq8pucnrcqtn8.apps.googleusercontent.com'
-)
-flutter run -d android @defines
-flutter run -d chrome @defines
-```
-
-### Build bản production
-
-Production APK bắt buộc có private keystore và Meta Client Token. Tạo
-`android/key.properties` và `android/facebook.properties` (đều đã được Git
-ignore) trước khi chạy:
-
-```powershell
-flutter build apk --release @defines
-flutter build appbundle --release @defines
-```
-
-Không commit keystore, mật khẩu hoặc token. Android App Links dùng
-`https://dailymeal.site/users/*` và `https://dailymeal.site/posts/*`; xem
-`docs/parity` để biết ma trận tính năng và bằng chứng kiểm thử hiện tại.
 
 ## Kiến trúc ngắn gọn
 
