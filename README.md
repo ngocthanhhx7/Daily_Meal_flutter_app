@@ -9,13 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/download/v1.0.0-preview/daily-meal-v1.0.0-preview.apk">
+  <a href="https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/download/v1.0.0-preview.2/daily-meal-v1.0.0-preview.2.apk">
     <img src="https://img.shields.io/badge/T%E1%BA%A3i%20APK-B%E1%BA%A3n%20d%C3%B9ng%20th%E1%BB%AD-FF6B35?style=for-the-badge&logo=android&logoColor=white" alt="Tải APK Daily Meal" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/tag/v1.0.0-preview">Xem ghi chú phát hành</a>
+  <a href="https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/tag/v1.0.0-preview.2">Xem ghi chú phát hành</a>
 </p>
 
 ## Một nơi cho mọi cảm hứng ẩm thực
@@ -44,7 +44,7 @@ chuyện với những người cùng sở thích. Từ món ăn thường ngày
 ## Tải và cài đặt APK
 
 1. Nhấn nút **Tải APK — Bản dùng thử** ở đầu trang hoặc tải trực tiếp tại
-   [daily-meal-v1.0.0-preview.apk](https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/download/v1.0.0-preview/daily-meal-v1.0.0-preview.apk).
+   [daily-meal-v1.0.0-preview.2.apk](https://github.com/ngocthanhhx7/Daily_Meal_flutter_app/releases/download/v1.0.0-preview.2/daily-meal-v1.0.0-preview.2.apk).
 2. Mở file APK sau khi tải xong trên điện thoại Android.
 3. Nếu Android hỏi quyền cài đặt từ nguồn này, hãy chọn **Cho phép**.
 4. Hoàn tất cài đặt, mở **Daily Meal** và bắt đầu khám phá.
